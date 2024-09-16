@@ -1,7 +1,8 @@
 import dotenv from 'dotenv';
 import express from 'express';
-import { env } from './config/environment';
-import { closeDB, connectDB, getDB } from './config/mongodb';
+import { closeDB, connectDB } from './config/mongodb';
+import { APIs_V1 } from './routers/v1';
+import { V1_ROUTE } from './constants/routes';
 const exitHook = require('async-exit-hook');
 
 dotenv.config();
@@ -9,14 +10,13 @@ dotenv.config();
 const startServer = () => {
   const app = express();
 
-  app.get('/', async (req, res) => {
-    res.end('<h1>Hello !</h1><hr>');
-  });
+  app.use(V1_ROUTE, APIs_V1);
 
   app.listen(8017, 'localhost', () => {
     console.log(`I am running server`);
   });
 
+  // Close the DB connection when the Node process is terminated
   exitHook(() => {
     closeDB();
     console.log('Disconnected from MongoDB');
@@ -26,8 +26,6 @@ const startServer = () => {
 //anonymous async function (IIFE)
 (async () => {
   try {
-    console.log('>>>> URI', env.MONGO_URI);
-
     await connectDB();
     console.log('Connected to MongoDB successfully');
     startServer();
