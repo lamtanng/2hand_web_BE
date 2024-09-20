@@ -8,5 +8,6 @@ declare namespace NodeJS {
     MONGO_NAME: string;
     APP_PORT: number;
     APP_HOST: string;
+    BUILD_MODE: string;
   }
 }
