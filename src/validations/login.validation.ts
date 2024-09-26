@@ -1,9 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
-import ApiError from '../utils/ApiError';
 import { AccountProps } from '../types/account.type';
-import { AppError } from '../types/error.type';
+import { catchErrors } from '../utils/catchErrors';
 
 const loginSchema = Joi.object<AccountProps>({
   email: Joi.string().email().required().trim().strict(),
@@ -11,17 +9,11 @@ const loginSchema = Joi.object<AccountProps>({
 });
 
 // post
-const login = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    // abortEarly: false will return all errors found in the request body
-    await loginSchema.validateAsync(req.body, { abortEarly: false });
-    //redirect to controller
-    next();
-  } catch (err: AppError) {
-    const customError = new ApiError({ message: new Error(err).message, statusCode: StatusCodes.UNPROCESSABLE_ENTITY });
-    next(customError);
-  }
-};
+const login = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
+  // abortEarly: false will return all errors found in the request bod
+  await loginSchema.validateAsync(req.body, { abortEarly: false });
+  next();
+});
 
 export const loginValidation = {
   login,

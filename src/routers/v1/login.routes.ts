@@ -5,9 +5,6 @@ const router = express.Router();
 
 router
   .route('/')
-  .get((req, res) => {
-    res.status(200).send('Login page');
-  })
   .post(loginValidation.login, loginController.login);
 
 export const loginRoutes = router;
