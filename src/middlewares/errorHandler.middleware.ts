@@ -4,7 +4,7 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { env } from '../config/environment';
 import ApiError from '../utils/ApiError';
 
-export const errorHandlingMiddleware = (err: ApiError, req: Request, res: Response, next: NextFunction) => {
+export const errorHandler = (err: ApiError, req: Request, res: Response, next: NextFunction) => {
   const responseError = {
     statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
     message: err.message || ReasonPhrases.INTERNAL_SERVER_ERROR,

@@ -1,9 +1,10 @@
 import dotenv from 'dotenv';
 import express from 'express';
-import { closeDB, connectDB } from './config/mongodb';
+// import { closeDB, connectDB } from './config/mongodb';
 import { APIs_V1 } from './routers/v1';
 import { V1_ROUTE } from './constants/routes';
-import { errorHandlingMiddleware } from './middlewares/errorHandling.middleware';
+import { errorHandler } from './middlewares/errorHandler.middleware';
+import { connectDB } from './config/db_mongoose';
 const exitHook = require('async-exit-hook');
 
 dotenv.config();
@@ -22,11 +23,11 @@ const startServer = () => {
   });
 
   //middleware for error handling
-  app.use(errorHandlingMiddleware);
+  app.use(errorHandler);
 
   // Close the DB connection when the Node process is terminated
   exitHook(() => {
-    closeDB();
+    // closeDB();
     console.log('Disconnected from MongoDB');
   });
 };
