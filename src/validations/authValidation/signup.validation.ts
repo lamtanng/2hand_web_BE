@@ -1,7 +1,7 @@
 import Joi from 'joi';
-import { catchErrors } from '../utils/catchErrors';
+import { catchErrors } from '../../utils/catchErrors';
 import { NextFunction, Request, Response } from 'express';
-import { SignUpProps } from '../types/account.type';
+import { SignUpProps } from '../../types/account.type';
 
 const registerSchema = Joi.object<SignUpProps>({
   email: Joi.string().email().required().trim().strict(),

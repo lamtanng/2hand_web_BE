@@ -14,6 +14,7 @@ ACCOUNT_COLLECTION_SCHEMA.methods.comparePassword = async function (password: st
   return await compareHash(password, this.password);
 };
 
+
 export const AccountModel = mongoose.model<AccountDocument>(
   ACCOUNT_COLLECTION_NAME,
   ACCOUNT_COLLECTION_SCHEMA,

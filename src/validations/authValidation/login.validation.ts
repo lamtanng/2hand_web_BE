@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import Joi from 'joi';
-import { AccountProps } from '../types/account.type';
-import { catchErrors } from '../utils/catchErrors';
+import { AccountProps } from '../../types/account.type';
+import { catchErrors } from '../../utils/catchErrors';
 
 const loginSchema = Joi.object<AccountProps>({
   email: Joi.string().email().required().trim().strict(),
