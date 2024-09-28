@@ -12,7 +12,7 @@ const generateToken = async ({ account, secretKey, expiresIn }: GenerateTokenPro
 };
 
 const verifyToken = async (token: string, secretKey: Secret | PublicKey) => {
-  return JWT.verify(token, secretKey);
+  return JWT.verify(token, secretKey, { algorithms: ['RS256'] });
 };
 
 export const JwtProvider = {

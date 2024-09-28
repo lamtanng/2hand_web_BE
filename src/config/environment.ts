@@ -15,7 +15,7 @@ const getEnv = (key: string, defaultValue?: string) => {
 
 export const env = {
   APP_HOST: getEnv('APP_HOST'),
-  APP_PORT: getEnv('APP_PORT'),
+  APP_PORT: Number(getEnv('APP_PORT')),
   MONGO_URI: getEnv('MONGO_URI'),
   MONGO_NAME: getEnv('MONGO_NAME'),
   BUILD_MODE: getEnv('BUILD_MODE'),
@@ -23,4 +23,5 @@ export const env = {
   ACCESS_TOKEN_EXPIRED: getEnv('ACCESS_TOKEN_EXPIRED'),
   REFRESH_TOKEN_SECRET_KEY: getEnv('REFRESH_TOKEN_SECRET_KEY'),
   REFRESH_TOKEN_EXPIRED: getEnv('REFRESH_TOKEN_EXPIRED'),
+  CLIENT_ORIGIN: getEnv('CLIENT_ORIGIN'),
 };
