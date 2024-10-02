@@ -8,34 +8,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.closeDB = exports.getDB = exports.connectDB = void 0;
-const mongodb_1 = require("mongodb");
-let dbInstance = null;
-let client = new mongodb_1.MongoClient('mongodb+srv://21110895:5T1SWt6aFLUjckG3@ecomweb.bllwi.mongodb.net/?retryWrites=true&w=majority&appName=eComWeb', {
-    serverApi: {
-        version: mongodb_1.ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-    },
-});
+exports.connectDB = void 0;
+const mongoose_1 = __importDefault(require("mongoose"));
+const environment_1 = require("./environment");
 const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield client.connect();
-        dbInstance = client.db('ecomweb');
+        yield mongoose_1.default.connect(environment_1.env.MONGO_URI, {
+            dbName: environment_1.env.MONGO_NAME,
+        });
     }
     catch (error) {
-        console.error('Error connecting to MongoDB', error);
+        process.exit(0);
     }
 });
 exports.connectDB = connectDB;
-const getDB = () => {
-    if (!dbInstance)
-        throw new Error('Must connect to DB before calling getDB');
-    return dbInstance;
-};
-exports.getDB = getDB;
-const closeDB = () => __awaiter(void 0, void 0, void 0, function* () {
-    yield client.close();
-});
-exports.closeDB = closeDB;

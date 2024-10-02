@@ -8,7 +8,7 @@ const express_1 = __importDefault(require("express"));
 const http_status_codes_1 = require("http-status-codes");
 const login_routes_1 = require("./login.routes");
 const signup_routes_1 = require("./signup.routes");
-const routes_1 = require("~/constants/routes");
+const routes_1 = require("../../constants/routes");
 const router = express_1.default.Router();
 router.get('/', (req, res) => {
     res.status(http_status_codes_1.StatusCodes.OK).send('V1 APIs are already to use !');
