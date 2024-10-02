@@ -1,15 +1,14 @@
 import { AccountModel } from '../../models/account';
-import { AccountProps, SignUpProps } from '../../types/account.type';
+import { AccountProps } from '../../types/account.type';
 import { Role } from '../../types/enum/role.enum';
+import { SignUpRequestProps } from '../../types/http/signup.type';
 import { catchErrors } from '../../utils/catchErrors';
 
-const signup = async (reqBody: SignUpProps) => {
-  const account: AccountProps = {
+const signup = async (reqBody: SignUpRequestProps) => {
+  const account = new AccountModel({
     email: reqBody.email,
     password: reqBody.password,
-    createdAt: new Date(),
-    role: [Role.User],
-  };
+  });
 
   const res = await AccountModel.create(account);
   const newAccount = await AccountModel.findById(res._id);

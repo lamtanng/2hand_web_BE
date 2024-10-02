@@ -19,6 +19,7 @@ class ApiError extends Error {
     // Ghi lại Stack Trace (dấu vết ngăn xếp) để thuận tiện cho việc debug
     Error.captureStackTrace(this, this.constructor);
   }
+  rejectError = () => Promise.reject(this);
 }
 
 export default ApiError;

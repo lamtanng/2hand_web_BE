@@ -1,13 +1,16 @@
 import dotenv from 'dotenv';
+import ApiError from '../utils/classes/ApiError';
+import { StatusCodes } from 'http-status-codes';
 
 dotenv.config();
-
-export interface ENV extends NodeJS.ProcessEnv {}
 
 const getEnv = (key: string, defaultValue?: string) => {
   const value = process.env[key] || defaultValue;
   if (!value) {
-    throw new Error(`Environment variable ${key} is missing`);
+    throw new ApiError({
+      statusCode: StatusCodes.NOT_FOUND,
+      message: `Environment variable ${key} is not defined`,
+    });
   }
 
   return value;

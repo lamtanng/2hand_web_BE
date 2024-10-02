@@ -1,13 +1,13 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { loginService } from '../services/authService/login.service';
-import { signupService } from '../services/authService/signup.service';
-import { catchErrors } from '../utils/catchErrors';
 import { logoutService } from '../services/authService/logout.service';
 import { refreshTokenService } from '../services/authService/refreshToken.service';
+import { signupService } from '../services/authService/signup.service';
+import { catchErrors } from '../utils/catchErrors';
 
-const login = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
-  const result = await loginService.login(req.body, res, next);
+const login = catchErrors(async (req: Request, res: Response) => {
+  const result = await loginService.login(req.body, res);
   res.status(StatusCodes.OK).json(result).send();
 });
 
