@@ -1,12 +1,15 @@
+import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
-// import { closeDB, connectDB } from './config/mongodb';
-import { APIs_V1 } from './routers/v1';
+import { connectDB } from './config/db_mongoose';
+import { env } from './config/environment';
+import { corsOptions } from './constants/corsOptions';
 import { V1_ROUTE } from './constants/routes';
 import { errorHandler } from './middlewares/errorHandler.middleware';
-import { connectDB } from './config/db_mongoose';
-const exitHook = require('async-exit-hook');
+import { APIs_V1 } from './routers/v1';
+import cookieParser from 'cookie-parser';
 
+const exitHook = require('async-exit-hook');
 dotenv.config();
 
 const startServer = () => {
@@ -15,10 +18,16 @@ const startServer = () => {
   // enable req.body json parsing
   app.use(express.json());
 
-  // V1_API routes
+  //enable read cookie
+  app.use(cookieParser());
+
+  //enable cors
+  app.use(cors(corsOptions));
+
+  // app routes
   app.use(V1_ROUTE, APIs_V1);
 
-  app.listen(8017, 'localhost', () => {
+  app.listen(env.APP_PORT, env.APP_HOST, () => {
     console.log(`I am running server`);
   });
 

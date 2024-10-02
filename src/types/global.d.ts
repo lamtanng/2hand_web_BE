@@ -13,5 +13,6 @@ declare namespace NodeJS {
     ACCESS_TOKEN_EXPIRED: string;
     REFRESH_TOKEN_SECRET_KEY: string;
     REFRESH_TOKEN_EXPIRED: string;
+    CLIENT_ORIGIN: string;
   }
 }
