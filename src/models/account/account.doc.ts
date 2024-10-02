@@ -12,6 +12,7 @@ export const ACCOUNT_COLLECTION_SCHEMA = new Schema<AccountDocument>(
     email: { type: String, unique: true, required: true },
     password: { type: String, required: true },
     role: { type: [String], enum: Role, default: [Role.User] },
+    createdAt: { type: Date, default: Date.now },
   },
   {
     timestamps: true,

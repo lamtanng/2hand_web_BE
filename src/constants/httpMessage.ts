@@ -10,5 +10,8 @@ const NOT_FOUND = {
   USER: getNotFoundMsg('User'),
   TOKEN: getNotFoundMsg('Token'),
 };
+const INCORRECT = {
+  PASSWORD: 'Incorrect password',
+};
 
-export const HttpMessage = { NOT_FOUND, EXPIRED_JWT_MGS };
+export const HttpMessage = { NOT_FOUND, EXPIRED_JWT_MGS, INCORRECT };

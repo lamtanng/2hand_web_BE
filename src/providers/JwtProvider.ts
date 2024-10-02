@@ -7,12 +7,14 @@ interface GenerateTokenProps {
   expiresIn: SignOptions['expiresIn'];
 }
 
+const algorithm = 'RS256';
+
 const generateToken = async ({ account, secretKey, expiresIn }: GenerateTokenProps) => {
-  return JWT.sign(account, secretKey, { expiresIn: expiresIn, algorithm: 'RS256' });
+  return JWT.sign(account, secretKey, { expiresIn: expiresIn, algorithm });
 };
 
 const verifyToken = async (token: string, secretKey: Secret | PublicKey) => {
-  return JWT.verify(token, secretKey, { algorithms: ['RS256'] });
+  return JWT.verify(token, secretKey, { algorithms: [algorithm] });
 };
 
 export const JwtProvider = {
