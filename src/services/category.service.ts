@@ -1,12 +1,7 @@
-import { MongoClient } from 'mongodb';
-import { ROLE_COLLECTION_NAME, RoleDocument } from '../models/role/role.schema';
 import { Request, Response } from 'express';
-import { env } from '../../config/environment';
-import { RoleModel } from '../models/role/role.model';
+import { StatusCodes } from 'http-status-codes';
 import { CategoryModel } from '../models/category/category.model';
 import { CategoryDocument } from '../models/category/category.schema';
-import { CategoryProps } from '../types/category.type';
-import { StatusCodes } from 'http-status-codes';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {

@@ -3,11 +3,10 @@ import { StatusCodes } from 'http-status-codes';
 import { ADMIN_ROUTE, AUTH_ROUTE } from '../../constants/routes';
 import { adminRouter } from './adminRoutes';
 import { authRouter } from './auth.routes';
-import { LOGIN_ROUTE, SIGNUP_ROUTE } from '../../constants/routes';
-import { roleRoutes } from '../../test/routes/role.route';
-import { userRoutes } from '../../test/routes/user.route';
-import { storeRoutes } from '../../test/routes/store.route';
-import { categoryRoutes } from '../../test/routes/category.route';
+import { roleRoutes } from './role.route';
+import { userRoutes } from './user.route';
+import { storeRoutes } from './store.route';
+import { categoryRoutes } from './category.route';
 
 const router = express.Router();
 

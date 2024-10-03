@@ -1,8 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
-import { catchErrors } from '../../utils/catchErrors';
-import { roleService } from '../service/role.service';
+import { catchErrors } from '../utils/catchErrors';
 import { Request, Response } from 'express';
-import { storeService } from '../service/store.service';
+import { storeService } from '../services/store.service';
 
 const findAll = catchErrors(async (req: Request, res: Response) => {
   const result = await storeService.findAll(req, res);
@@ -16,6 +15,6 @@ const addStore = catchErrors(async (req: Request, res: Response) => {
 });
 
 export const storeController = {
-    findAll,
-    addStore
+  findAll,
+  addStore,
 };

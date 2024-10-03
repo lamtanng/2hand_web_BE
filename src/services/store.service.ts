@@ -1,9 +1,4 @@
-import { MongoClient } from 'mongodb';
-import { ROLE_COLLECTION_NAME, RoleDocument } from '../models/role/role.schema';
 import { Request, Response } from 'express';
-import { env } from '../../config/environment';
-import { RoleModel } from '../models/role/role.model';
-import mongoose from 'mongoose';
 import { StoreModel } from '../models/store/store.model';
 import { StoreDocument } from '../models/store/store.schema';
 

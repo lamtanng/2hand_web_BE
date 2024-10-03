@@ -8,7 +8,9 @@ export const ROLE_COLLECTION_SCHEMA = new Schema<RoleDocument>(
   {
     _id: {
       type: mongoose.Schema.Types.ObjectId,
-      default: function () { return new mongoose.Types.ObjectId()}
+      default: function () {
+        return new mongoose.Types.ObjectId();
+      },
     },
     name: {
       type: String,

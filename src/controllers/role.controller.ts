@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
-import { catchErrors } from '../../utils/catchErrors';
-import { roleService } from '../service/role.service';
+import { catchErrors } from '../utils/catchErrors';
 import { Request, Response } from 'express';
+import { roleService } from '../services/role.service';
 
 const findAll = catchErrors(async (req: Request, res: Response) => {
   const result = await roleService.findAll(req, res);
@@ -15,6 +15,6 @@ const addRole = catchErrors(async (req: Request, res: Response) => {
 });
 
 export const roleController = {
-    findAll,
-    addRole
+  findAll,
+  addRole,
 };

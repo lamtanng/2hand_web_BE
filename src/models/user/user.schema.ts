@@ -10,7 +10,9 @@ export const USER_COLLECTION_SCHEMA = new Schema<UserDocument>(
   {
     _id: {
       type: mongoose.Schema.Types.ObjectId,
-      default: function () { return new mongoose.Types.ObjectId()}
+      default: function () {
+        return new mongoose.Types.ObjectId();
+      },
     },
     firstName: {
       type: String,
@@ -38,11 +40,13 @@ export const USER_COLLECTION_SCHEMA = new Schema<UserDocument>(
     },
     dateOfBirth: {
       type: Date,
-      default: new Date,
+      default: new Date(),
     },
-    address: [{
-      type: String,
-    }],
+    address: [
+      {
+        type: String,
+      },
+    ],
     isActive: {
       type: Boolean,
       default: true,
@@ -51,22 +55,30 @@ export const USER_COLLECTION_SCHEMA = new Schema<UserDocument>(
       type: Boolean,
       default: false,
     },
-    roleID: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: ROLE_COLLECTION_NAME
-    }],
-    followerID: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: USER_COLLECTION_NAME
-    }],
-    followingID: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: USER_COLLECTION_NAME
-    }],
-    blockedID: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: USER_COLLECTION_NAME
-    }],
+    roleID: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: ROLE_COLLECTION_NAME,
+      },
+    ],
+    followerID: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: USER_COLLECTION_NAME,
+      },
+    ],
+    followingID: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: USER_COLLECTION_NAME,
+      },
+    ],
+    blockedID: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: USER_COLLECTION_NAME,
+      },
+    ],
   },
   {
     timestamps: true,

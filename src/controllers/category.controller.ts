@@ -1,8 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
-import { catchErrors } from '../../utils/catchErrors';
-import { roleService } from '../service/role.service';
+import { catchErrors } from '../utils/catchErrors';
 import { Request, Response } from 'express';
-import { categoryService } from '../service/category.service';
+import { categoryService } from '../services/category.service';
 
 const findAll = catchErrors(async (req: Request, res: Response) => {
   const result = await categoryService.findAll(req, res);
@@ -16,6 +15,6 @@ const addCate = catchErrors(async (req: Request, res: Response) => {
 });
 
 export const categoryController = {
-    findAll,
-    addCate
+  findAll,
+  addCate,
 };

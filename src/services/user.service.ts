@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import { UserModel } from '../models/user/user.model';
 import { UserDocument } from '../models/user/user.schema';
 import { RoleModel } from '../models/role/role.model';
-import { StatusCodes } from 'http-status-codes';
-import { Schema } from 'mongoose';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {
@@ -17,15 +16,6 @@ const findAll = async (reqBody: Request, res: Response) => {
     console.error(error);
   }
 };
-
-// const findOne = async (reqBody: Request, res: Response) => {
-//   try {
-//     const users = await UserModel.findOne({});
-//     return { users };
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
 
 const addUser = async (reqBody: UserDocument, res: Response) => {
   try {
