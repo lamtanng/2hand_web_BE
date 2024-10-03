@@ -1,18 +1,18 @@
-import mongoose, { ObjectId, Schema } from "mongoose";
+import mongoose from "mongoose";
 
 export interface UserProps{
     _id: mongoose.Schema.Types.ObjectId,
-    firstName: String,
-    lastName: String,
-    email: String,
-    password: String,
-    phoneNumber: String,
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+    phoneNumber: string,
     dateOfBirth: Date,
-    address: String[];
+    address: string[];
     createAt?: Date,
     updateAt?: Date,
-    isActive: Boolean,
-    isVerified: Boolean,
+    isActive: boolean,
+    isVerified: boolean,
     roleID: mongoose.Schema.Types.ObjectId[] ,
     followerID?: mongoose.Schema.Types.ObjectId[],
     followingID?: mongoose.Schema.Types.ObjectId[],

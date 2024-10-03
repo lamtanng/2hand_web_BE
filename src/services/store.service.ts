@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { StoreModel } from '../models/store/store.model';
-import { StoreDocument } from '../models/store/store.schema';
+import { StoreModel } from '../models/store';
+import { StoreDocument } from '../models/store/store.doc';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {
@@ -16,10 +16,10 @@ const addStore = async (reqBody: StoreDocument, res: Response) => {
     const store = reqBody;
 
     const newStore = await StoreModel.create(store);
-    return {newStore};
+    return { newStore };
   } catch (error) {
     console.error(error);
   }
-}
+};
 
 export const storeService = { findAll, addStore };

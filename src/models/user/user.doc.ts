@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 import { UserProps } from '../../types/user.type';
 import { timeStamp } from 'console';
-import { ROLE_COLLECTION_NAME } from '../role/role.schema';
+import { ROLE_COLLECTION_NAME } from '../role/role.doc';
 
 export interface UserDocument extends UserProps, Document {}
 

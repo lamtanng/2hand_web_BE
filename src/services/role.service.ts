@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { RoleModel } from '../models/role/role.model';
-import { RoleDocument } from '../models/role/role.schema';
+import { RoleModel } from '../models/role';
+import { RoleDocument } from '../models/role/role.doc';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {

@@ -7,6 +7,8 @@ import { roleRoutes } from './role.route';
 import { userRoutes } from './user.route';
 import { storeRoutes } from './store.route';
 import { categoryRoutes } from './category.route';
+import { productRoutes } from './product.route';
+import { reviewRoutes } from './review.route';
 
 const router = express.Router();
 
@@ -21,5 +23,7 @@ router.use('/role', roleRoutes);
 router.use('/user', userRoutes);
 router.use('/store', storeRoutes);
 router.use('/category', categoryRoutes);
+router.use('/product', productRoutes);
+router.use('/review', reviewRoutes);
 
 export const APIs_V1 = router;

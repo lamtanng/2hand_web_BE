@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { CategoryModel } from '../models/category/category.model';
-import { CategoryDocument } from '../models/category/category.schema';
+import { CategoryModel } from '../models/category';
+import { CategoryDocument } from '../models/category/category.doc';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {

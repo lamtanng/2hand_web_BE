@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import { StoreProps } from '../../types/store.type';
-import { USER_COLLECTION_NAME } from '../user/user.schema';
+import { USER_COLLECTION_NAME } from '../user/user.doc';
 
 export interface StoreDocument extends StoreProps, Document {}
 

@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { UserModel } from '../models/user/user.model';
-import { UserDocument } from '../models/user/user.schema';
-import { RoleModel } from '../models/role/role.model';
+import { UserModel } from '../models/user';
+import { UserDocument } from '../models/user/user.doc';
+import { RoleModel } from '../models/role';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {
