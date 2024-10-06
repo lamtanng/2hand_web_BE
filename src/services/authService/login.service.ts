@@ -1,8 +1,9 @@
 import { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { HttpMessage } from '../../constants/httpMessage';
-import { AccountModel } from '../../models/account';
-import { AccountProps } from '../../types/account.type';
+import { UserModel } from '../../models/user';
+import { LoginResponseProps } from '../../types/http/login.type';
+import { UserProps } from '../../types/user.type';
 import ApiError from '../../utils/classes/ApiError';
 import {
   setAccessTokenToCookies,
@@ -10,14 +11,13 @@ import {
   signAccessToken,
   signRefreshToken,
 } from '../../utils/jwt';
-import { LoginResponseProps } from '../../types/http/login.type';
 
-const login = async (reqBody: AccountProps, res: Response) => {
-  const account = reqBody;
+const login = async (reqBody: UserProps, res: Response) => {
+  const { email, password } = reqBody;
 
   //check if the user exists
-  const existAccount = await AccountModel.findOne({ email: account.email }).exec();
-  if (!existAccount) {
+  const existUser = await UserModel.findOne({ email }).exec();
+  if (!existUser) {
     return new ApiError({
       message: HttpMessage.NOT_FOUND.USER,
       statusCode: StatusCodes.NOT_FOUND,
@@ -25,7 +25,7 @@ const login = async (reqBody: AccountProps, res: Response) => {
   }
 
   //if the user exists, check if the password is correct
-  const isMatchPassword = await existAccount.comparePassword(account.password);
+  const isMatchPassword = await existUser.comparePassword(password);
   if (!isMatchPassword) {
     return new ApiError({
       message: HttpMessage.INCORRECT.PASSWORD,
@@ -34,8 +34,8 @@ const login = async (reqBody: AccountProps, res: Response) => {
   }
 
   //generate a token
-  const accessToken = await signAccessToken(existAccount.toJSON());
-  const refreshToken = await signRefreshToken(existAccount.toJSON());
+  const accessToken = await signAccessToken(existUser.toJSON());
+  const refreshToken = await signRefreshToken(existUser.toJSON());
 
   // assign to cookies
   setAccessTokenToCookies(res, accessToken);
@@ -44,9 +44,6 @@ const login = async (reqBody: AccountProps, res: Response) => {
   const response: LoginResponseProps = {
     accessToken,
     refreshToken,
-    id: String(existAccount._id),
-    email: existAccount.email,
-    role: existAccount.role,
   };
   return response;
 };
