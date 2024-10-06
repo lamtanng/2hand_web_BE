@@ -43,7 +43,7 @@ export const REVIEW_COLLECTION_SCHEMA = new Schema<ReviewDocument>(
     },
     productID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'product',
+      ref: PRODUCT_COLLECTION_NAME,
       required: true,
     }
   },

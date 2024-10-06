@@ -26,12 +26,6 @@ export const CATEGORY_COLLECTION_SCHEMA = new Schema<CategoryDocument>(
       ref: CATEGORY_COLLECTION_NAME,
       default: null,
     },
-    childrenID: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: CATEGORY_COLLECTION_NAME,
-      },
-    ],
   },
   { timestamps: true },
 );

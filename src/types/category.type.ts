@@ -7,5 +7,4 @@ export interface CategoryProps{
     createAt?: Date,
     updateAt?: Date,
     parentID: mongoose.Schema.Types.ObjectId,
-    childrenID: mongoose.Schema.Types.ObjectId[],
 }

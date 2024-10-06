@@ -2,7 +2,6 @@ import mongoose, { Schema } from 'mongoose';
 import { ProductProps } from '../../types/product.type';
 import { CATEGORY_COLLECTION_NAME } from '../category/category.doc';
 import { STORE_COLLECTION_NAME } from '../store/store.doc';
-import { REVIEW_COLLECTION_NAME } from '../review/review.doc';
 
 export interface ProductDocument extends ProductProps, Document {}
 
@@ -62,12 +61,6 @@ export const PRODUCT_COLLECTION_SCHEMA = new Schema<ProductDocument>(
       ref: STORE_COLLECTION_NAME,
       required: true
     },
-    reviewID: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: REVIEW_COLLECTION_NAME,
-      },
-    ],
   },
   { timestamps: true },
 );
