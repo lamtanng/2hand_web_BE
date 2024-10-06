@@ -7,3 +7,18 @@ export const REFRESH_TOKEN_ROUTE = '/refresh';
 // admin routes
 export const ADMIN_ROUTE = '/ad';
 export const DASHBOARD_ROUTE = '/dashboard';
+// model reoutes
+export const ROLE_ROUTE = '/roles';
+export const USER_ROUTE = '/users';
+export const STORE_ROUTE = '/stores';
+export const CATEGORY_ROUTE = '/categories';
+export const PRODUCT_ROUTE = '/products';
+export const REVIEW_ROUTE = '/reviews';
+export const ORDERSTATUS_ROUTE = '/orderstatuses';
+export const PAYMENTMETHOD_ROUTE = '/paymentmethods';
+export const CART_ROUTE = '/carts';
+export const REASON_ROUTE = '/reasons';
+export const ORDER_ROUTE = '/orders';
+export const ORDERDETAIL_ROUTE = '/orderdetails';
+export const ORDERREQUEST_ROUTE = '/orderrequests';
+export const REPORT_ROUTE = '/reports';
