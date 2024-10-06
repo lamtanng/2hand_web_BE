@@ -1,5 +1,5 @@
-import { AccountProps } from '../account.type';
+import { UserProps } from '../user.type';
 
-export interface SignUpRequestProps extends Pick<AccountProps, 'email' | 'password'> {
-  confirmPassword: Pick<AccountProps, 'password'>;
+export interface SignUpRequestProps extends Pick<UserProps, 'email' | 'password' | 'phoneNumber'> {
+  confirmPassword: Pick<UserProps, 'password'>;
 }

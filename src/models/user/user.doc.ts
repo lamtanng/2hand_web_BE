@@ -3,7 +3,9 @@ import { UserProps } from '../../types/user.type';
 import { timeStamp } from 'console';
 import { ROLE_COLLECTION_NAME } from '../role/role.doc';
 
-export interface UserDocument extends UserProps, Document {}
+export interface UserDocument extends UserProps, Document {
+  comparePassword: (password: string) => Promise<boolean>;
+}
 
 export const USER_COLLECTION_NAME = 'user';
 export const USER_COLLECTION_SCHEMA = new Schema<UserDocument>(

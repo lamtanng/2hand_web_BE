@@ -3,19 +3,19 @@ import ms from 'ms';
 import { env } from '../config/environment';
 import { cookieOptions } from '../constants/cookieOptions';
 import { JwtProvider } from '../providers/JwtProvider';
-import { AccountProps } from '../types/account.type';
+import { UserProps } from '../types/user.type';
 
 export const getSecretKeyFromEnv = (secretKey: string) => secretKey.replace(/\\n/g, '\n');
 
-export const signAccessToken = async (account: AccountProps) =>
+export const signAccessToken = async (user: UserProps) =>
   await JwtProvider.generateToken({
-    account,
+    user,
     secretKey: getSecretKeyFromEnv(env.ACCESS_TOKEN_SECRET_KEY),
-    expiresIn: '5s',
+    expiresIn: '15s',
   });
-export const signRefreshToken = async (account: AccountProps) =>
+export const signRefreshToken = async (user: UserProps) =>
   await JwtProvider.generateToken({
-    account,
+    user,
     secretKey: getSecretKeyFromEnv(env.REFRESH_TOKEN_SECRET_KEY),
     expiresIn: '14d',
   });
