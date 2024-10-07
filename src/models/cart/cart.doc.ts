@@ -17,12 +17,10 @@ export const CART_COLLECTION_SCHEMA = new Schema<CartDocument>(
     userID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: USER_COLLECTION_NAME,
+      required: true,
     },
-    products: [
-      {
-        type: Map,
-        of: CARTITEM_SCHEMA,
-      },
+    items: [
+      CARTITEM_SCHEMA,
     ],
   },
   { timestamps: true },

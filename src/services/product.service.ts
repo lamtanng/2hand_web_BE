@@ -4,7 +4,7 @@ import { ProductDocument } from '../models/product/product.doc';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {
-    const products = await ProductModel.find({});
+    const products = await ProductModel.find({}).populate("cateID", "name").populate("storeID", "name");
     return { products };
   } catch (error) {
     console.error(error);

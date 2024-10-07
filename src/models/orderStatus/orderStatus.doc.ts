@@ -17,6 +17,11 @@ export const ORDERSTATUS_COLLECTION_SCHEMA = new Schema<OrderStatusDocument>(
       required: true,
       unique: true,
     },
+    stage: {
+      type: Number,
+      required: true,
+      min: 1,
+    }
   },
   { timestamps: true },
 );

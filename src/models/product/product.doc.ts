@@ -2,6 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 import { ProductProps } from '../../types/product.type';
 import { CATEGORY_COLLECTION_NAME } from '../category/category.doc';
 import { STORE_COLLECTION_NAME } from '../store/store.doc';
+import { ProductQuality } from '../../types/enum/productQuality.enum';
 
 export interface ProductDocument extends ProductProps, Document {}
 
@@ -36,12 +37,21 @@ export const PRODUCT_COLLECTION_SCHEMA = new Schema<ProductDocument>(
     quantity: {
       type: Number,
       required: true,
-      min: 0,
+      min: 1,
+    },
+    quality: {
+      type: String,
+      enum: {
+        values: [ProductQuality.New, ProductQuality.LikeNew, ProductQuality.Good, ProductQuality.Average, ProductQuality.Old]
+      },
+      required: true,
     },
     slug: {
       type: String,
-      required: true,
       unique: true,
+      default: function() {
+        return this.name.toLowerCase().replaceAll(" ", "-");
+      }
     },
     isActive: {
       type: Boolean,

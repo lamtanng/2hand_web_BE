@@ -20,12 +20,14 @@ export const STORE_COLLECTION_SCHEMA = new Schema<StoreDocument>(
     },
     slug: {
       type: String,
-      required: true,
       unique: true,
+      default: function() {
+        return this.name.toLowerCase().replaceAll(" ", "-");
+      }
     },
     description: {
       type: String,
-      default: '',
+      default: null,
     },
     address: [
       {

@@ -5,7 +5,7 @@ import { CategoryDocument } from '../models/category/category.doc';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {
-    const cates = await CategoryModel.find({ parentID: null });
+    const cates = await CategoryModel.find({}).populate("parentID", "name");
     return { cates };
   } catch (error) {
     console.error(error);

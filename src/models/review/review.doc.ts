@@ -16,6 +16,7 @@ export const REVIEW_COLLECTION_SCHEMA = new Schema<ReviewDocument>(
     },
     content: {
       type: String,
+      default: null,
     },
     rate: {
       type: Number,
@@ -35,6 +36,7 @@ export const REVIEW_COLLECTION_SCHEMA = new Schema<ReviewDocument>(
     },
     replyMessage: {
       type: String,
+      default: null,
     },
     reviewerID: {
       type: mongoose.Schema.Types.ObjectId,

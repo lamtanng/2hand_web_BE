@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import { CartModel } from '../models/cart';
 import { CartDocument } from '../models/cart/cart.doc';
+import path from 'path';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {
-    const cart = await CartModel.find({});
+    const cart = await CartModel.find({}).populate({path: 'items' ,populate: {path: 'productID'}});
     return { cart };
   } catch (error) {
     console.error(error);

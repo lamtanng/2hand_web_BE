@@ -19,6 +19,11 @@ export const ORDER_COLLECTION_SCHEMA = new Schema<OrderDocument>(
     exprDate: {
       type: Date,
       required: true,
+      default: function() {
+        const date = new Date(Date.now());
+        date.setDate(date.getDate() + 3);
+        return date;
+      },
     },
     receiverAddress: [
       {
@@ -27,30 +32,37 @@ export const ORDER_COLLECTION_SCHEMA = new Schema<OrderDocument>(
     ],
     note: {
       type: String,
+      default: null,
     },
     total: {
       type: Number,
-      required: true,
+      min: 0,
+      default: 0,
     },
     shipmentCost: {
       type: Number,
       required: true,
+      min: 0,
     },
     userID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: USER_COLLECTION_NAME,
+      required: true,
     },
     storeID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: STORE_COLLECTION_NAME,
+      required: true,
     },
     orderStatusID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: ORDERSTATUS_COLLECTION_NAME,
+      required: true
     },
     paymentMethodID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: PAYMENTMETHOD_COLLECTION_NAME,
+      required: true,
     },
   },
   { timestamps: true },

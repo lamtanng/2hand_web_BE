@@ -22,10 +22,10 @@ const addUser = async (reqBody: UserDocument, res: Response) => {
     const user = reqBody;
 
     const roleID = await RoleModel.findOne({ name: 'Customer' }, { _id: 1 });
-    console.log(roleID?._id);
 
     if (!roleID) {
       res.status(StatusCodes.NOT_FOUND);
+      return;
     } else {
       user.roleID = [roleID._id];
     }
