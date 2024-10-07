@@ -1,6 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
 import { UserProps } from '../../types/user.type';
-import { timeStamp } from 'console';
 import { ROLE_COLLECTION_NAME } from '../role/role.doc';
 
 export interface UserDocument extends UserProps, Document {
@@ -18,11 +17,11 @@ export const USER_COLLECTION_SCHEMA = new Schema<UserDocument>(
     },
     firstName: {
       type: String,
-      default: '',
+      default: null,
     },
     lastName: {
       type: String,
-      default: '',
+      default: null,
     },
     email: {
       type: String,
@@ -36,9 +35,8 @@ export const USER_COLLECTION_SCHEMA = new Schema<UserDocument>(
     },
     phoneNumber: {
       type: String,
-      unique: true,
       length: 10,
-      default: '',
+      default: null,
     },
     dateOfBirth: {
       type: Date,
@@ -61,6 +59,7 @@ export const USER_COLLECTION_SCHEMA = new Schema<UserDocument>(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: ROLE_COLLECTION_NAME,
+        required: true
       },
     ],
     followerID: [

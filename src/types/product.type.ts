@@ -7,6 +7,7 @@ export interface ProductProps{
     image: string[],
     price: number,
     quantity: number,
+    quality: string,
     slug: string,
     isActive: boolean,
     isSoldOut: boolean,

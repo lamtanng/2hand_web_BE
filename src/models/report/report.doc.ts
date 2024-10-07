@@ -1,8 +1,8 @@
 import mongoose, { Schema } from 'mongoose';
 import { ReportProps } from '../../types/report.type';
-import { REPORTOBJECT_COLLECTION_SCHEMA } from '../reportObject/reportObject.doc';
 import { USER_COLLECTION_NAME } from '../user/user.doc';
 import { REASON_COLLECTION_NAME } from '../reason/reason.doc';
+import { REPORTOBJECT_SCHEMA } from '../reportObject/reportObject.doc';
 
 export interface ReportDocument extends ReportProps, Document {}
 
@@ -16,18 +16,23 @@ export const REPORT_COLLECTION_SCHEMA = new Schema<ReportDocument>(
       },
     },
     object: {
-      type: Map,
-      of: REPORTOBJECT_COLLECTION_SCHEMA,
+      type: REPORTOBJECT_SCHEMA,
       required: true,
     },
     description: {
       type: String,
+      default: null,
     },
     replyStatus: {
       type: String,
+      enum: {
+        values: ["pending", "succeeded", "rejected"]
+      },
+      default: "pending",
     },
     replyMessage: {
       type: String,
+      default: null,
     },
     senderID: {
       type: mongoose.Schema.Types.ObjectId,
