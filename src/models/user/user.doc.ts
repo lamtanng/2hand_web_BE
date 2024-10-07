@@ -33,7 +33,6 @@ export const USER_COLLECTION_SCHEMA = new Schema<UserDocument>(
     },
     phoneNumber: {
       type: String,
-      unique: true,
       length: 10,
       default: null,
     },
