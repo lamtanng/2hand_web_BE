@@ -4,6 +4,8 @@ export const LOGIN_ROUTE = '/login';
 export const SIGNUP_ROUTE = '/signup';
 export const LOGOUT_ROUTE = '/logout';
 export const REFRESH_TOKEN_ROUTE = '/refresh';
+export const VERIFY_OTP_ROUTE = '/verify';
+export const SEND_OTP_ROUTE = '/sendotp';
 // admin routes
 export const ADMIN_ROUTE = '/ad';
 export const DASHBOARD_ROUTE = '/dashboard';

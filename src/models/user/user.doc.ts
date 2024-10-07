@@ -1,13 +1,25 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Model, Schema } from 'mongoose';
 import { UserProps } from '../../types/user.type';
 import { ROLE_COLLECTION_NAME } from '../role/role.doc';
 
-export interface UserDocument extends UserProps, Document {
+export interface IUserMethods {
   comparePassword: (password: string) => Promise<boolean>;
 }
+export interface IUserStatics {
+  findByEmail: (email: string) => any;
+}
+export interface IUserQueries {}
+export interface IUserModel extends Model<UserProps, IUserQueries, IUserMethods> {}
 
 export const USER_COLLECTION_NAME = 'user';
-export const USER_COLLECTION_SCHEMA = new Schema<UserDocument>(
+export const USER_COLLECTION_SCHEMA = new Schema<
+  UserProps,
+  IUserModel,
+  IUserStatics,
+  IUserQueries,
+  {},
+  IUserMethods
+>(
   {
     _id: {
       type: mongoose.Schema.Types.ObjectId,
