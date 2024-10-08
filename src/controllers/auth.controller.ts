@@ -14,7 +14,6 @@ const login = catchErrors(async (req: Request, res: Response) => {
 const signup = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
   const newUser = await signupService(req.body);
   res.status(StatusCodes.OK).json(newUser);
-  next();
 });
 
 const logout = catchErrors(async (req: Request, res: Response) => {
