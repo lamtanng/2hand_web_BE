@@ -1,5 +1,5 @@
 import mongoose, { Model, Schema } from 'mongoose';
-import { UserProps } from '../../types/user.type';
+import { UserProps } from '../../types/model/user.type';
 import { ROLE_COLLECTION_NAME } from '../role/role.doc';
 
 export interface IUserMethods {
@@ -71,7 +71,7 @@ export const USER_COLLECTION_SCHEMA = new Schema<
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: ROLE_COLLECTION_NAME,
-        required: true
+        required: true,
       },
     ],
     followerID: [

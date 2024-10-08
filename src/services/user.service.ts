@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { RoleModel } from '../models/role';
 import { UserModel } from '../models/user';
-import { UserProps } from '../types/user.type';
+import { UserProps } from '../types/model/user.type';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {

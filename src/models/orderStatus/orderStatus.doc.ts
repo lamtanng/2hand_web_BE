@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { OrderStatusProps } from '../../types/orderStatus.type';
+import { OrderStatusProps } from '../../types/model/orderStatus.type';
 
 export interface OrderStatusDocument extends OrderStatusProps, Document {}
 
@@ -21,7 +21,7 @@ export const ORDERSTATUS_COLLECTION_SCHEMA = new Schema<OrderStatusDocument>(
       type: Number,
       required: true,
       min: 1,
-    }
+    },
   },
   { timestamps: true },
 );

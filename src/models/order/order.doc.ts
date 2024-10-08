@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { OrderProps } from '../../types/order.type';
+import { OrderProps } from '../../types/model/order.type';
 import { USER_COLLECTION_NAME } from '../user/user.doc';
 import { STORE_COLLECTION_NAME } from '../store/store.doc';
 import { ORDERSTATUS_COLLECTION_NAME } from '../orderStatus/orderStatus.doc';
@@ -19,7 +19,7 @@ export const ORDER_COLLECTION_SCHEMA = new Schema<OrderDocument>(
     exprDate: {
       type: Date,
       required: true,
-      default: function() {
+      default: function () {
         const date = new Date(Date.now());
         date.setDate(date.getDate() + 3);
         return date;
@@ -57,7 +57,7 @@ export const ORDER_COLLECTION_SCHEMA = new Schema<OrderDocument>(
     orderStatusID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: ORDERSTATUS_COLLECTION_NAME,
-      required: true
+      required: true,
     },
     paymentMethodID: {
       type: mongoose.Schema.Types.ObjectId,

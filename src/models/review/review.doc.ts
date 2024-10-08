@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { ReviewProps } from '../../types/reivew.type';
+import { ReviewProps } from '../../types/model/review.type';
 import { USER_COLLECTION_NAME } from '../user/user.doc';
 import { PRODUCT_COLLECTION_NAME } from '../product/product.doc';
 
@@ -47,7 +47,7 @@ export const REVIEW_COLLECTION_SCHEMA = new Schema<ReviewDocument>(
       type: mongoose.Schema.Types.ObjectId,
       ref: PRODUCT_COLLECTION_NAME,
       required: true,
-    }
+    },
   },
   { timestamps: true },
 );

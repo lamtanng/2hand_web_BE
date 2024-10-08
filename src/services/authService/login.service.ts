@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { HttpMessage } from '../../constants/httpMessage';
 import { UserModel } from '../../models/user';
 import { LoginResponseProps } from '../../types/http/login.type';
-import { UserProps } from '../../types/user.type';
+import { UserProps } from '../../types/model/user.type';
 import ApiError from '../../utils/classes/ApiError';
 import {
   setAccessTokenToCookies,

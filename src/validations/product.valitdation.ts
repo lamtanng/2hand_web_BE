@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import { catchErrors } from '../utils/catchErrors';
 import { NextFunction, Request, Response } from 'express';
-import { ProductProps } from '../types/product.type';
+import { ProductProps } from '../types/model/product.type';
 import { ProductQuality } from '../types/enum/productQuality.enum';
 import { ObjectIDRegex } from '../constants/validation';
 
@@ -17,12 +17,8 @@ const productSchema = Joi.object<ProductSchema>({
   slug: Joi.string(),
   isActive: Joi.boolean().default(true),
   isSoldOut: Joi.boolean().default(false),
-  cateID: Joi.string()
-    .regex(ObjectIDRegex, 'valid id')
-    .required(),
-  storeID: Joi.string()
-    .regex(ObjectIDRegex, 'valid id')
-    .required(),
+  cateID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
+  storeID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
 });
 
 export const productValidation = catchErrors(

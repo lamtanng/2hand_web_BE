@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { StoreProps } from '../../types/store.type';
+import { StoreProps } from '../../types/model/store.type';
 import { USER_COLLECTION_NAME } from '../user/user.doc';
 
 export interface StoreDocument extends StoreProps, Document {}
@@ -21,9 +21,9 @@ export const STORE_COLLECTION_SCHEMA = new Schema<StoreDocument>(
     slug: {
       type: String,
       unique: true,
-      default: function() {
-        return this.name.toLowerCase().replaceAll(" ", "-");
-      }
+      default: function () {
+        return this.name.toLowerCase().replaceAll(' ', '-');
+      },
     },
     description: {
       type: String,

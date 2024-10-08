@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { ReportProps } from '../../types/report.type';
+import { ReportProps } from '../../types/model/report.type';
 import { USER_COLLECTION_NAME } from '../user/user.doc';
 import { REASON_COLLECTION_NAME } from '../reason/reason.doc';
 import { REPORTOBJECT_SCHEMA } from '../reportObject/reportObject.doc';
@@ -26,9 +26,9 @@ export const REPORT_COLLECTION_SCHEMA = new Schema<ReportDocument>(
     replyStatus: {
       type: String,
       enum: {
-        values: ["pending", "succeeded", "rejected"]
+        values: ['pending', 'succeeded', 'rejected'],
       },
-      default: "pending",
+      default: 'pending',
     },
     replyMessage: {
       type: String,

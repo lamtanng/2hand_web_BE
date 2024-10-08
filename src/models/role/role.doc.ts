@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { RoleProps } from '../../types/role.type';
+import { RoleProps } from '../../types/model/role.type';
 
 export interface RoleDocument extends RoleProps, Document {}
 

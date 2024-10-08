@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { CategoryProps } from '../../types/category.type';
+import { CategoryProps } from '../../types/model/category.type';
 
 export interface CategoryDocument extends CategoryProps, Document {}
 

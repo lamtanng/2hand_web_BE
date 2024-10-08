@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { OrderDetailProps } from '../../types/orderDetail.type';
+import { OrderDetailProps } from '../../types/model/orderDetail.type';
 import { PRODUCT_COLLECTION_NAME } from '../product/product.doc';
 import { ORDER_COLLECTION_NAME } from '../order/order.doc';
 

@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { OTPVerificationProps } from '../../types/otpVerification.type';
+import { OTPVerificationProps } from '../../types/model/otpVerification.type';
 import { USER_COLLECTION_NAME } from '../user/user.doc';
 import ms from 'ms';
 
