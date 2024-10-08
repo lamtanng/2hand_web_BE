@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { UserModel } from '../models/user';
-import { UserDocument } from '../models/user/user.doc';
 import { RoleModel } from '../models/role';
+import { UserModel } from '../models/user';
+import { UserProps } from '../types/user.type';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {
@@ -17,7 +17,7 @@ const findAll = async (reqBody: Request, res: Response) => {
   }
 };
 
-const addUser = async (reqBody: UserDocument, res: Response) => {
+const addUser = async (reqBody: UserProps, res: Response) => {
   try {
     const user = reqBody;
 

@@ -3,6 +3,7 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { HttpMessage } from '../constants/httpMessage';
 import { AppError } from '../types/error.type';
 import ApiError, { ApiErrorProps } from './classes/ApiError';
+import { TokenExpiredError } from 'jsonwebtoken';
 
 type AsyncController = (req: Request, res: Response, next: NextFunction) => Promise<any>;
 interface HandleErrorProps extends ApiErrorProps {
@@ -19,7 +20,7 @@ export const catchErrors = (asyncFunc: AsyncController): AsyncController => {
   };
 };
 
-const handleError = async ({ message, statusCode, next }: HandleErrorProps) => {
+export const handleError = async ({ message, statusCode, next }: HandleErrorProps) => {
   const customError = new ApiError({
     message: message,
     statusCode: statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
@@ -33,8 +34,8 @@ export const catchAuthErrors = (error: AppError, next?: NextFunction) => {
   let statusCode = StatusCodes.UNAUTHORIZED;
 
   // Token is expired
-  if (error.message?.includes(HttpMessage.EXPIRED_JWT_MGS.ERROR)) {
-    message = HttpMessage.EXPIRED_JWT_MGS.RESPONSE;
+  if (error instanceof TokenExpiredError) {
+    message = HttpMessage.EXPIRED_MGS.TOKEN;
     statusCode = StatusCodes.GONE;
   }
 

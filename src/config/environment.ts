@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
-import ApiError from '../utils/classes/ApiError';
 import { StatusCodes } from 'http-status-codes';
+import ApiError from '../utils/classes/ApiError';
 
 dotenv.config();
 
@@ -19,6 +19,7 @@ const getEnv = (key: string, defaultValue?: string) => {
 export const env = {
   APP_HOST: getEnv('APP_HOST'),
   APP_PORT: Number(getEnv('APP_PORT')),
+  APP_NAME: getEnv('APP_NAME'),
   MONGO_URI: getEnv('MONGO_URI'),
   MONGO_NAME: getEnv('MONGO_NAME'),
   BUILD_MODE: getEnv('BUILD_MODE'),
@@ -27,4 +28,7 @@ export const env = {
   REFRESH_TOKEN_SECRET_KEY: getEnv('REFRESH_TOKEN_SECRET_KEY'),
   REFRESH_TOKEN_EXPIRED: getEnv('REFRESH_TOKEN_EXPIRED'),
   CLIENT_ORIGIN: getEnv('CLIENT_ORIGIN'),
+  EMAIL_ADDRESS: getEnv('EMAIL_ADDRESS'),
+  EMAIL_PASSWORD: getEnv('EMAIL_PASSWORD'),
+  EMAIL_HOST: getEnv('EMAIL_HOST'),
 };
