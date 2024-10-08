@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { AppError } from '../../types/error.type';
-import { UserProps } from '../../types/user.type';
+import { UserProps } from '../../types/model/user.type';
 import { catchAuthErrors } from '../../utils/catchErrors';
 import { setAccessTokenToCookies, signAccessToken, verifyRefreshToken } from '../../utils/jwt';
 

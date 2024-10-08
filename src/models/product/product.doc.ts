@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { ProductProps } from '../../types/product.type';
+import { ProductProps } from '../../types/model/product.type';
 import { CATEGORY_COLLECTION_NAME } from '../category/category.doc';
 import { STORE_COLLECTION_NAME } from '../store/store.doc';
 import { ProductQuality } from '../../types/enum/productQuality.enum';
@@ -42,16 +42,22 @@ export const PRODUCT_COLLECTION_SCHEMA = new Schema<ProductDocument>(
     quality: {
       type: String,
       enum: {
-        values: [ProductQuality.New, ProductQuality.LikeNew, ProductQuality.Good, ProductQuality.Average, ProductQuality.Old]
+        values: [
+          ProductQuality.New,
+          ProductQuality.LikeNew,
+          ProductQuality.Good,
+          ProductQuality.Average,
+          ProductQuality.Old,
+        ],
       },
       required: true,
     },
     slug: {
       type: String,
       unique: true,
-      default: function() {
-        return this.name.toLowerCase().replaceAll(" ", "-");
-      }
+      default: function () {
+        return this.name.toLowerCase().replaceAll(' ', '-');
+      },
     },
     isActive: {
       type: Boolean,
@@ -64,12 +70,12 @@ export const PRODUCT_COLLECTION_SCHEMA = new Schema<ProductDocument>(
     cateID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: CATEGORY_COLLECTION_NAME,
-      required: true
+      required: true,
     },
     storeID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: STORE_COLLECTION_NAME,
-      required: true
+      required: true,
     },
   },
   { timestamps: true },

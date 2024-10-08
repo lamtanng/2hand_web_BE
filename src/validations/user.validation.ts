@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import { catchErrors } from '../utils/catchErrors';
 import { NextFunction, Request, Response } from 'express';
-import { UserProps } from '../types/user.type';
+import { UserProps } from '../types/model/user.type';
 import { ObjectIDRegex, PasswordRegex } from '../constants/validation';
 
 interface UserSchema extends UserProps {}

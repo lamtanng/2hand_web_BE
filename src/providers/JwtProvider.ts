@@ -1,5 +1,5 @@
 import JWT, { PrivateKey, PublicKey, Secret, SignOptions } from 'jsonwebtoken';
-import { UserProps } from '../types/user.type';
+import { UserProps } from '../types/model/user.type';
 
 interface GenerateTokenProps {
   user: UserProps;

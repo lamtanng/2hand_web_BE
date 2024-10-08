@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { OrderDetailModel } from '../models/orderDetail';
-import { OrderDetailProps } from '../types/orderDetail.type';
+import { OrderDetailProps } from '../types/model/orderDetail.type';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {

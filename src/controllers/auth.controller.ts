@@ -21,7 +21,7 @@ const logout = catchErrors(async (req: Request, res: Response) => {
   const logout = await logoutService(res);
   res.status(StatusCodes.OK).json(logout).send();
 });
-
+  
 const refreshToken = catchErrors(async (req: Request, res: Response) => {
   const refreshToken = await refreshTokenService(req, res);
   res.status(StatusCodes.OK).json(refreshToken).send();

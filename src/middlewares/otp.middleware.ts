@@ -6,7 +6,7 @@ import { OTPVerificationModel } from '../models/otpVerification';
 import { UserModel } from '../models/user';
 import { AppError } from '../types/error.type';
 import { SendOtpRequestProps, VerifyOtpRequestProps } from '../types/http/otp.type';
-import { UserProps } from '../types/user.type';
+import { UserProps } from '../types/model/user.type';
 import { compareHash, hashValue } from '../utils/bcrypt';
 import { catchErrors, handleError } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';

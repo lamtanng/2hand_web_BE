@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { PaymentMethodProps } from '../../types/paymentMethod.type';
+import { PaymentMethodProps } from '../../types/model/paymentMethod.type';
 
 export interface PaymentMethodDocument extends PaymentMethodProps, Document {}
 

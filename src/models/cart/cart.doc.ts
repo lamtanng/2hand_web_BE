@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { CartProps } from '../../types/cart.type';
+import { CartProps } from '../../types/model/cart.type';
 import { USER_COLLECTION_NAME } from '../user/user.doc';
 import { CARTITEM_SCHEMA } from '../cartItem/cartItem.doc';
 
@@ -19,9 +19,7 @@ export const CART_COLLECTION_SCHEMA = new Schema<CartDocument>(
       ref: USER_COLLECTION_NAME,
       required: true,
     },
-    items: [
-      CARTITEM_SCHEMA,
-    ],
+    items: [CARTITEM_SCHEMA],
   },
   { timestamps: true },
 );

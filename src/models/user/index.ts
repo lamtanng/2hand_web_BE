@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
 import { HttpMessage } from '../../constants/httpMessage';
-import { UserProps } from '../../types/user.type';
+import { UserProps } from '../../types/model/user.type';
 import { compareHash, hashValue } from '../../utils/bcrypt';
 import ApiError from '../../utils/classes/ApiError';
 import { IUserModel, IUserQueries, USER_COLLECTION_NAME, USER_COLLECTION_SCHEMA } from './user.doc';

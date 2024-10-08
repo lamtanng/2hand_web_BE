@@ -3,7 +3,7 @@ import ms from 'ms';
 import { env } from '../config/environment';
 import { cookieOptions } from '../constants/cookieOptions';
 import { JwtProvider } from '../providers/JwtProvider';
-import { UserProps } from '../types/user.type';
+import { UserProps } from '../types/model/user.type';
 
 export const getSecretKeyFromEnv = (secretKey: string) => secretKey.replace(/\\n/g, '\n');
 
