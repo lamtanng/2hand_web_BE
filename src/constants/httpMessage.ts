@@ -4,6 +4,7 @@ const TOKEN = 'Token';
 const OTP = 'OTP';
 const USER = 'User';
 const PASSWORD = 'Password';
+const NOT_VERIFY = "Your email hasn't been verified";
 
 const getNotFoundMsg = (title: string) => `${title} ${ReasonPhrases.NOT_FOUND}`;
 const getConflictMsg = (title: string) => `${title} already exists`;
@@ -29,4 +30,4 @@ const CONFLICT = {
   USER: getConflictMsg(USER),
 };
 
-export const HttpMessage = { NOT_FOUND, EXPIRED_MGS, INCORRECT, CONFLICT };
+export const HttpMessage = { NOT_FOUND, EXPIRED_MGS, INCORRECT, CONFLICT, NOT_VERIFY };

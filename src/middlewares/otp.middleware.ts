@@ -10,14 +10,35 @@ import { UserProps } from '../types/model/user.type';
 import { compareHash, hashValue } from '../utils/bcrypt';
 import { catchErrors, handleError } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
+import { verifyAccessToken } from '../utils/jwt';
 import { mailOptions } from '../utils/mailOptions';
 import { generateOTP } from '../utils/otp';
+
+const isVerified = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { accessToken } = req.cookies;
+    const { isVerified } = (await verifyAccessToken(accessToken)) as UserProps;
+    if (isVerified === false)
+      throw new ApiError({
+        message: HttpMessage.NOT_VERIFY,
+        statusCode: StatusCodes.UNAUTHORIZED,
+      });
+
+    next();
+  } catch (error: AppError) {
+    handleError({ message: error.message, statusCode: error.statusCode, next });
+  }
+};
 
 const sendOtpVerificationEmail = catchErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     const { email } = req.body as SendOtpRequestProps;
     if (!email) {
-      handleError({ message: 'Missing field', statusCode: StatusCodes.BAD_REQUEST, next });
+      handleError({
+        message: ReasonPhrases.BAD_REQUEST,
+        statusCode: StatusCodes.BAD_REQUEST,
+        next,
+      });
       return;
     }
 
@@ -80,4 +101,4 @@ const verifyOTP = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export const otpMiddleware = { sendOtpVerificationEmail, verifyOTP };
+export const otpMiddleware = { sendOtpVerificationEmail, verifyOTP, isVerified };
