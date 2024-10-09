@@ -12,7 +12,7 @@ const login = catchErrors(async (req: Request, res: Response) => {
 });
 
 const signup = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
-  const newUser = await signupService(req.body);
+  const newUser = await signupService(req);
   res.status(StatusCodes.OK).json(newUser);
 });
 

@@ -22,9 +22,7 @@ router
   .post(signupValidation, otpMiddleware.sendOtpVerificationEmail, otpController);
 router.route(LOGOUT_ROUTE).delete(isAuthorized, authController.logout);
 router.route(REFRESH_TOKEN_ROUTE).put(isAuthorized, authController.refreshToken);
-router.route(VERIFY_OTP_ROUTE).post(isAuthorized, otpMiddleware.verifyOTP, otpController);
-router
-  .route(SEND_OTP_ROUTE)
-  .post(isAuthorized, otpMiddleware.sendOtpVerificationEmail, otpController);
+router.route(VERIFY_OTP_ROUTE).post(otpMiddleware.verifyOTP, authController.signup);
+router.route(SEND_OTP_ROUTE).post(otpMiddleware.sendOtpVerificationEmail, otpController);
 
 export const authRouter = router;
