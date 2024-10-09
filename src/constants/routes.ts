@@ -9,6 +9,8 @@ export const SEND_OTP_ROUTE = '/sendotp';
 // admin routes
 export const ADMIN_ROUTE = '/ad';
 export const DASHBOARD_ROUTE = '/dashboard';
+//seller routes
+export const SELLER_ROUTE = '/se';
 // customer routes
 export const PRODUCT_ROUTE = '/products';
 export const CATEGORY_ROUTE = '/categories';
