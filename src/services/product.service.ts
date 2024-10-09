@@ -4,27 +4,23 @@ import { ProductDocument } from '../models/product/product.doc';
 import { ProductQuality } from '../types/enum/productQuality.enum';
 import { AppError } from '../types/error.type';
 import ApiError from '../utils/classes/ApiError';
-import { CategoryModel } from '../models/category';
 
 const findAll = async (req: Request, res: Response) => {
   try {
     const page = (req.query.page || 1) as number;
     const limit = (req.query.limit || 10) as number;
     const search = req.query.search || '';
-    const sort = req.query.sort || 'name';
-    const genre = req.query.genre || 'All';
 
-    // const products = await CategoryModel.find({});
     const products = await ProductModel.find({})
       .populate('cateID', 'name')
-      .populate('storeID', 'name');
-    // .limit(limit)
-    // .skip((page - 1) * limit)
-    // .find({ name: { $regex: search, $options: 'i' } });
+      .populate('storeID', 'name')
+      .limit(limit)
+      .skip((page - 1) * limit)
+      .find({ name: { $regex: search, $options: 'i' } });
 
-    const total = await ProductModel.countDocuments();
+    const total = await ProductModel.countDocuments({ name: { $regex: search, $options: 'i' } });
     const response = {
-      page: page,
+      page,
       limit,
       total,
       products,
