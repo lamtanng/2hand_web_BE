@@ -1,8 +1,8 @@
 import mongoose, { Schema } from 'mongoose';
+import { ProductQuality } from '../../types/enum/productQuality.enum';
 import { ProductProps } from '../../types/model/product.type';
 import { CATEGORY_COLLECTION_NAME } from '../category/category.doc';
 import { STORE_COLLECTION_NAME } from '../store/store.doc';
-import { ProductQuality } from '../../types/enum/productQuality.enum';
 
 export interface ProductDocument extends ProductProps, Document {}
 
