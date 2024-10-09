@@ -1,6 +1,6 @@
 import express from 'express';
-import { cartController } from '../../controllers/cart.controller';
-import { cartValidation } from '../../validations/cart.validation';
+import { cartController } from '../../../controllers/cart.controller';
+import { cartValidation } from '../../../validations/cart.validation';
 const router = express.Router();
 
 router.route('/').get(cartController.findAll);
