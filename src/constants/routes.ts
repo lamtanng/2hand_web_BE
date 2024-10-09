@@ -6,16 +6,15 @@ export const LOGOUT_ROUTE = '/logout';
 export const REFRESH_TOKEN_ROUTE = '/refresh';
 export const VERIFY_OTP_ROUTE = '/verify';
 export const SEND_OTP_ROUTE = '/sendotp';
-// customer routes
-export const PRODUCT_ROUTE = '/products';
 // admin routes
 export const ADMIN_ROUTE = '/ad';
 export const DASHBOARD_ROUTE = '/dashboard';
-// model reoutes
+// customer routes
+export const PRODUCT_ROUTE = '/products';
+export const CATEGORY_ROUTE = '/categories';
 export const ROLE_ROUTE = '/roles';
 export const USER_ROUTE = '/users';
 export const STORE_ROUTE = '/stores';
-export const CATEGORY_ROUTE = '/categories';
 export const REVIEW_ROUTE = '/reviews';
 export const ORDERSTATUS_ROUTE = '/orderstatuses';
 export const PAYMENTMETHOD_ROUTE = '/paymentmethods';
