@@ -3,7 +3,6 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { emailTransporter } from '../constants/emailTransporter';
 import { HttpMessage } from '../constants/httpMessage';
 import { OTPVerificationModel } from '../models/otpVerification';
-import { UserModel } from '../models/user';
 import { AppError } from '../types/error.type';
 import { SendOtpRequestProps, VerifyOtpRequestProps } from '../types/http/otp.type';
 import { UserProps } from '../types/model/user.type';
@@ -51,11 +50,7 @@ const sendOtpVerificationEmail = catchErrors(
     );
 
     const hashedOtp = await hashValue(String(otp));
-    const { _id } = (await UserModel.findOne({ email })) as UserProps;
-
-    //delete all previous OTP records before sending OTP code to email (re-sent otp)
-    await OTPVerificationModel.deleteMany({ userID: _id });
-    await OTPVerificationModel.create({ userID: _id, otp: hashedOtp, email });
+    await OTPVerificationModel.create({ otp: hashedOtp, email });
 
     res.status(StatusCodes.OK);
     next();
@@ -68,15 +63,6 @@ const verifyOTP = async (req: Request, res: Response, next: NextFunction) => {
 
     const otpModel = await OTPVerificationModel.findOne({ email }).exec();
     if (!otpModel) {
-      throw new ApiError({
-        message: ReasonPhrases.UNAUTHORIZED,
-        statusCode: StatusCodes.UNAUTHORIZED,
-      });
-    }
-
-    //
-    const isExpired = Date.now() >= otpModel.expiredAt.getTime();
-    if (isExpired) {
       throw new ApiError({
         message: HttpMessage.EXPIRED_MGS.OTP,
         statusCode: StatusCodes.GONE,
@@ -93,7 +79,6 @@ const verifyOTP = async (req: Request, res: Response, next: NextFunction) => {
 
     //delete otp record when it is accepted
     await OTPVerificationModel.deleteMany({ email });
-    await UserModel.findOneAndUpdate({ email }, { isVerified: true });
     res.status(StatusCodes.ACCEPTED);
     next();
   } catch (error: AppError) {
