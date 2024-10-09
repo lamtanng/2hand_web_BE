@@ -1,8 +1,7 @@
 import { Request, Response } from 'express';
 import { ProductModel } from '../models/product';
-import { ProductDocument } from '../models/product/product.doc';
-import { ProductQuality } from '../types/enum/productQuality.enum';
 import { AppError } from '../types/error.type';
+import { ProductProps } from '../types/model/product.type';
 import ApiError from '../utils/classes/ApiError';
 
 const findAll = async (req: Request, res: Response) => {
@@ -31,22 +30,12 @@ const findAll = async (req: Request, res: Response) => {
   }
 };
 
-const addProduct = async (reqBody: ProductDocument, res: Response) => {
+const addProduct = async (req: Request, res: Response) => {
   try {
-    const product = new ProductModel({
-      name: 'Product 03',
-      description: 'Product 01 description',
-      cateID: '66ff5bfd99b8498b6508784d',
-      storeID: '67025231c7c0f38968366f2e',
-      price: 100000,
-      quantity: 1,
-      quality: ProductQuality.Average,
-    });
-
-    const newProduct = await ProductModel.create(product);
-    return { newProduct };
-  } catch (error) {
-    console.error(error);
+    const product = req.body as ProductProps;
+    return await ProductModel.create(product);
+  } catch (error: AppError) {
+    return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
   }
 };
 

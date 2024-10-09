@@ -9,7 +9,7 @@ const findAll = catchErrors(async (req: Request, res: Response) => {
 });
 
 const addProduct = catchErrors(async (req: Request, res: Response) => {
-  const result = await productService.addProduct(req.body, res);
+  const result = await productService.addProduct(req, res);
   res.status(StatusCodes.OK).json(result).send();
 });
 
