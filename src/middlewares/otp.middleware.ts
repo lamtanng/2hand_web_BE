@@ -50,12 +50,11 @@ const sendOtpVerificationEmail = catchErrors(
       }),
     );
 
-    const hashedOtp = await hashValue(String(otp));
-    const { _id } = (await UserModel.findOne({ email })) as UserProps;
-
     //delete all previous OTP records before sending OTP code to email (re-sent otp)
-    await OTPVerificationModel.deleteMany({ userID: _id });
-    await OTPVerificationModel.create({ userID: _id, otp: hashedOtp, email });
+    await OTPVerificationModel.deleteMany({ email });
+
+    const hashedOtp = await hashValue(String(otp));
+    await OTPVerificationModel.create({ otp: hashedOtp, email });
 
     res.status(StatusCodes.OK);
     next();
