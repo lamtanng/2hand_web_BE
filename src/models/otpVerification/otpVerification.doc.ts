@@ -22,7 +22,6 @@ export const OTP_VERIFICATION_COLLECTION_SCHEMA = new Schema<OTPVerificationProp
     userID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: USER_COLLECTION_NAME,
-      required: true,
     },
     email: {
       type: String,
