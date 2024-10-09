@@ -92,7 +92,6 @@ const verifyOTP = async (req: Request, res: Response, next: NextFunction) => {
 
     //delete otp record when it is accepted
     await OTPVerificationModel.deleteMany({ email });
-    await UserModel.findOneAndUpdate({ email }, { isVerified: true });
     res.status(StatusCodes.ACCEPTED);
     next();
   } catch (error: AppError) {
