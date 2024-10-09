@@ -27,7 +27,6 @@ export const OTP_VERIFICATION_COLLECTION_SCHEMA = new Schema<OTPVerificationProp
   },
   expiredAt: {
     type: Date,
-    default: new Date(),
   },
 });
 OTP_VERIFICATION_COLLECTION_SCHEMA.index({ expiredAt: 1 }, { expireAfterSeconds: 120 });
