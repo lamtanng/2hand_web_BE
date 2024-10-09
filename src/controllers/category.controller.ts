@@ -5,7 +5,6 @@ import { categoryService } from '../services/category.service';
 
 const findAll = catchErrors(async (req: Request, res: Response) => {
   const result = await categoryService.findAll(req, res);
-
   res.status(StatusCodes.OK).json(result).send();
 });
 

@@ -18,7 +18,7 @@ router.use('/', customerRouter);
 // router.use(ROLE_ROUTE, roleRoutes);
 // router.use(USER_ROUTE, userRoutes);
 // router.use(STORE_ROUTE, storeRoutes);
-// router.use(CATEGORY_ROUTE, categoryRoutes);
+// 
 // router.use(REVIEW_ROUTE, reviewRoutes);
 // router.use(ORDERSTATUS_ROUTE, orderStatusRoutes);
 // router.use(PAYMENTMETHOD_ROUTE, paymentMethodRoutes);
