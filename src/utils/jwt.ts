@@ -11,13 +11,13 @@ export const signAccessToken = async (user: UserProps) =>
   await JwtProvider.generateToken({
     user,
     secretKey: getSecretKeyFromEnv(env.ACCESS_TOKEN_SECRET_KEY),
-    expiresIn: '15s',
+    expiresIn: env.ACCESS_TOKEN_EXPIRED,
   });
 export const signRefreshToken = async (user: UserProps) =>
   await JwtProvider.generateToken({
     user,
     secretKey: getSecretKeyFromEnv(env.REFRESH_TOKEN_SECRET_KEY),
-    expiresIn: '14d',
+    expiresIn: env.REFRESH_TOKEN_EXPIRED,
   });
 
 export const verifyAccessToken = async (accessToken: string) =>

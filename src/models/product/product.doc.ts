@@ -3,6 +3,7 @@ import { ProductQuality } from '../../types/enum/productQuality.enum';
 import { ProductProps } from '../../types/model/product.type';
 import { CATEGORY_COLLECTION_NAME } from '../category/category.doc';
 import { STORE_COLLECTION_NAME } from '../store/store.doc';
+import { generateSlug } from '../../utils/slug';
 
 export interface ProductDocument extends ProductProps, Document {}
 
@@ -56,7 +57,7 @@ export const PRODUCT_COLLECTION_SCHEMA = new Schema<ProductDocument>(
       type: String,
       unique: true,
       default: function () {
-        return this.name.toLowerCase().replaceAll(' ', '-');
+        return generateSlug(this.name);
       },
     },
     isActive: {

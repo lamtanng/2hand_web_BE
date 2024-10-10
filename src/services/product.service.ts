@@ -3,6 +3,7 @@ import { ProductModel } from '../models/product';
 import { AppError } from '../types/error.type';
 import { ProductProps } from '../types/model/product.type';
 import ApiError from '../utils/classes/ApiError';
+import { generateSlug } from '../utils/slug';
 
 const findAll = async (req: Request, res: Response) => {
   try {
@@ -39,4 +40,22 @@ const addProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const productService = { findAll, addProduct };
+const updateProduct = async (req: Request, res: Response) => {
+  try {
+    const product = req.body as ProductProps;
+
+    //check conditions
+
+    return await ProductModel.findByIdAndUpdate(
+      product._id,
+      { ...product, slug: generateSlug(product.name) },
+      {
+        new: true,
+      },
+    );
+  } catch (error: AppError) {
+    return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
+  }
+};
+
+export const productService = { findAll, addProduct, updateProduct };
