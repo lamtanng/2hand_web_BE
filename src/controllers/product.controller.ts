@@ -1,7 +1,7 @@
-import { StatusCodes } from 'http-status-codes';
 import { Request, Response } from 'express';
-import { catchErrors } from '../utils/catchErrors';
+import { StatusCodes } from 'http-status-codes';
 import { productService } from '../services/product.service';
+import { catchErrors } from '../utils/catchErrors';
 
 const findAll = catchErrors(async (req: Request, res: Response) => {
   const result = await productService.findAll(req, res);
@@ -23,9 +23,15 @@ const deleteProduct = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const toggleActiveProduct = catchErrors(async (req: Request, res: Response) => {
+  const result = await productService.toggleActiveProduct(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const productController = {
   findAll,
   addProduct,
   updateProduct,
   deleteProduct,
+  toggleActiveProduct,
 };

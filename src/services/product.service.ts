@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { ProductModel } from '../models/product';
 import { AppError } from '../types/error.type';
-import { DeleteProductRequestProps } from '../types/http/product.type';
+import { DeleteProductRequestProps, ToggleProductRequestProps } from '../types/http/product.type';
 import { ProductProps } from '../types/model/product.type';
 import ApiError from '../utils/classes/ApiError';
 import { generateSlug } from '../utils/slug';
@@ -68,4 +68,23 @@ const deleteProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const productService = { findAll, addProduct, updateProduct, deleteProduct };
+const toggleActiveProduct = async (req: Request, res: Response) => {
+  try {
+    const { _id } = req.query as unknown as ToggleProductRequestProps;
+    const product = await ProductModel.findById(_id);
+    if (product) {
+      product.isActive = !product.isActive;
+      return product.save();
+    }
+  } catch (error: AppError) {
+    return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
+  }
+};
+
+export const productService = {
+  findAll,
+  addProduct,
+  updateProduct,
+  deleteProduct,
+  toggleActiveProduct,
+};
