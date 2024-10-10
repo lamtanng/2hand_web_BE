@@ -18,8 +18,14 @@ const updateProduct = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const deleteProduct = catchErrors(async (req: Request, res: Response) => {
+  const result = await productService.deleteProduct(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const productController = {
   findAll,
   addProduct,
   updateProduct,
+  deleteProduct,
 };

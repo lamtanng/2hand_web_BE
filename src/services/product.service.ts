@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { ProductModel } from '../models/product';
 import { AppError } from '../types/error.type';
+import { DeleteProductRequestProps } from '../types/http/product.type';
 import { ProductProps } from '../types/model/product.type';
 import ApiError from '../utils/classes/ApiError';
 import { generateSlug } from '../utils/slug';
@@ -58,4 +59,13 @@ const updateProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const productService = { findAll, addProduct, updateProduct };
+const deleteProduct = async (req: Request, res: Response) => {
+  try {
+    const { _id } = req.query as unknown as DeleteProductRequestProps;
+    return await ProductModel.deleteOne({ _id });
+  } catch (error: AppError) {
+    return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
+  }
+};
+
+export const productService = { findAll, addProduct, updateProduct, deleteProduct };
