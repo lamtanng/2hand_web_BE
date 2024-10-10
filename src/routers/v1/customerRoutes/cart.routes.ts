@@ -3,7 +3,8 @@ import { cartController } from '../../../controllers/cart.controller';
 import { cartValidation } from '../../../validations/cart.validation';
 const router = express.Router();
 
-router.route('/').get(cartController.findAll);
-router.route('/').post(cartValidation, cartController.addCart);
+const { addCart, findAll } = cartController;
+router.route('/').get(findAll);
+router.route('/').post(cartValidation, addCart);
 
 export const cartRoutes = router;
