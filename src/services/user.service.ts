@@ -11,7 +11,8 @@ const findAll = async (reqBody: Request, res: Response) => {
       .populate('followerID', 'email')
       .populate('followingID', 'email')
       .exec();
-    return { users };
+
+    return { ...users };
   } catch (error) {
     console.error(error);
   }

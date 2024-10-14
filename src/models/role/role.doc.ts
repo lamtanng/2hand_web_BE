@@ -17,6 +17,9 @@ export const ROLE_COLLECTION_SCHEMA = new Schema<RoleDocument>(
       unique: true,
       required: true,
     },
+    permission: {
+      type: [String],
+    },
   },
   {
     timestamps: true,
