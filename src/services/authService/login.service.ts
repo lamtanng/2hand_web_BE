@@ -16,7 +16,7 @@ const login = async (reqBody: UserProps, res: Response) => {
   const { email, password } = reqBody;
 
   //check if the user exists
-  const existUser = await UserModel.findOne({ email }).exec();
+  const existUser = await UserModel.findOne({ email }).populate('roleID', 'id name').exec();
   if (!existUser) {
     return new ApiError({
       message: HttpMessage.NOT_FOUND.USER,
