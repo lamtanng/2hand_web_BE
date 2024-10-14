@@ -21,6 +21,7 @@ export const REVIEW_ROUTE = '/reviews';
 export const ORDERSTATUS_ROUTE = '/orderstatuses';
 export const PAYMENTMETHOD_ROUTE = '/paymentmethods';
 export const CART_ROUTE = '/cart';
+export const CART_ITEM_ROUTE = '/:productID';
 export const REASON_ROUTE = '/reasons';
 export const ORDER_ROUTE = '/orders';
 export const ORDERDETAIL_ROUTE = '/orderdetails';
