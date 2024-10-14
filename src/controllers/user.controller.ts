@@ -5,7 +5,6 @@ import { userService } from '../services/user.service';
 
 const findAll = catchErrors(async (req: Request, res: Response) => {
   const result = await userService.findAll(req, res);
-
   res.status(StatusCodes.OK).json(result).send();
 });
 
