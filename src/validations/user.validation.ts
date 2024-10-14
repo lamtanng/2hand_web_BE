@@ -24,7 +24,6 @@ const userSchema = Joi.object<UserSchema>({
 
 export const userValidation = catchErrors(
   async (req: Request, res: Response, next: NextFunction) => {
-    // abortEarly: false will return all errors found in the request bod
     await userSchema.validateAsync(req.body, { abortEarly: false });
     next();
   },

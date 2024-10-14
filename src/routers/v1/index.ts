@@ -19,7 +19,7 @@ import { adminRouter } from './adminRoutes';
 import { authRouter } from './auth.routes';
 import { customerRouter } from './customerRoutes';
 import { roleRoutes } from './role.route';
-import { userRoutes } from './user.route';
+import { userRoutes } from './customerRoutes/user.route';
 import { reviewRoutes } from './review.route';
 import { orderStatusRoutes } from './orderStatus.route';
 import { paymentMethodRoutes } from './paymentMethod.route';
@@ -43,7 +43,7 @@ router.use(SELLER_ROUTE, sellerRouter);
 router.use('/', customerRouter);
 
 router.use(ROLE_ROUTE, roleRoutes);
-router.use(USER_ROUTE, userRoutes);
+
 
 router.use(REVIEW_ROUTE, reviewRoutes);
 router.use(ORDERSTATUS_ROUTE, orderStatusRoutes);
