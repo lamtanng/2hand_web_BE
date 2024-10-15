@@ -8,7 +8,9 @@ export interface IUserMethods {
 export interface IUserStatics {
   findByEmail: (email: string) => any;
 }
-export interface IUserQueries {}
+export interface IUserQueries {
+  paginate: (page: number, limit: number) => any;
+}
 export interface IUserModel extends Model<UserProps, IUserQueries, IUserMethods> {}
 
 export const USER_COLLECTION_NAME = 'user';
