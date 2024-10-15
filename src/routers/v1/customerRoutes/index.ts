@@ -5,7 +5,7 @@ import { productRouter } from './product.routes';
 import { categoryRoutes } from './category.routes';
 import { cartRoutes } from './cart.routes';
 import { isAuthorized } from '../../../middlewares/auth.middleware';
-import { userRoutes } from './user.route';
+import { userRoutes } from './user.routes';
 
 const router = express.Router();
 

@@ -12,6 +12,7 @@ const addressSchema = Joi.object<AddressProps>({
   cityCode: Joi.number().min(0).required(),
   provincesCode: Joi.number().min(0).required(),
   isDefault: Joi.boolean().default(false),
+  _id: Joi.string().regex(ObjectIDRegex, 'valid id'),
 });
 
 const userSchema = Joi.object<UserSchema>({

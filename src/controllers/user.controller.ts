@@ -23,9 +23,15 @@ const createReceiveAddress = catchErrors(async (req: Request, res: Response) => 
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const updateAddress = catchErrors(async (req: Request, res: Response) => {
+  const result = await userService.updateAddress(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const userController = {
   findAll,
   addUser,
   updateUserInfo,
   createReceiveAddress,
+  updateAddress,
 };

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { HttpMessage } from '../constants/httpMessage';
 import { pagination } from '../constants/pagination';
 import { RoleModel } from '../models/role';
 import { UserModel } from '../models/user';
@@ -9,6 +10,7 @@ import { AddressProps, UserProps } from '../types/model/user.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
 import { verifyAccessToken } from '../utils/jwt';
+import mongoose from 'mongoose';
 
 const findAll = async (req: Request, res: Response) => {
   try {
@@ -68,13 +70,46 @@ const updateUserInfo = catchServiceFunc(async (req: Request, res: Response) => {
 const createReceiveAddress = catchServiceFunc(async (req: Request, res: Response) => {
   const newAddress = req.body as AddressProps;
   const { _id } = (await verifyAccessToken(req.cookies.accessToken)) as UserProps;
-  const user = await UserModel.findById({ _id });
-
-  if (newAddress.isDefault && user) {
+  const user = await findUserById(_id);
+  
+  if (newAddress.isDefault) {
     user.address = user.address.map((address) => ({ ...address, isDefault: false }));
   }
   user?.address.push(newAddress);
   return await user?.save();
 });
 
-export const userService = { findAll, addUser, updateUserInfo, createReceiveAddress };
+const updateAddress = catchServiceFunc(async (req: Request, res: Response) => {
+  const address = req.body;
+  const { _id } = (await verifyAccessToken(req.cookies.accessToken)) as UserProps;
+  const user = await findUserById(_id);
+
+  if (address.isDefault) {
+    user.address = user.address.map((address) => ({ ...address, isDefault: false }));
+  }
+
+  user.address = user?.address.map((item) =>
+    String(item._id) === String(address._id) ? address : item,
+  );
+  return await user.save();
+});
+
+const findUserById = async (_id: string | mongoose.Schema.Types.ObjectId) => {
+  const user = await UserModel.findById({ _id });
+
+  if (!user)
+    return new ApiError({
+      message: HttpMessage.NOT_FOUND.USER,
+      statusCode: StatusCodes.NOT_FOUND,
+    }).rejectError();
+
+  return user;
+};
+
+export const userService = {
+  findAll,
+  addUser,
+  updateUserInfo,
+  createReceiveAddress,
+  updateAddress,
+};

@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 export interface AddressProps {
+  _id: mongoose.Schema.Types.ObjectId;
   address: string;
   cityCode: number;
   districtCode: number;

@@ -24,7 +24,7 @@ export const catchErrors = (asyncFunc: AsyncController): AsyncController => {
 export const catchServiceFunc = (asyncFunc: ServiceFunc) => {
   return async (req: Request, res: Response) => {
     try {
-      await asyncFunc(req, res);
+      return await asyncFunc(req, res);
     } catch (error: AppError) {
       return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
     }
