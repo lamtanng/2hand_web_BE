@@ -1,5 +1,13 @@
 import mongoose from 'mongoose';
 
+export interface AddressProps {
+  address: string;
+  cityCode: number;
+  districtCode: number;
+  provincesCode: number;
+  isDefault: boolean;
+}
+
 export interface UserProps {
   _id: mongoose.Schema.Types.ObjectId;
   firstName: string;
@@ -8,7 +16,7 @@ export interface UserProps {
   password: string;
   phoneNumber: string;
   dateOfBirth: Date;
-  address: string[];
+  address: AddressProps[];
   createAt?: Date;
   updateAt?: Date;
   isActive: boolean;

@@ -58,7 +58,14 @@ export const USER_COLLECTION_SCHEMA = new Schema<
     },
     address: [
       {
-        type: String,
+        address: String,
+        districtCode: Number,
+        cityCode: Number,
+        provincesCode: Number,
+        isDefault: {
+          type: Boolean,
+          default: false,
+        },
       },
     ],
     isActive: {
