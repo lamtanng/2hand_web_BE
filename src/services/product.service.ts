@@ -5,18 +5,17 @@ import { DeleteProductRequestProps, ToggleProductRequestProps } from '../types/h
 import { ProductProps } from '../types/model/product.type';
 import ApiError from '../utils/classes/ApiError';
 import { generateSlug } from '../utils/slug';
+import { pagination } from '../constants/pagination';
 
 const findAll = async (req: Request, res: Response) => {
   try {
-    const page = (req.query.page || 1) as number;
-    const limit = (req.query.limit || 10) as number;
-    const search = req.query.search || '';
+    const { page, limit, search, skip } = pagination(req);
 
     const products = await ProductModel.find({})
       .populate('cateID', 'name')
       .populate('storeID', 'name')
       .limit(limit)
-      .skip((page - 1) * limit)
+      .skip(skip)
       .find({ name: { $regex: search, $options: 'i' } });
 
     const total = await ProductModel.countDocuments({ name: { $regex: search, $options: 'i' } });

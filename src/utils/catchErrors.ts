@@ -1,11 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import { TokenExpiredError } from 'jsonwebtoken';
 import { HttpMessage } from '../constants/httpMessage';
 import { AppError } from '../types/error.type';
 import ApiError, { ApiErrorProps } from './classes/ApiError';
-import { TokenExpiredError } from 'jsonwebtoken';
 
 type AsyncController = (req: Request, res: Response, next: NextFunction) => Promise<any>;
+type ServiceFunc = (req: Request, res: Response) => Promise<any>;
 interface HandleErrorProps extends ApiErrorProps {
   next: NextFunction;
 }
@@ -16,6 +17,16 @@ export const catchErrors = (asyncFunc: AsyncController): AsyncController => {
       await asyncFunc(req, res, next);
     } catch (error: AppError) {
       handleError({ message: error.message, statusCode: error.statusCode, next });
+    }
+  };
+};
+
+export const catchServiceFunc = (asyncFunc: ServiceFunc) => {
+  return async (req: Request, res: Response) => {
+    try {
+      return await asyncFunc(req, res);
+    } catch (error: AppError) {
+      return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
     }
   };
 };

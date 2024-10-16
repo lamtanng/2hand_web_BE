@@ -16,6 +16,7 @@ export const PRODUCT_ROUTE = '/products';
 export const CATEGORY_ROUTE = '/categories';
 export const ROLE_ROUTE = '/roles';
 export const USER_ROUTE = '/users';
+export const USER_ADDRESS_ROUTE = '/address';
 export const STORE_ROUTE = '/stores';
 export const REVIEW_ROUTE = '/reviews';
 export const ORDERSTATUS_ROUTE = '/orderstatuses';

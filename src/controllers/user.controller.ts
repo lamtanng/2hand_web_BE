@@ -13,8 +13,25 @@ const addUser = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const updateUserInfo = catchErrors(async (req: Request, res: Response) => {
+  const result = await userService.updateUserInfo(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
+const createReceiveAddress = catchErrors(async (req: Request, res: Response) => {
+  const result = await userService.createReceiveAddress(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
+const updateAddress = catchErrors(async (req: Request, res: Response) => {
+  const result = await userService.updateAddress(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const userController = {
   findAll,
   addUser,
-  // findOne
+  updateUserInfo,
+  createReceiveAddress,
+  updateAddress,
 };
