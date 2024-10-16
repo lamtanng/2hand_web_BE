@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import mongoose from 'mongoose';
 import { HttpMessage } from '../constants/httpMessage';
 import { pagination } from '../constants/pagination';
 import { RoleModel } from '../models/role';
@@ -10,7 +11,6 @@ import { AddressProps, UserProps } from '../types/model/user.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
 import { verifyAccessToken } from '../utils/jwt';
-import mongoose from 'mongoose';
 
 const findAll = async (req: Request, res: Response) => {
   try {
@@ -71,7 +71,7 @@ const createReceiveAddress = catchServiceFunc(async (req: Request, res: Response
   const newAddress = req.body as AddressProps;
   const { _id } = (await verifyAccessToken(req.cookies.accessToken)) as UserProps;
   const user = await findUserById(_id);
-  
+
   if (newAddress.isDefault) {
     user.address = user.address.map((address) => ({ ...address, isDefault: false }));
   }
@@ -94,6 +94,25 @@ const updateAddress = catchServiceFunc(async (req: Request, res: Response) => {
   return await user.save();
 });
 
+const deleteAddress = catchServiceFunc(async (req: Request, res: Response) => {
+  const { addressID } = req.params;
+  const { _id } = (await verifyAccessToken(req.cookies.accessToken)) as UserProps;
+
+  const result = await UserModel.updateOne(
+    { _id, address: { _id: addressID } },
+    { $pull: { address: { _id: addressID, isDefault: false } } },
+  );
+
+  if (result.modifiedCount === 0) {
+    return new ApiError({
+      message: 'Address is default or not found',
+      statusCode: StatusCodes.NOT_FOUND,
+    }).rejectError();
+  }
+
+  return result;
+});
+
 const findUserById = async (_id: string | mongoose.Schema.Types.ObjectId) => {
   const user = await UserModel.findById({ _id });
 
@@ -112,4 +131,5 @@ export const userService = {
   updateUserInfo,
   createReceiveAddress,
   updateAddress,
+  deleteAddress,
 };
