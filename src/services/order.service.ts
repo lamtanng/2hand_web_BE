@@ -8,6 +8,9 @@ import { OrderStatusModel } from '../models/orderStatus';
 import { IPNMoMoPaymentRequestProps, MoMoPaymentItemsProps } from '../types/http/momoPayment.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import { getMoMoCreationRequestBody } from '../utils/momo';
+import ApiError from '../utils/classes/ApiError';
+import { StatusCodes } from 'http-status-codes';
+import { AppError } from '../types/error.type';
 const crypto = require('crypto');
 
 const findAll = catchServiceFunc(async (reqBody: Request, res: Response) => {
@@ -16,7 +19,9 @@ const findAll = catchServiceFunc(async (reqBody: Request, res: Response) => {
 });
 
 const findAllByUserID = catchServiceFunc(async (req: Request, res: Response) => {
-  const { userID } = req.query;
+  const { userID } = req.params;
+  console.log(userID);
+
   const orders = await OrderModel.find({ userID });
   return orders;
 });
@@ -32,6 +37,26 @@ const addOrder = catchServiceFunc(async (req: Request, res: Response) => {
   try {
     for (const order of orders) {
       const { total, storeId, note, items } = order;
+      const formattedItems = items.map((item: MoMoPaymentItemsProps) => {
+        const { quantity, totalPrice, id } = item;
+        return {
+          quantity,
+          priceTotal: totalPrice,
+          productID: id,
+        };
+      });
+      const orderDetailIDs = (await OrderDetailModel.insertMany(formattedItems, { session })).map(
+        (item) => item._id,
+      );
+
+      console.log(orderDetailIDs);
+      if (!orderDetailIDs) {
+        throw new ApiError({
+          message: 'Order detail created failed',
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        });
+      }
+
       const orderModel = new OrderModel({
         total,
         userID,
@@ -40,39 +65,28 @@ const addOrder = catchServiceFunc(async (req: Request, res: Response) => {
         storeID: storeId,
         shipmentCost: 15000,
         note,
+        orderDetailIDs,
       });
 
       const newOrder = await orderModel.save({ session });
       if (!newOrder) {
-        await session.abortTransaction();
-        session.endSession();
-        return { message: 'Order created failed' };
-      }
-
-      const formattedItems = items.map((item: MoMoPaymentItemsProps) => {
-        const { quantity, totalPrice, id } = item;
-        return {
-          quantity,
-          priceTotal: totalPrice,
-          productID: id,
-          orderID: newOrder._id,
-        };
-      });
-      const newItems = await OrderDetailModel.insertMany(formattedItems, { session });
-      if (newItems) {
-        await session.abortTransaction();
-        session.endSession();
-        return { message: 'Order created failed' };
+        throw new ApiError({
+          message: 'Order detail created failed',
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        });
       }
     }
 
     await session.commitTransaction();
-    session.endSession();
     return true;
-  } catch (error) {
+  } catch (error: AppError) {
     await session.abortTransaction();
+    throw new ApiError({
+      message: error.message,
+      statusCode: error.statusCode,
+    });
+  } finally {
     session.endSession();
-    throw error;
   }
 });
 

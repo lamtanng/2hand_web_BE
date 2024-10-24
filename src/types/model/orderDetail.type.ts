@@ -5,7 +5,7 @@ export interface OrderDetailProps{
     quantity: number,
     priceTotal: number,
     productID: mongoose.Schema.Types.ObjectId,
-    orderID: mongoose.Schema.Types.ObjectId,
+    // orderID: mongoose.Schema.Types.ObjectId,
     createAt?: Date,
     updateAt?: Date,
 }

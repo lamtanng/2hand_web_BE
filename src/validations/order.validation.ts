@@ -16,6 +16,7 @@ const orderSchema = Joi.object<OrderSchema>({
   storeID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
   orderStatusID: Joi.string().regex(ObjectIDRegex, 'valid id'),
   paymentMethodID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
+  orderDetailIDs: Joi.array().items(Joi.string().regex(ObjectIDRegex, 'valid id')),
 });
 
 export const orderValidation = catchErrors(

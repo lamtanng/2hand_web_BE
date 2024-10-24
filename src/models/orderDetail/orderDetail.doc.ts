@@ -29,11 +29,11 @@ export const ORDERDETAIL_COLLECTION_SCHEMA = new Schema<orderDetailDocument>(
       ref: PRODUCT_COLLECTION_NAME,
       required: true,
     },
-    orderID: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: ORDER_COLLECTION_NAME,
-      required: true,
-    },
+    // orderID: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: ORDER_COLLECTION_NAME,
+    //   required: true,
+    // },
   },
   { timestamps: true },
 );

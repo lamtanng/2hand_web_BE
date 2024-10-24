@@ -4,6 +4,7 @@ import { USER_COLLECTION_NAME } from '../user/user.doc';
 import { STORE_COLLECTION_NAME } from '../store/store.doc';
 import { ORDERSTATUS_COLLECTION_NAME } from '../orderStatus/orderStatus.doc';
 import { PAYMENTMETHOD_COLLECTION_NAME } from '../paymentMethod/paymentMethod.doc';
+import { ORDERDETAIL_COLLECTION_NAME } from '../orderDetail/orderDetail.doc';
 
 export interface OrderDocument extends OrderProps, Document {}
 
@@ -62,6 +63,11 @@ export const ORDER_COLLECTION_SCHEMA = new Schema<OrderDocument>(
     paymentMethodID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: PAYMENTMETHOD_COLLECTION_NAME,
+      required: true,
+    },
+    orderDetailIDs: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: ORDERDETAIL_COLLECTION_NAME,
       required: true,
     },
   },
