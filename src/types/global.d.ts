@@ -18,5 +18,8 @@ declare namespace NodeJS {
     EMAIL_ADDRESS: string;
     EMAIL_PASSWORD: string;
     EMAIL_HOST: string;
+    MOMO_ACCESS_KEY: string;
+    MOMO_SECRET_KEY: string;
+    MOMO_IPN_URL: string;
   }
 }

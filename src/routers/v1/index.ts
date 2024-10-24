@@ -49,7 +49,7 @@ router.use(ORDERSTATUS_ROUTE, orderStatusRoutes);
 router.use(PAYMENTMETHOD_ROUTE, paymentMethodRoutes);
 
 router.use(REASON_ROUTE, reasonRoutes);
-router.use(ORDER_ROUTE, orderRoutes);
+
 router.use(ORDERDETAIL_ROUTE, orderDetailRoutes);
 router.use(ORDERREQUEST_ROUTE, orderRequestRoutes);
 router.use(REPORT_ROUTE, reportRoutes);
