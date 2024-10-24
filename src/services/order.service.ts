@@ -17,13 +17,15 @@ import { deleteEmptyObjectFields } from '../utils/object';
 const crypto = require('crypto');
 
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {
-  const { userID, orderStatusID, paymentMethodID } = req.query;
+  const { userID, orderStatusID, paymentMethodID, storeID, _id } = req.query;
   const { page, limit, search, skip } = pagination(req);
 
   let queryObj: { [key: string]: string | undefined } = {
+    _id: (_id || '') as string,
     userID: (userID || '') as string,
     orderStatusID: (orderStatusID || '') as string,
     paymentMethodID: (paymentMethodID || '') as string,
+    storeID: (storeID || '') as string,
   };
   deleteEmptyObjectFields(queryObj);
 
