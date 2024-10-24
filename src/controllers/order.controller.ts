@@ -7,10 +7,6 @@ const findAll = catchErrors(async (req: Request, res: Response) => {
   const result = await orderService.findAll(req, res);
   res.status(StatusCodes.OK).json(result).send();
 });
-const findAllByUserID = catchErrors(async (req: Request, res: Response) => {
-  const result = await orderService.findAllByUserID(req, res);
-  res.status(StatusCodes.OK).json(result).send();
-});
 
 const addOrder = catchErrors(async (req: Request, res: Response) => {
   const result = await orderService.addOrder(req, res);
@@ -32,5 +28,4 @@ export const orderController = {
   addOrder,
   payByMomo,
   checkPaymentTransaction,
-  findAllByUserID,
 };
