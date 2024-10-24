@@ -21,6 +21,6 @@ router.use(CATEGORY_ROUTE, categoryRoutes);
 router.use(PRODUCT_ROUTE, productRouter);
 router.use(CART_ROUTE, isAuthorized, cartRoutes);
 router.use(USER_ROUTE, isAuthorized, userRoutes);
-router.use(ORDER_ROUTE, orderRoutes);
+router.use(ORDER_ROUTE, isAuthorized, orderRoutes);
 
 export const customerRouter = router;

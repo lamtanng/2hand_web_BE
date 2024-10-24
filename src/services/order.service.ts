@@ -11,18 +11,29 @@ import { getMoMoCreationRequestBody } from '../utils/momo';
 import ApiError from '../utils/classes/ApiError';
 import { StatusCodes } from 'http-status-codes';
 import { AppError } from '../types/error.type';
+import mongoose from 'mongoose';
+import { pagination } from '../constants/pagination';
+import { deleteEmptyObjectFields } from '../utils/object';
 const crypto = require('crypto');
 
-const findAll = catchServiceFunc(async (reqBody: Request, res: Response) => {
-  const orders = await OrderModel.find({});
-  return orders;
-});
+const findAll = catchServiceFunc(async (req: Request, res: Response) => {
+  const { userID, orderStatusID, paymentMethodID } = req.query;
+  const { page, limit, search, skip } = pagination(req);
 
-const findAllByUserID = catchServiceFunc(async (req: Request, res: Response) => {
-  const { userID } = req.params;
-  console.log(userID);
+  let queryObj: { [key: string]: string | undefined } = {
+    userID: (userID || '') as string,
+    orderStatusID: (orderStatusID || '') as string,
+    paymentMethodID: (paymentMethodID || '') as string,
+  };
+  deleteEmptyObjectFields(queryObj);
 
-  const orders = await OrderModel.find({ userID });
+  const orders = await OrderModel.find(queryObj)
+    .populate({ path: 'orderDetailIDs', populate: { path: 'productID' } })
+    .populate('storeID');
+  // .limit(limit)
+  // .skip(skip)
+  // .find({ name: { $regex: search, $options: 'i' } });
+
   return orders;
 });
 
@@ -147,5 +158,4 @@ export const orderService = {
   addOrder,
   payByMomo,
   checkPaymentTransaction,
-  findAllByUserID,
 };
