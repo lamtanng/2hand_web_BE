@@ -3,7 +3,6 @@ import { StatusCodes } from 'http-status-codes';
 import {
   ADMIN_ROUTE,
   AUTH_ROUTE,
-  ORDER_ROUTE,
   ORDERDETAIL_ROUTE,
   ORDERREQUEST_ROUTE,
   ORDERSTATUS_ROUTE,
@@ -11,23 +10,18 @@ import {
   REASON_ROUTE,
   REPORT_ROUTE,
   REVIEW_ROUTE,
-  ROLE_ROUTE,
   SELLER_ROUTE,
-  USER_ROUTE,
 } from '../../constants/routes';
 import { adminRouter } from './adminRoutes';
 import { authRouter } from './auth.routes';
 import { customerRouter } from './customerRoutes';
-import { roleRoutes } from './role.route';
-import { userRoutes } from './customerRoutes/user.routes';
-import { reviewRoutes } from './review.route';
+import { orderDetailRoutes } from './orderDetail.routes';
+import { orderRequestRoutes } from './orderRequest.routes';
 import { orderStatusRoutes } from './orderStatus.route';
 import { paymentMethodRoutes } from './paymentMethod.route';
 import { reasonRoutes } from './reason.routes';
-import { orderRoutes } from './customerRoutes/order.routes';
-import { orderDetailRoutes } from './orderDetail.routes';
-import { orderRequestRoutes } from './orderRequest.routes';
 import { reportRoutes } from './report.routes';
+import { reviewRoutes } from './review.route';
 import { sellerRouter } from './sellerRoutes';
 
 const router = express.Router();
@@ -41,8 +35,6 @@ router.use(AUTH_ROUTE, authRouter);
 router.use(ADMIN_ROUTE, adminRouter);
 router.use(SELLER_ROUTE, sellerRouter);
 router.use('/', customerRouter);
-
-router.use(ROLE_ROUTE, roleRoutes);
 
 router.use(REVIEW_ROUTE, reviewRoutes);
 router.use(ORDERSTATUS_ROUTE, orderStatusRoutes);
