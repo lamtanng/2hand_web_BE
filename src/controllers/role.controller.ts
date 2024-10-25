@@ -10,11 +10,17 @@ const findAll = catchErrors(async (req: Request, res: Response) => {
 });
 
 const addRole = catchErrors(async (req: Request, res: Response) => {
-  const result = await roleService.addRole(req.body, res);
+  const result = await roleService.addRole(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
+const updateRole = catchErrors(async (req: Request, res: Response) => {
+  const result = await roleService.updateRole(req, res);
   res.status(StatusCodes.OK).json(result).send();
 });
 
 export const roleController = {
   findAll,
   addRole,
+  updateRole,
 };
