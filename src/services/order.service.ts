@@ -1,18 +1,17 @@
 import axios from 'axios';
 import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import { createMoMoPayment } from '../apis/momo';
 import { MOMO } from '../constants/momo';
+import { pagination } from '../constants/pagination';
 import { OrderModel } from '../models/order';
 import { OrderDetailModel } from '../models/orderDetail';
 import { OrderStatusModel } from '../models/orderStatus';
+import { AppError } from '../types/error.type';
 import { IPNMoMoPaymentRequestProps, MoMoPaymentItemsProps } from '../types/http/momoPayment.type';
 import { catchServiceFunc } from '../utils/catchErrors';
-import { getMoMoCreationRequestBody } from '../utils/momo';
 import ApiError from '../utils/classes/ApiError';
-import { StatusCodes } from 'http-status-codes';
-import { AppError } from '../types/error.type';
-import mongoose from 'mongoose';
-import { pagination } from '../constants/pagination';
+import { getMoMoCreationRequestBody } from '../utils/momo';
 import { deleteEmptyObjectFields } from '../utils/object';
 const crypto = require('crypto');
 
@@ -31,12 +30,23 @@ const findAll = catchServiceFunc(async (req: Request, res: Response) => {
 
   const orders = await OrderModel.find(queryObj)
     .populate({ path: 'orderDetailIDs', populate: { path: 'productID' } })
+    .populate('userID')
+    .populate('orderStatusID')
+    .populate('paymentMethodID')
     .populate('storeID');
   // .limit(limit)
   // .skip(skip)
   // .find({ name: { $regex: search, $options: 'i' } });
 
   return orders;
+});
+
+const updateOrderStatus = catchServiceFunc(async (req: Request, res: Response) => {
+  const { _id, orderStatusID } = req.body;
+  const order = await OrderModel.findByIdAndUpdate(_id, { orderStatusID }, { new: true }).populate(
+    'orderStatusID',
+  );
+  return order;
 });
 
 const addOrder = catchServiceFunc(async (req: Request, res: Response) => {
@@ -160,4 +170,5 @@ export const orderService = {
   addOrder,
   payByMomo,
   checkPaymentTransaction,
+  updateOrderStatus,
 };
