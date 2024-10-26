@@ -13,6 +13,11 @@ const addOrder = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send('<p>some html</p>');
 });
 
+const updateOrderStatus = catchErrors(async (req: Request, res: Response) => {
+  const result = await orderService.updateOrderStatus(req, res);
+  res.status(StatusCodes.OK).json(result).send('<p>some html</p>');
+});
+
 const payByMomo = catchErrors(async (req: Request, res: Response) => {
   const result = await orderService.payByMomo(req, res);
   res.status(StatusCodes.OK).json(result).send();
@@ -28,4 +33,5 @@ export const orderController = {
   addOrder,
   payByMomo,
   checkPaymentTransaction,
+  updateOrderStatus,
 };
