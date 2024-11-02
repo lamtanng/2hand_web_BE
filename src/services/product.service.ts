@@ -1,24 +1,39 @@
 import { Request, Response } from 'express';
+import { pagination } from '../constants/pagination';
 import { ProductModel } from '../models/product';
 import { AppError } from '../types/error.type';
 import { DeleteProductRequestProps, ToggleProductRequestProps } from '../types/http/product.type';
 import { ProductProps } from '../types/model/product.type';
 import ApiError from '../utils/classes/ApiError';
+import { deleteEmptyObjectFields, parseJson } from '../utils/object';
 import { generateSlug } from '../utils/slug';
-import { pagination } from '../constants/pagination';
 
 const findAll = async (req: Request, res: Response) => {
   try {
     const { page, limit, search, skip } = pagination(req);
 
-    const products = await ProductModel.find({})
-      .populate('cateID', 'name')
-      .populate('storeID', 'name')
+    const sort = parseJson(req.query.sort as string);
+    const quality = parseJson(req.query.quality as string);
+    const cateID = parseJson(req.query.cateID as string);
+    const price = parseJson(req.query.price as string);
+
+    const findCondition = {
+      name: search && { $regex: search, $options: 'i' },
+      cateID: cateID && { $in: cateID },
+      isSoldOut: false,
+      quality: quality && { $in: quality },
+      price: price && { $gte: price.min, $lte: price.max },
+    };
+    deleteEmptyObjectFields(findCondition);
+
+    const products = await ProductModel.find(findCondition)
+      .populate('cateID')
+      .populate('storeID')
       .limit(limit)
       .skip(skip)
-      .find({ name: { $regex: search, $options: 'i' } });
+      .sort(sort);
 
-    const total = await ProductModel.countDocuments({ name: { $regex: search, $options: 'i' } });
+    const total = await ProductModel.countDocuments(findCondition);
     const response = {
       page,
       limit,
