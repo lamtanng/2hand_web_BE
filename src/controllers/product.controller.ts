@@ -8,6 +8,16 @@ const findAll = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const findOneById = catchErrors(async (req: Request, res: Response) => {
+  const result = await productService.findOneById(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
+const findOneBySlug = catchErrors(async (req: Request, res: Response) => {
+  const result = await productService.findOneBySlug(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 const addProduct = catchErrors(async (req: Request, res: Response) => {
   const result = await productService.addProduct(req, res);
   res.status(StatusCodes.OK).json(result).send();
@@ -34,4 +44,6 @@ export const productController = {
   updateProduct,
   deleteProduct,
   toggleActiveProduct,
+  findOneById,
+  findOneBySlug,
 };

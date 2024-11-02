@@ -7,6 +7,7 @@ import { ProductProps } from '../types/model/product.type';
 import ApiError from '../utils/classes/ApiError';
 import { deleteEmptyObjectFields, parseJson } from '../utils/object';
 import { generateSlug } from '../utils/slug';
+import { catchServiceFunc } from '../utils/catchErrors';
 
 const findAll = async (req: Request, res: Response) => {
   try {
@@ -45,6 +46,20 @@ const findAll = async (req: Request, res: Response) => {
     return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
   }
 };
+
+const findOneById = catchServiceFunc(async (req: Request, res: Response) => {
+  const { productID } = req.params;
+  const product = await ProductModel.findById(productID).populate('cateID').populate('storeID');
+  return product;
+});
+
+const findOneBySlug = catchServiceFunc(async (req: Request, res: Response) => {
+  const { productSlug } = req.params;
+  const product = await ProductModel.findOne({ slug: productSlug })
+    .populate('cateID')
+    .populate('storeID');
+  return product;
+});
 
 const addProduct = async (req: Request, res: Response) => {
   try {
@@ -101,4 +116,6 @@ export const productService = {
   updateProduct,
   deleteProduct,
   toggleActiveProduct,
+  findOneById,
+  findOneBySlug,
 };
