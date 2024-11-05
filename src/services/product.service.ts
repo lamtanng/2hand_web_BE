@@ -17,6 +17,7 @@ const findAll = async (req: Request, res: Response) => {
     const quality = parseJson(req.query.quality as string);
     const cateID = parseJson(req.query.cateID as string);
     const price = parseJson(req.query.price as string);
+    const storeID = parseJson(req.query.storeID as string);
 
     const findCondition = {
       name: search && { $regex: search, $options: 'i' },
@@ -24,6 +25,7 @@ const findAll = async (req: Request, res: Response) => {
       isSoldOut: false,
       quality: quality && { $in: quality },
       price: price && { $gte: price.min, $lte: price.max },
+      storeID: storeID && { $in: storeID },
     };
     deleteEmptyObjectFields(findCondition);
 
@@ -49,7 +51,14 @@ const findAll = async (req: Request, res: Response) => {
 
 const findOneById = catchServiceFunc(async (req: Request, res: Response) => {
   const { productID } = req.params;
-  const product = await ProductModel.findById(productID).populate('cateID').populate('storeID');
+  const product = await ProductModel.findById(productID)
+    .populate('cateID')
+    .populate({
+      path: 'storeID',
+      populate: {
+        path: 'userID',
+      },
+    });
   return product;
 });
 
@@ -57,7 +66,12 @@ const findOneBySlug = catchServiceFunc(async (req: Request, res: Response) => {
   const { productSlug } = req.params;
   const product = await ProductModel.findOne({ slug: productSlug })
     .populate('cateID')
-    .populate('storeID');
+    .populate({
+      path: 'storeID',
+      populate: {
+        path: 'userID',
+      },
+    });
   return product;
 });
 
