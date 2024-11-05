@@ -8,6 +8,7 @@ import ApiError from '../utils/classes/ApiError';
 import { verifyAccessToken } from '../utils/jwt';
 import { CartItemProps } from '../types/model/cartItem.type';
 import _ from 'lodash';
+import { ProductProps } from '../types/model/product.type';
 
 const findAll = async (req: Request, res: Response) => {
   try {
@@ -20,11 +21,17 @@ const findAll = async (req: Request, res: Response) => {
       })
       .lean();
 
-    const newItems = cart?.items?.map((product: any) => ({
-      ...product,
-      storeID: product.productID.storeID,
-    }));
-    return { ...cart, items: newItems };
+    //group products by store with key is storeID
+    const group = _.groupBy(cart?.items, (product: any) => product.productID.storeID._id);
+    const formattedResult = _.map(group, (products) => {
+      const store = products[0].productID as unknown as ProductProps;
+      return {
+        store: store.storeID,
+        products,
+      };
+    });
+
+    return formattedResult;
   } catch (error: AppError) {
     return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
   }
