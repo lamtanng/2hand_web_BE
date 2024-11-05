@@ -14,7 +14,19 @@ const addStore = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const findOneById = catchErrors(async (req: Request, res: Response) => {
+  const result = await storeService.findOneById(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
+const findOneByUserId = catchErrors(async (req: Request, res: Response) => {
+  const result = await storeService.findOneByUserId(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const storeController = {
   findAll,
   addStore,
+  findOneById,
+  findOneByUserId
 };
