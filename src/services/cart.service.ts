@@ -6,16 +6,25 @@ import { CartProps } from '../types/model/cart.type';
 import { UserProps } from '../types/model/user.type';
 import ApiError from '../utils/classes/ApiError';
 import { verifyAccessToken } from '../utils/jwt';
+import { CartItemProps } from '../types/model/cartItem.type';
+import _ from 'lodash';
 
 const findAll = async (req: Request, res: Response) => {
   try {
     const { _id } = (await verifyAccessToken(req.cookies?.accessToken)) as UserProps;
 
-    const cart = await CartModel.find({ userID: _id }).populate({
-      path: 'items',
-      populate: { path: 'productID' },
-    });
-    return cart;
+    const cart = await CartModel.findOne({ userID: _id })
+      .populate({
+        path: 'items',
+        populate: { path: 'productID', populate: 'storeID' },
+      })
+      .lean();
+
+    const newItems = cart?.items?.map((product: any) => ({
+      ...product,
+      storeID: product.productID.storeID,
+    }));
+    return { ...cart, items: newItems };
   } catch (error: AppError) {
     return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
   }
