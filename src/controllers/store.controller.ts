@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import { catchErrors } from '../utils/catchErrors';
 import { Request, Response } from 'express';
 import { storeService } from '../services/store.service';
+import { CreateStoreRequestProps } from '../types/http/store.type';
 
 const findAll = catchErrors(async (req: Request, res: Response) => {
   const result = await storeService.findAll(req, res);
@@ -10,7 +11,8 @@ const findAll = catchErrors(async (req: Request, res: Response) => {
 });
 
 const addStore = catchErrors(async (req: Request, res: Response) => {
-  const result = await storeService.addStore(req.body, res);
+
+  const result = await storeService.addStore(req, res);
   res.status(StatusCodes.OK).json(result).send();
 });
 
@@ -24,9 +26,15 @@ const findOneByUserId = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const createGHNStore = catchErrors(async (req: Request, res: Response) => {
+  const result = await storeService.createGHNStore(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const storeController = {
   findAll,
   addStore,
   findOneById,
-  findOneByUserId
+  findOneByUserId,
+  createGHNStore,
 };

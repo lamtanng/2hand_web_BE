@@ -72,7 +72,6 @@ const addOrder = catchServiceFunc(async (req: Request, res: Response) => {
         (item) => item._id,
       );
 
-      console.log(orderDetailIDs);
       if (!orderDetailIDs) {
         throw new ApiError({
           message: 'Order detail created failed',

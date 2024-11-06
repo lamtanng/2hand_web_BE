@@ -7,10 +7,11 @@ import { RoleModel } from '../models/role';
 import { UserModel } from '../models/user';
 import { AppError } from '../types/error.type';
 import { GetUsersResponseProps, UpdateUserInfoRequestProps } from '../types/http/user.type';
-import { AddressProps, UserProps } from '../types/model/user.type';
+import { UserProps } from '../types/model/user.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
 import { verifyAccessToken } from '../utils/jwt';
+import { AddressProps } from '../types/model/address.type';
 
 const findAll = async (req: Request, res: Response) => {
   try {
