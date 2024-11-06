@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { createGHNStoreAPI } from '../apis/ghn';
 import { StoreModel } from '../models/store';
+import { UserModel } from '../models/user';
+import { AppError } from '../types/error.type';
 import { CreateGHNStoreRequestProps } from '../types/http/ghn.type';
 import { CreateStoreRequestProps } from '../types/http/store.type';
 import { catchServiceFunc } from '../utils/catchErrors';
@@ -11,7 +13,7 @@ const findAll = async (reqBody: Request, res: Response) => {
     const stores = await StoreModel.find({}).populate('userID', 'email');
     return { stores };
   } catch (error) {
-  console.error(error);
+    console.error(error);
   }
 };
 
@@ -26,9 +28,25 @@ const addStore = catchServiceFunc(async (req: Request, res: Response) => {
     });
   }
 
-  //create store
-  const newStore = await StoreModel.create({ ...store, ghnStoreID: '123456' });
-  return newStore;
+  const session = await StoreModel.startSession();
+  session.startTransaction();
+
+  try {
+    await UserModel.findByIdAndUpdate(store.userID, {
+      phoneNumber: store.phoneNumber,
+    });
+    const newStore = await StoreModel.create({ ...store, ghnStoreID: '123456' });
+    await session.commitTransaction();
+    return newStore;
+  } catch (error: AppError) {
+    await session.abortTransaction();
+    throw new ApiError({
+      message: error.message,
+      statusCode: error.statusCode,
+    });
+  } finally {
+    session.endSession();
+  }
 });
 
 const createGHNStore = catchServiceFunc(async (req: Request, res: Response) => {
