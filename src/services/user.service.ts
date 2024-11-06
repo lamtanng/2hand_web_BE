@@ -70,7 +70,7 @@ const updateUserInfo = catchServiceFunc(async (req: Request, res: Response) => {
 const createReceiveAddress = catchServiceFunc(async (req: Request, res: Response) => {
   const newAddress = req.body as AddressProps;
   const { _id } = (await verifyAccessToken(req.cookies.accessToken)) as UserProps;
-  const user = await findUserById(_id);
+  const user = await getUserById(_id);
 
   if (newAddress.isDefault) {
     user.address = user.address.map((address) => ({ ...address, isDefault: false }));
@@ -82,7 +82,7 @@ const createReceiveAddress = catchServiceFunc(async (req: Request, res: Response
 const updateAddress = catchServiceFunc(async (req: Request, res: Response) => {
   const address = req.body;
   const { _id } = (await verifyAccessToken(req.cookies.accessToken)) as UserProps;
-  const user = await findUserById(_id);
+  const user = await getUserById(_id);
 
   if (address.isDefault) {
     user.address = user.address.map((address) => ({ ...address, isDefault: false }));
@@ -113,7 +113,13 @@ const deleteAddress = catchServiceFunc(async (req: Request, res: Response) => {
   return result;
 });
 
-const findUserById = async (_id: string | mongoose.Schema.Types.ObjectId) => {
+const findOneById = catchServiceFunc(async (req: Request, res: Response) => {
+  const { userID } = req.params;
+  const user = await getUserById(userID);
+  return user;
+});
+
+const getUserById = async (_id: string | mongoose.Schema.Types.ObjectId) => {
   const user = await UserModel.findById({ _id });
 
   if (!user)
@@ -132,4 +138,5 @@ export const userService = {
   createReceiveAddress,
   updateAddress,
   deleteAddress,
+  findOneById,
 };
