@@ -21,5 +21,6 @@ declare namespace NodeJS {
     MOMO_ACCESS_KEY: string;
     MOMO_SECRET_KEY: string;
     MOMO_IPN_URL: string;
+    GHN_TOKEN: string;
   }
 }

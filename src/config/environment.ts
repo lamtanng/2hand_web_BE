@@ -34,4 +34,5 @@ export const env = {
   MOMO_ACCESS_KEY: getEnv('MOMO_ACCESS_KEY'),
   MOMO_SECRET_KEY: getEnv('MOMO_SECRET_KEY'),
   MOMO_IPN_URL: getEnv('MOMO_IPN_URL'),
+  GHN_TOKEN: getEnv('GHN_TOKEN'),
 };

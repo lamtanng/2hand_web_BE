@@ -1,16 +1,17 @@
 import Joi from 'joi';
 import { catchErrors } from '../utils/catchErrors';
 import { NextFunction, Request, Response } from 'express';
-import { AddressProps, UserProps } from '../types/model/user.type';
+import { UserProps } from '../types/model/user.type';
 import { ObjectIDRegex, PasswordRegex, VNCharRegex } from '../constants/validation';
+import { AddressProps } from '../types/model/address.type';
 
 interface UserSchema extends UserProps {}
 
 const addressSchema = Joi.object<AddressProps>({
   address: Joi.string(),
-  districtCode: Joi.number().min(0).required(),
-  cityCode: Joi.number().min(0).required(),
-  provincesCode: Joi.number().min(0).required(),
+  // districtCode: Joi.number().min(0).required(),
+  // cityCode: Joi.number().min(0).required(),
+  // provincesCode: Joi.number().min(0).required(),
   isDefault: Joi.boolean().default(false),
   _id: Joi.string().regex(ObjectIDRegex, 'valid id'),
 });
