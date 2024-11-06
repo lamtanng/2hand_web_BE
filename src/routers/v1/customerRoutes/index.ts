@@ -22,7 +22,7 @@ const router = express.Router();
 router.use(CATEGORY_ROUTE, categoryRoutes);
 router.use(PRODUCT_ROUTE, productRouter);
 router.use(CART_ROUTE, isAuthorized, cartRoutes);
-router.use(USER_ROUTE, isAuthorized, userRoutes);
+router.use(USER_ROUTE, userRoutes);
 router.use(ORDER_ROUTE, isAuthorized, orderRoutes);
 router.use(STORE_ROUTE, storeRoutes);
 

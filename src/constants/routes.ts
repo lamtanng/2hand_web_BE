@@ -15,7 +15,11 @@ export const SELLER_ROUTE = '/se';
 export const PRODUCT_ROUTE = '/products';
 export const CATEGORY_ROUTE = '/categories';
 export const ROLE_ROUTE = '/roles';
+
+//user routes
 export const USER_ROUTE = '/users';
+export const USER_BY_ID_ROUTE = '/:userID';
+
 export const USER_ADDRESS_ROUTE = '/address';
 
 //store routes
