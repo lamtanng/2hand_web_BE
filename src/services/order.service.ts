@@ -13,6 +13,8 @@ import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
 import { getMoMoCreationRequestBody } from '../utils/momo';
 import { deleteEmptyObjectFields } from '../utils/object';
+import { calcShippingFeeAPI } from '../apis/ghn';
+import { CalcShippingFeeResponseProps } from '../types/http/order.type';
 const crypto = require('crypto');
 
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {
@@ -164,10 +166,15 @@ const checkPaymentTransaction = async (req: Request, res: Response) => {
   return result.data;
 };
 
+const calcShippingFee = catchServiceFunc(async (req: Request, res: Response) => {
+  const fee = await calcShippingFeeAPI(req.body);
+  return fee.data;
+});
 export const orderService = {
   findAll,
   addOrder,
   payByMomo,
   checkPaymentTransaction,
   updateOrderStatus,
+  calcShippingFee,
 };
