@@ -1,4 +1,5 @@
 import axios from 'axios';
+import ApiError from '../utils/classes/ApiError';
 
 const timeout = 30000;
 const headers = {
@@ -9,10 +10,18 @@ const headers = {
 export const axiosClient = axios.create({ timeout, headers });
 axiosClient.interceptors.request.use(
   (config) => config,
-  (error) => Promise.reject(error),
+  (error) =>
+    new ApiError({
+      statusCode: error.response.status,
+      message: error.response.statusText,
+    }).rejectError(),
 );
 
 axiosClient.interceptors.response.use(
   (response) => response.data,
-  (error) => Promise.reject(error),
+  (error) =>
+    new ApiError({
+      statusCode: error.response.status,
+      message: error.response.statusText,
+    }).rejectError(),
 );

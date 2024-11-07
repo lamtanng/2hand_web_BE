@@ -28,10 +28,16 @@ const checkPaymentTransaction = catchErrors(async (req: Request, res: Response) 
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const calcShippingFee = catchErrors(async (req: Request, res: Response) => {
+  const result = await orderService.calcShippingFee(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const orderController = {
   findAll,
   addOrder,
   payByMomo,
   checkPaymentTransaction,
   updateOrderStatus,
+  calcShippingFee,
 };
