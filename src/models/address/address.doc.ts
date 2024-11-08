@@ -75,7 +75,7 @@ const DISTRICT_ADDRESS_SCHEMA = new Schema<DistrictAddressProps>({
 
 const WARD_ADDRESS_SCHEMA = new Schema<WardAddressProps>({
   WardCode: {
-    type: Number,
+    type: String,
     required: true,
   },
   DistrictID: {
