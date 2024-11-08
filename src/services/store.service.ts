@@ -7,6 +7,9 @@ import { CreateGHNStoreRequestProps } from '../types/http/ghn.type';
 import { CreateStoreRequestProps } from '../types/http/store.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
+import { RoleModel } from '../models/role';
+import { Role } from '../types/enum/role.enum';
+import { ObjectId } from 'mongoose';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {
@@ -35,7 +38,13 @@ const addStore = catchServiceFunc(async (req: Request, res: Response) => {
     await UserModel.findByIdAndUpdate(store.userID, {
       phoneNumber: store.phoneNumber,
     });
-    const newStore = await StoreModel.create({ ...store, ghnStoreID: '123456' });
+    const newStore = await StoreModel.create({ ...store, ghnStoreID: ghnStore.shop_id });
+    //add seller role to user
+    const sellerRoleID = await RoleModel.findOne({ name: Role.Seller }).lean();
+    await UserModel.findByIdAndUpdate(store.userID, {
+      $push: { roleID: sellerRoleID?._id as ObjectId },
+    });
+
     await session.commitTransaction();
     return newStore;
   } catch (error: AppError) {
