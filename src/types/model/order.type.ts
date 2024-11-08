@@ -1,9 +1,10 @@
 import mongoose from 'mongoose';
+import { AddressProps } from './address.type';
 
 export interface OrderProps {
   _id: mongoose.Schema.Types.ObjectId;
   exprDate: Date;
-  receiverAddress: string[];
+  receiverAddress: AddressProps;
   note: string;
   total: number;
   shipmentCost: number;

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { Request, Response } from 'express';
-import { StatusCodes } from 'http-status-codes';
+import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import { calcShippingFeeAPI } from '../apis/ghn';
 import { createMoMoPayment } from '../apis/momo';
 import { MOMO } from '../constants/momo';
 import { pagination } from '../constants/pagination';
@@ -9,12 +10,11 @@ import { OrderDetailModel } from '../models/orderDetail';
 import { OrderStatusModel } from '../models/orderStatus';
 import { AppError } from '../types/error.type';
 import { IPNMoMoPaymentRequestProps, MoMoPaymentItemsProps } from '../types/http/momoPayment.type';
+import { CreateCODPaymentRequestProps } from '../types/http/order.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
 import { getMoMoCreationRequestBody } from '../utils/momo';
 import { deleteEmptyObjectFields } from '../utils/object';
-import { calcShippingFeeAPI } from '../apis/ghn';
-import { CalcShippingFeeResponseProps } from '../types/http/order.type';
 const crypto = require('crypto');
 
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {
@@ -51,9 +51,31 @@ const updateOrderStatus = catchServiceFunc(async (req: Request, res: Response) =
   return order;
 });
 
-const addOrder = catchServiceFunc(async (req: Request, res: Response) => {
+const addOrderWithMoMo = catchServiceFunc(async (req: Request, res: Response) => {
   const { extraData } = req.body as IPNMoMoPaymentRequestProps;
-  const { userID, paymentMethodID, orders } = JSON.parse(extraData);
+  const data = JSON.parse(extraData) as CreateCODPaymentRequestProps;
+  return createOrder(data);
+});
+
+const addOrderWithCOD = catchServiceFunc(async (req: Request, res: Response) => {
+  const data = req.body as CreateCODPaymentRequestProps;
+  return createOrder(data);
+});
+
+const payByMomo = catchServiceFunc(async (req: Request, res: Response) => {
+  const { orders, total: amount } = req.body as CreateCODPaymentRequestProps;
+  const extraData = JSON.stringify(req.body);
+  const items = orders.reduce((accumulator: MoMoPaymentItemsProps[], shopOrder: any) => {
+    return accumulator.concat(shopOrder.items);
+  }, []);
+  const requestBody = getMoMoCreationRequestBody({ items, amount, extraData });
+
+  const data = await createMoMoPayment(requestBody);
+  return data;
+});
+
+const createOrder = async (data: CreateCODPaymentRequestProps) => {
+  const { userID, paymentMethodID, orders, receiverAddress } = data as CreateCODPaymentRequestProps;
   const orderStatus = await OrderStatusModel.findOne({ stage: 1 });
 
   const session = await OrderModel.startSession();
@@ -61,8 +83,9 @@ const addOrder = catchServiceFunc(async (req: Request, res: Response) => {
 
   try {
     for (const order of orders) {
-      const { total, storeId, note, items } = order;
-      const formattedItems = items.map((item: MoMoPaymentItemsProps) => {
+      //create order detail
+      const { total, storeID, note, items, shipmentCost } = order;
+      const orderDetailList = items.map((item: MoMoPaymentItemsProps) => {
         const { quantity, totalPrice, id } = item;
         return {
           quantity,
@@ -70,7 +93,7 @@ const addOrder = catchServiceFunc(async (req: Request, res: Response) => {
           productID: id,
         };
       });
-      const orderDetailIDs = (await OrderDetailModel.insertMany(formattedItems, { session })).map(
+      const orderDetailIDs = (await OrderDetailModel.insertMany(orderDetailList, { session })).map(
         (item) => item._id,
       );
 
@@ -81,15 +104,17 @@ const addOrder = catchServiceFunc(async (req: Request, res: Response) => {
         });
       }
 
+      //create order
       const orderModel = new OrderModel({
         total,
         userID,
         orderStatusID: orderStatus?._id,
         paymentMethodID,
-        storeID: storeId,
-        shipmentCost: 15000,
+        storeID,
+        shipmentCost,
         note,
         orderDetailIDs,
+        receiverAddress,
       });
 
       const newOrder = await orderModel.save({ session });
@@ -102,7 +127,7 @@ const addOrder = catchServiceFunc(async (req: Request, res: Response) => {
     }
 
     await session.commitTransaction();
-    return true;
+    return { message: ReasonPhrases.OK };
   } catch (error: AppError) {
     await session.abortTransaction();
     throw new ApiError({
@@ -112,19 +137,7 @@ const addOrder = catchServiceFunc(async (req: Request, res: Response) => {
   } finally {
     session.endSession();
   }
-});
-
-const payByMomo = catchServiceFunc(async (req: Request, res: Response) => {
-  const { orders, total: amount } = req.body;
-  const extraData = JSON.stringify(req.body);
-  const items = orders.reduce((accumulator: MoMoPaymentItemsProps[], shopOrder: any) => {
-    return accumulator.concat(shopOrder.items);
-  }, []);
-  const requestBody = getMoMoCreationRequestBody({ items, amount, extraData });
-
-  const data = await createMoMoPayment(requestBody);
-  return data;
-});
+};
 
 const checkPaymentTransaction = async (req: Request, res: Response) => {
   const { orderId, requestId } = req.body;
@@ -170,11 +183,13 @@ const calcShippingFee = catchServiceFunc(async (req: Request, res: Response) => 
   const fee = await calcShippingFeeAPI(req.body);
   return fee.data;
 });
+
 export const orderService = {
   findAll,
-  addOrder,
+  addOrderWithMoMo,
   payByMomo,
   checkPaymentTransaction,
   updateOrderStatus,
   calcShippingFee,
+  addOrderWithCOD,
 };

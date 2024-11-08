@@ -2,14 +2,18 @@ import { StatusCodes } from 'http-status-codes';
 import { catchErrors } from '../utils/catchErrors';
 import { Request, Response } from 'express';
 import { orderService } from '../services/order.service';
+import { CreateCODPaymentRequestProps } from '../types/http/order.type';
+import { PaymentMethodModel } from '../models/paymentMethod';
+import ApiError from '../utils/classes/ApiError';
+import { PaymentMethod } from '../types/enum/paymentMethod.enum';
 
 const findAll = catchErrors(async (req: Request, res: Response) => {
   const result = await orderService.findAll(req, res);
   res.status(StatusCodes.OK).json(result).send();
 });
 
-const addOrder = catchErrors(async (req: Request, res: Response) => {
-  const result = await orderService.addOrder(req, res);
+const addOrderWithMoMo = catchErrors(async (req: Request, res: Response) => {
+  const result = await orderService.addOrderWithMoMo(req, res);
   res.status(StatusCodes.OK).json(result).send('<p>some html</p>');
 });
 
@@ -21,6 +25,25 @@ const updateOrderStatus = catchErrors(async (req: Request, res: Response) => {
 const payByMomo = catchErrors(async (req: Request, res: Response) => {
   const result = await orderService.payByMomo(req, res);
   res.status(StatusCodes.OK).json(result).send();
+});
+
+const placeOrder = catchErrors(async (req: Request, res: Response) => {
+  const { paymentMethodID } = req.body as CreateCODPaymentRequestProps;
+  const paymentMethod = await PaymentMethodModel.findOne({ _id: paymentMethodID });
+  if (!paymentMethod) {
+    throw new ApiError({
+      message: 'Payment method not found',
+      statusCode: StatusCodes.NOT_FOUND,
+    });
+  }
+  if (paymentMethod.name === PaymentMethod.MOMO) {
+    const result = await orderService.payByMomo(req, res);
+    res.status(StatusCodes.OK).json(result).send();
+  }
+  if (paymentMethod.name === PaymentMethod.COD) {
+    const result = await orderService.addOrderWithCOD(req, res);
+    res.status(StatusCodes.OK).json(result).send();
+  }
 });
 
 const checkPaymentTransaction = catchErrors(async (req: Request, res: Response) => {
@@ -35,9 +58,9 @@ const calcShippingFee = catchErrors(async (req: Request, res: Response) => {
 
 export const orderController = {
   findAll,
-  addOrder,
-  payByMomo,
+  addOrderWithMoMo,
   checkPaymentTransaction,
   updateOrderStatus,
   calcShippingFee,
+  placeOrder
 };
