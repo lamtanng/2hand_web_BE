@@ -28,7 +28,7 @@ export interface DistrictAddressProps extends GHNAddressProps {
 }
 
 export interface WardAddressProps extends GHNAddressProps {
-  WardCode: number;
+  WardCode: string;
   DistrictID: number;
   WardName: string;
   SupportType?: GHNSupportType;

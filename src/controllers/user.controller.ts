@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import { catchErrors } from '../utils/catchErrors';
 import { Request, Response } from 'express';
 import { userService } from '../services/user.service';
+import { addressService } from '../services/address.service';
 
 const findAll = catchErrors(async (req: Request, res: Response) => {
   const result = await userService.findAll(req, res);
@@ -37,6 +38,18 @@ const findOneById = catchErrors(async (req: Request, res: Response) => {
   const result = await userService.findOneById(req, res);
   res.status(StatusCodes.OK).json(result).send();
 });
+const getProvinces = catchErrors(async (req: Request, res: Response) => {
+  const result = await addressService.getProvinces(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+const getDistricts = catchErrors(async (req: Request, res: Response) => {
+  const result = await addressService.getDistricts(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+const getWards = catchErrors(async (req: Request, res: Response) => {
+  const result = await addressService.getWards(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
 
 export const userController = {
   findAll,
@@ -45,5 +58,8 @@ export const userController = {
   createReceiveAddress,
   updateAddress,
   deleteAddress,
-  findOneById
+  findOneById,
+  getProvinces,
+  getDistricts,
+  getWards,
 };
