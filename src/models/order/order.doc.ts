@@ -5,6 +5,7 @@ import { STORE_COLLECTION_NAME } from '../store/store.doc';
 import { ORDERSTATUS_COLLECTION_NAME } from '../orderStatus/orderStatus.doc';
 import { PAYMENTMETHOD_COLLECTION_NAME } from '../paymentMethod/paymentMethod.doc';
 import { ORDERDETAIL_COLLECTION_NAME } from '../orderDetail/orderDetail.doc';
+import { ADDRESS_COLLECTION_SCHEMA } from '../address/address.doc';
 
 export interface OrderDocument extends OrderProps, Document {}
 
@@ -26,11 +27,7 @@ export const ORDER_COLLECTION_SCHEMA = new Schema<OrderDocument>(
         return date;
       },
     },
-    receiverAddress: [
-      {
-        type: String,
-      },
-    ],
+    receiverAddress: ADDRESS_COLLECTION_SCHEMA,
     note: {
       type: String,
       default: null,
