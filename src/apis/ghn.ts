@@ -46,7 +46,8 @@ export function getProvinceAPI() {
 }
 
 export function getDistrictAPI({ province_id }: GetDistrictRequestProps) {
-  const data = { province_id };
+  const data = { province_id: Number(province_id) };
+  console.log(data)
   return axiosGHN.get<DistrictAddressProps>(getDistrictUrl, {
     data,
     headers: {
@@ -56,7 +57,7 @@ export function getDistrictAPI({ province_id }: GetDistrictRequestProps) {
 }
 
 export function getWardAPI({ district_id }: GetWardRequestProps) {
-  const data = { district_id };
+  const data = { district_id: Number(district_id) };
   return axiosGHN.get<WardAddressProps>(getWardUrl, {
     data,
     headers: {
