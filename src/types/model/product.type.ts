@@ -15,4 +15,5 @@ export interface ProductProps{
     updateAt?: Date,
     cateID: mongoose.Schema.Types.ObjectId,
     storeID: mongoose.Schema.Types.ObjectId,
+    weight: number,
 }

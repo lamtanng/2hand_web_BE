@@ -78,6 +78,12 @@ export const PRODUCT_COLLECTION_SCHEMA = new Schema<ProductDocument>(
       ref: STORE_COLLECTION_NAME,
       required: true,
     },
+    weight: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
   },
   { timestamps: true },
 );
