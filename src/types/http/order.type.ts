@@ -1,7 +1,6 @@
-import mongoose from 'mongoose';
 import { OrderProps } from '../model/order.type';
-import { PaginationRequestProps } from './pagination.type';
 import { MoMoPaymentItemsProps } from './momoPayment.type';
+import { PaginationRequestProps } from './pagination.type';
 
 export interface FindAllOrdersResponseProps
   extends Pick<OrderProps, '_id' | 'userID' | 'orderStatusID' | 'paymentMethodID' | 'storeID'>,
@@ -23,7 +22,8 @@ export interface CalcShippingFeeResponseProps {
   code_message: string;
 }
 
-export interface CreatedOrderProps extends Pick<OrderProps, 'storeID' | 'total' | 'note' | 'shipmentCost'> {
+export interface CreatedOrderProps
+  extends Pick<OrderProps, 'storeID' | 'total' | 'note' | 'shipmentCost'> {
   items: MoMoPaymentItemsProps[];
 }
 export interface CreateCODPaymentRequestProps
