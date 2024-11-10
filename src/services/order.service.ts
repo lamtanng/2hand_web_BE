@@ -10,7 +10,10 @@ import { OrderDetailModel } from '../models/orderDetail';
 import { OrderStatusModel } from '../models/orderStatus';
 import { AppError } from '../types/error.type';
 import { IPNMoMoPaymentRequestProps, MoMoPaymentItemsProps } from '../types/http/momoPayment.type';
-import { CreateCODPaymentRequestProps } from '../types/http/order.type';
+import {
+  CalcShippingFeeResponseProps,
+  CreateCODPaymentRequestProps,
+} from '../types/http/order.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
 import { getMoMoCreationRequestBody } from '../utils/momo';
@@ -138,7 +141,7 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
     session.endSession();
   }
 };
-
+  
 const checkPaymentTransaction = async (req: Request, res: Response) => {
   const { orderId, requestId } = req.body;
   const { accessKey, secretKey, partnerCode, lang } = MOMO;
