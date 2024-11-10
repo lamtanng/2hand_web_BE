@@ -19,6 +19,7 @@ const productSchema = Joi.object<ProductSchema>({
   isSoldOut: Joi.boolean().default(false),
   cateID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
   storeID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
+  weight: Joi.number().min(0).required(),
 });
 
 export const productValidation = catchErrors(
