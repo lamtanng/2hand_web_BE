@@ -9,13 +9,14 @@ const getProvinces = catchServiceFunc(async (req: Request, res: Response) => {
 });
 
 const getDistricts = catchServiceFunc(async (req: Request, res: Response) => {
-  const { province_id } = req.body as GetDistrictRequestProps;
+  const { province_id  } = req.query as GetDistrictRequestProps;
+
   const districts = await getDistrictAPI({ province_id });
   return districts;
 });
 
 const getWards = catchServiceFunc(async (req: Request, res: Response) => {
-  const { district_id } = req.body as GetWardRequestProps;
+  const { district_id } = req.query as GetWardRequestProps;
   const wards = await getWardAPI({ district_id });
   return wards;
 });
