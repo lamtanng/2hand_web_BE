@@ -7,12 +7,17 @@ interface CalcShippingFeeSchema extends CalcShippingFeeRequestProps {}
 
 const calcShippingFeeSchema = Joi.object<CalcShippingFeeSchema>({
   shopid: Joi.number().required(),
-  weight: Joi.number().required(),
+  weight: Joi.number().required().max(1600000).min(0).default(0),
   service_type_id: Joi.number().required(),
   from_district_id: Joi.number().required(),
   from_ward_code: Joi.string().required(),
   to_district_id: Joi.number().required(),
   to_ward_code: Joi.number().allow(null, ''),
+  insurance_value: Joi.number().allow(null, ''),
+  height: Joi.number().allow(null, '').max(200).min(0).default(0),
+  length: Joi.number().allow(null, '').max(200).min(0).default(0),
+  width: Joi.number().allow(null, '').max(200).min(0).default(0),
+  cod_value: Joi.number().allow(null, '').max(10000000).min(0).default(0),
 });
 
 const calcShippingFee = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
