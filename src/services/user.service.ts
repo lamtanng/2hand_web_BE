@@ -70,14 +70,13 @@ const updateUserInfo = catchServiceFunc(async (req: Request, res: Response) => {
 });
 
 const createReceiveAddress = catchServiceFunc(async (req: Request, res: Response) => {
-  const newAddress = req.body as AddressProps;
-  const { _id } = (await verifyAccessToken(req.cookies.accessToken)) as UserProps;
+  const { _id, address } = req.body as AddressRequestProps;
   const user = await getUserById(_id);
 
-  if (newAddress.isDefault) {
+  if (address.isDefault) {
     user.address = user.address.map((address) => ({ ...address, isDefault: false }));
   }
-  user?.address.push({ ...newAddress, _id: new mongoose.Types.ObjectId() });
+  user?.address.push({ ...address, _id: new mongoose.Types.ObjectId() });
   return await user?.save();
 });
 
