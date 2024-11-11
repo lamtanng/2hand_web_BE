@@ -6,6 +6,7 @@ import { pagination } from '../constants/pagination';
 import { RoleModel } from '../models/role';
 import { UserModel } from '../models/user';
 import { AppError } from '../types/error.type';
+import { AddressRequestProps } from '../types/http/address.type';
 import { GetUsersResponseProps, UpdateUserInfoRequestProps } from '../types/http/user.type';
 import { AddressProps } from '../types/model/address.type';
 import { UserProps } from '../types/model/user.type';
@@ -76,18 +77,12 @@ const createReceiveAddress = catchServiceFunc(async (req: Request, res: Response
   if (newAddress.isDefault) {
     user.address = user.address.map((address) => ({ ...address, isDefault: false }));
   }
-
-  const address = await UserModel.findByIdAndUpdate(
-    { _id },
-    { $push: { address: { ...newAddress, _id: new mongoose.Types.ObjectId() } } },
-    { new: true },
-  );
-  return address;
+  user?.address.push({ ...newAddress, _id: new mongoose.Types.ObjectId() });
+  return await user?.save();
 });
 
 const updateAddress = catchServiceFunc(async (req: Request, res: Response) => {
-  const address = req.body;
-  const { _id } = (await verifyAccessToken(req.cookies.accessToken)) as UserProps;
+  const { _id, address } = req.body as AddressRequestProps;
   const user = await getUserById(_id);
 
   if (address.isDefault) {
@@ -101,13 +96,14 @@ const updateAddress = catchServiceFunc(async (req: Request, res: Response) => {
 });
 
 const deleteAddress = catchServiceFunc(async (req: Request, res: Response) => {
-  const { addressID } = req.params;
-  const { _id } = (await verifyAccessToken(req.cookies.accessToken)) as UserProps;
+  const { addressID, _id } = req.body;
 
   const result = await UserModel.updateOne(
-    { _id, address: { _id: addressID } },
-    { $pull: { address: { _id: addressID, isDefault: false } } },
+    { _id, address: [{ _id: addressID, isDefault: false }] },
+    { $pullAll: { address: [{ _id: addressID, isDefault: false }] } },
   );
+
+  console.log(result);
 
   if (result.modifiedCount === 0) {
     return new ApiError({
@@ -125,7 +121,9 @@ const findOneById = catchServiceFunc(async (req: Request, res: Response) => {
   return user;
 });
 
-const getUserById = async (_id: string | mongoose.Schema.Types.ObjectId) => {
+const getUserById = async (
+  _id: string | mongoose.Schema.Types.ObjectId | mongoose.Types.ObjectId,
+) => {
   const user = await UserModel.findById({ _id });
 
   if (!user)
