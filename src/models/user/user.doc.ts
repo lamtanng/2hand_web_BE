@@ -1,6 +1,7 @@
 import mongoose, { Model, Schema } from 'mongoose';
 import { UserProps } from '../../types/model/user.type';
 import { ROLE_COLLECTION_NAME } from '../role/role.doc';
+import { ADDRESS_COLLECTION_NAME } from '../address/address.doc';
 
 export interface IUserMethods {
   comparePassword: (password: string) => Promise<boolean>;
@@ -56,18 +57,7 @@ export const USER_COLLECTION_SCHEMA = new Schema<
       type: Date,
       default: new Date(),
     },
-    address: [
-      {
-        address: String,
-        districtCode: Number,
-        cityCode: Number,
-        provincesCode: Number,
-        isDefault: {
-          type: Boolean,
-          default: false,
-        },
-      },
-    ],
+    address: [ADDRESS_COLLECTION_NAME],
     isActive: {
       type: Boolean,
       default: true,

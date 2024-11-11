@@ -7,7 +7,7 @@ export enum GHNSupportType {
   'Pick/Return/Delivery' = 3,
 }
 
-interface GHNAddressProps {
+export interface GHNAddressProps {
   NameExtension?: string[];
   CanUpdateCOD?: boolean;
   Status?: number;
