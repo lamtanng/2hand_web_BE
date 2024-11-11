@@ -20,13 +20,10 @@ const getDistrictUrl = `${baseURL}/master-data/district`;
 const getWardUrl = `${baseURL}/master-data/ward`;
 const axiosGHN = axiosClient;
 axiosGHN.defaults.baseURL = baseURL;
+axiosGHN.defaults.headers.common['Token'] = env.GHN_TOKEN;
 
 export function createGHNStoreAPI(data: CreateGHNStoreRequestProps) {
-  return axiosGHN.post<CreateGHNStoreResponseProps>(createStoreUrl, data, {
-    headers: {
-      Token: env.GHN_TOKEN,
-    },
-  });
+  return axiosGHN.post<CreateGHNStoreResponseProps>(createStoreUrl, data);
 }
 
 export function calcShippingFeeAPI(data: CalcShippingFeeRequestProps) {
@@ -38,21 +35,14 @@ export function calcShippingFeeAPI(data: CalcShippingFeeRequestProps) {
 }
 
 export function getProvinceAPI() {
-  return axiosGHN.get<ProvincesAddressProps>(getProvinceUrl, {
-    headers: {
-      Token: env.GHN_TOKEN,
-    },
-  });
+  return axiosGHN.get<ProvincesAddressProps>(getProvinceUrl);
 }
 
 export function getDistrictAPI({ province_id }: GetDistrictRequestProps) {
   const data = { province_id: Number(province_id) };
-  console.log(data)
+  console.log(data);
   return axiosGHN.get<DistrictAddressProps>(getDistrictUrl, {
     data,
-    headers: {
-      Token: env.GHN_TOKEN,
-    },
   });
 }
 
@@ -60,8 +50,5 @@ export function getWardAPI({ district_id }: GetWardRequestProps) {
   const data = { district_id: Number(district_id) };
   return axiosGHN.get<WardAddressProps>(getWardUrl, {
     data,
-    headers: {
-      Token: env.GHN_TOKEN,
-    },
   });
 }
