@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import Joi from 'joi';
-import { ObjectIDRegex } from '../constants/validation';
 import {
   AddressProps,
   DistrictAddressProps,
@@ -11,6 +10,7 @@ import {
 } from '../types/model/address.type';
 import { catchErrors } from '../utils/catchErrors';
 import { CommonValidation } from './common.validation';
+import { AddressRequestProps } from '../types/http/address.type';
 
 interface GHNAddressSchema extends GHNAddressProps {}
 interface ProvincesAddressSchema extends ProvincesAddressProps {}
@@ -61,7 +61,9 @@ const addressSchema = Joi.object<AddressSchema>({
 });
 
 export const userAddress = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
-  await addressSchema.validateAsync(req.body, { abortEarly: true });
+  const { _id, address } = req.body as AddressRequestProps;
+  await addressSchema.validateAsync(address, { abortEarly: true });
+  await idSchema.validateAsync(_id, { abortEarly: true });
   next();
 });
 
