@@ -24,9 +24,10 @@ const addStore = catchServiceFunc(async (req: Request, res: Response) => {
   const store = req.body as CreateStoreRequestProps;
   //create ghn store
   const ghnStore = await storeService.createGHNStore(req, res);
-  if (!ghnStore) {
+
+  if (ghnStore.code !== 200) {
     throw new ApiError({
-      message: ghnStore.code_message_value,
+      message: ghnStore.message,
       statusCode: ghnStore.code,
     });
   }
@@ -38,7 +39,8 @@ const addStore = catchServiceFunc(async (req: Request, res: Response) => {
     await UserModel.findByIdAndUpdate(store.userID, {
       phoneNumber: store.phoneNumber,
     });
-    const newStore = await StoreModel.create({ ...store, ghnStoreID: ghnStore.shop_id });
+
+    const newStore = await StoreModel.create({ ...store, ghnStoreID: ghnStore.data.shop_id });
     //add seller role to user
     const sellerRoleID = await RoleModel.findOne({ name: Role.Seller }).lean();
     await UserModel.findByIdAndUpdate(store.userID, {
