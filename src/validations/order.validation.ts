@@ -5,8 +5,10 @@ import { FindAllOrdersResponseProps } from '../types/http/order.type';
 import { OrderProps } from '../types/model/order.type';
 import { catchErrors } from '../utils/catchErrors';
 import { paginationSchema } from './pagination.validation';
+import { CommonValidation } from './common.validation';
 
 interface OrderSchema extends OrderProps {}
+const { idSchema } = CommonValidation;
 
 const orderSchema = Joi.object<OrderSchema>({
   exprDate: Joi.date().iso(),
@@ -14,27 +16,27 @@ const orderSchema = Joi.object<OrderSchema>({
   note: Joi.string().trim(),
   total: Joi.number().min(0).required(),
   shipmentCost: Joi.number().min(0).required(),
-  userID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
-  storeID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
-  orderStatusID: Joi.string().regex(ObjectIDRegex, 'valid id'),
-  paymentMethodID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
-  orderDetailIDs: Joi.array().items(Joi.string().regex(ObjectIDRegex, 'valid id')),
+  userID: idSchema.required(),
+  storeID: idSchema.required(),
+  orderStatusID: idSchema,
+  paymentMethodID: idSchema.required(),
+  orderDetailIDs: Joi.array().items(idSchema),
 });
 
 const findAllSchema = Joi.object<FindAllOrdersResponseProps>({
-  userID: Joi.string().regex(ObjectIDRegex, 'valid id').empty(''),
-  storeID: Joi.string().regex(ObjectIDRegex, 'valid id').empty(''),
-  orderStatusID: Joi.string().regex(ObjectIDRegex, 'valid id').empty(''),
-  paymentMethodID: Joi.string().regex(ObjectIDRegex, 'valid id').empty(''),
-  _id: Joi.string().regex(ObjectIDRegex, 'valid id').empty(''),
+  userID: idSchema.empty(''),
+  storeID: idSchema.empty(''),
+  orderStatusID: idSchema.empty(''),
+  paymentMethodID: idSchema.empty(''),
+  _id: idSchema.empty(''),
 }).concat(paginationSchema);
 
 const customerFindAllSchema = Joi.object<FindAllOrdersResponseProps>({
-  userID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
+  userID: idSchema.required(),
 }).concat(findAllSchema);
 
 const sellerFindAllSchema = Joi.object<FindAllOrdersResponseProps>({
-  storeID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
+  storeID: idSchema.required(),
 }).concat(findAllSchema);
 
 const createOrder = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
