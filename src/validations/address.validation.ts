@@ -20,7 +20,7 @@ interface AddressSchema extends AddressProps {}
 
 const { idSchema } = CommonValidation;
 
-const GHNAddressSchema = Joi.object<GHNAddressSchema>({
+const GHNAddressSchema = Joi.object<GHNAddressSchema>().keys({
   NameExtension: Joi.array().items(Joi.string()).allow(null, ''),
   CanUpdateCOD: Joi.boolean().allow(null, ''),
   Status: Joi.number().allow(null, ''),
@@ -51,13 +51,13 @@ const wardSchema = GHNAddressSchema.append<WardAddressSchema>({
     .valid(...Object.values(GHNSupportType)),
 });
 
-const addressSchema = Joi.object<AddressSchema>({
+const addressSchema = Joi.object<AddressSchema>().keys({
   address: Joi.string(),
-  isDefault: Joi.boolean().default(false),
+  isDefault: Joi.boolean(),
   _id: idSchema,
   province: provinceSchema,
   district: districtSchema,
-  ward: wardSchema,
+  ward: wardSchema.required(),
 });
 
 export const userAddress = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
