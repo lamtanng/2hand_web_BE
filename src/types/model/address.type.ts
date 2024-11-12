@@ -36,7 +36,7 @@ export interface WardAddressProps extends GHNAddressProps {
 
 export interface AddressProps {
   _id: mongoose.Types.ObjectId;
-  address: string;
+  address?: string;
   ward: WardAddressProps;
   district: DistrictAddressProps;
   province: ProvincesAddressProps;

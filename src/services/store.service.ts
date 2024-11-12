@@ -67,7 +67,7 @@ const createGHNStore = catchServiceFunc(async (req: Request, res: Response) => {
     ward_code: address[0].ward.WardCode,
     name,
     phone: phoneNumber,
-    address: address[0].address,
+    address: address[0].address || '',
   };
   const ghnStore = await createGHNStoreAPI(data);
   return ghnStore;
