@@ -23,7 +23,11 @@ export const OTP_VERIFICATION_COLLECTION_SCHEMA = new Schema<OTPVerificationProp
   },
   email: {
     type: String,
-    required: true,
+    // required: true,
+  },
+  phoneNumber: {
+    type: String,
+    // required: true,
   },
   expiredAt: {
     type: Date,

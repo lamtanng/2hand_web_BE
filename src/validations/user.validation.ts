@@ -4,10 +4,20 @@ import { ObjectIDRegex, PasswordRegex } from '../constants/validation';
 import { UserProps } from '../types/model/user.type';
 import { catchErrors } from '../utils/catchErrors';
 import { addressValidation } from './address.validation';
+import { SendSmsOtpRequestProps, VerifySmsOtpRequestProps } from '../types/http/otp.type';
+import parsePhoneNumber, {
+  isValidPhoneNumber,
+  ParseError,
+  parsePhoneNumberWithError,
+} from 'libphonenumber-js';
+import { CommonValidation } from './common.validation';
 
 interface UserSchema extends UserProps {}
+interface SendSmsOtpSchema extends SendSmsOtpRequestProps {}
+interface VerifySmsOtpSchema extends VerifySmsOtpRequestProps {}
 
 const { addressSchema } = addressValidation;
+const { idSchema } = CommonValidation;
 
 const userSchema = Joi.object<UserSchema>({
   firstName: Joi.string().default(null).trim(),
@@ -25,9 +35,45 @@ const userSchema = Joi.object<UserSchema>({
   blockedID: [Joi.string().regex(ObjectIDRegex, 'valid id')],
 });
 
-export const userValidation = catchErrors(
+const sendSmsOtpSchema = Joi.object<SendSmsOtpSchema>().keys({
+  phoneNumber: Joi.string()
+    .required()
+    .custom((value: string, helpers) => {
+      if (!value.startsWith('+84')) {
+        return helpers.message({ custom: 'Phone number must start with +84' });
+      }
+
+      if (!isValidPhoneNumber(value, 'VI')) {
+        return helpers.error('any.invalid');
+      }
+      return true;
+    }),
+});
+
+const verifySmsOtpSchema = sendSmsOtpSchema.append<VerifySmsOtpSchema>({
+  _id: idSchema.required(),
+  otp: Joi.string().length(6).required(),
+});
+
+const userModelValidation = catchErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     await userSchema.validateAsync(req.body, { abortEarly: false });
     next();
   },
 );
+
+const sendSmsOtpValidation = catchErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    await sendSmsOtpSchema.validateAsync(req.body, { abortEarly: false });
+    next();
+  },
+);
+
+const verifySmsOtpValidation = catchErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    await verifySmsOtpSchema.validateAsync(req.body, { abortEarly: false });
+    next();
+  },
+);
+
+export const userValidation = { sendSmsOtpValidation, userModelValidation, verifySmsOtpValidation };

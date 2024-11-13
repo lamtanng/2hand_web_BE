@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import mongoose from 'mongoose';
+import mongoose, { ObjectId } from 'mongoose';
 import { HttpMessage } from '../constants/httpMessage';
 import { pagination } from '../constants/pagination';
 import { RoleModel } from '../models/role';
@@ -13,6 +13,13 @@ import { UserProps } from '../types/model/user.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
 import { verifyAccessToken } from '../utils/jwt';
+import { sendOTPSms } from '../apis/sms';
+import { SendSmsOtpRequestProps, VerifySmsOtpRequestProps } from '../types/http/otp.type';
+import { generateOTP } from '../utils/otp';
+import { compareHash, hashValue } from '../utils/bcrypt';
+import { OTPVerificationModel } from '../models/otpVerification';
+import { parsePhoneNumber } from 'libphonenumber-js';
+import { formatPhoneNumber } from '../utils/phone';
 
 const findAll = async (req: Request, res: Response) => {
   try {
@@ -97,19 +104,25 @@ const updateAddress = catchServiceFunc(async (req: Request, res: Response) => {
 const deleteAddress = catchServiceFunc(async (req: Request, res: Response) => {
   const { addressID, _id } = req.body;
 
-  const result = await UserModel.updateOne(
-    { _id, address: [{ _id: addressID, isDefault: false }] },
-    { $pullAll: { address: [{ _id: addressID, isDefault: false }] } },
+  const result = await UserModel.findOneAndUpdate(
+    { _id },
+    { $pull: { address: { $elemMatch: { isDefault: true } } } },
+    { new: true },
   );
 
+  // const result = await UserModel.find({
+  //   _id,
+  //   "address.isDefault":  {$ne: true} ,
+  //   // 'address.address': {$eq: 'duong so 10002'},
+  // });
   console.log(result);
 
-  if (result.modifiedCount === 0) {
-    return new ApiError({
-      message: 'Address is default or not found',
-      statusCode: StatusCodes.NOT_FOUND,
-    }).rejectError();
-  }
+  // if (result.modifiedCount === 0) {
+  //   return new ApiError({
+  //     message: 'Address is default or not found',
+  //     statusCode: StatusCodes.NOT_FOUND,
+  //   }).rejectError();
+  // }
 
   return result;
 });
@@ -134,6 +147,29 @@ const getUserById = async (
   return user;
 };
 
+const sendSmsOtp = catchServiceFunc(async (req: Request, res: Response) => {
+  const { phoneNumber } = req.body as SendSmsOtpRequestProps;
+  const otp = generateOTP();
+  const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
+
+  const result = await sendOTPSms({ phoneNumber: formattedPhoneNumber, otp });
+
+  const hashedOtp = await hashValue(String(otp));
+  await OTPVerificationModel.create({ otp: hashedOtp, phoneNumber: formattedPhoneNumber });
+
+  return result;
+});
+
+const createUserPhone = catchServiceFunc(async (req: Request, res: Response) => {
+  const { phoneNumber, _id } = req.body as VerifySmsOtpRequestProps;
+  const updatedUser = await UserModel.findOneAndUpdate(
+    { _id },
+    { phoneNumber: phoneNumber },
+    { new: true },
+  );
+  return updatedUser;
+});
+
 export const userService = {
   findAll,
   addUser,
@@ -142,4 +178,6 @@ export const userService = {
   updateAddress,
   deleteAddress,
   findOneById,
+  sendSmsOtp,
+  createUserPhone,
 };

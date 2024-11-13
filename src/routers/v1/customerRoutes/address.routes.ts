@@ -11,7 +11,7 @@ const { Read, Create, Update, Delete } = ActionPermission.User;
 const { userAddress } = addressValidation;
 router.route('/').post(checkCustomerPermission(Update), userAddress, createReceiveAddress);
 router.route('/').put(checkCustomerPermission(Update), userAddress, updateAddress);
-router.route('/:addressID').delete(checkCustomerPermission(Update), deleteAddress);
+router.route('/').delete(checkCustomerPermission(Update), deleteAddress);
 router.route('/provinces').get(getProvinces);
 router.route('/districts').get(getDistricts);
 router.route('/wards').get(getWards);

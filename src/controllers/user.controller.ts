@@ -50,6 +50,14 @@ const getWards = catchErrors(async (req: Request, res: Response) => {
   const result = await addressService.getWards(req, res);
   res.status(StatusCodes.OK).json(result).send();
 });
+const sendSmsOtp = catchErrors(async (req: Request, res: Response) => {
+  const result = await userService.sendSmsOtp(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+const createUserPhone = catchErrors(async (req: Request, res: Response) => {
+  const result = await userService.createUserPhone(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
 
 export const userController = {
   findAll,
@@ -62,4 +70,6 @@ export const userController = {
   getProvinces,
   getDistricts,
   getWards,
+  sendSmsOtp,
+  createUserPhone,
 };
