@@ -65,12 +65,11 @@ const addUser = async (reqBody: UserProps, res: Response) => {
 };
 
 const updateUserInfo = catchServiceFunc(async (req: Request, res: Response) => {
-  const { _id, email, firstName, lastName, phoneNumber, dateOfBirth } =
-    req.body as UpdateUserInfoRequestProps;
+  const { _id, firstName, lastName, dateOfBirth } = req.body as UpdateUserInfoRequestProps;
 
   const updatedUser = await UserModel.findOneAndUpdate(
     { _id },
-    { email, firstName, lastName, phoneNumber, dateOfBirth },
+    { firstName, lastName, dateOfBirth },
     { new: true },
   );
   return updatedUser;
