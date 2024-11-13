@@ -4,7 +4,12 @@ import { emailTransporter } from '../constants/emailTransporter';
 import { HttpMessage } from '../constants/httpMessage';
 import { OTPVerificationModel } from '../models/otpVerification';
 import { AppError } from '../types/error.type';
-import { SendOtpRequestProps, VerifyOtpRequestProps } from '../types/http/otp.type';
+import {
+  SendOtpRequestProps,
+  SendSmsOtpRequestProps,
+  VerifyOtpRequestProps,
+  VerifySmsOtpRequestProps,
+} from '../types/http/otp.type';
 import { UserProps } from '../types/model/user.type';
 import { compareHash, hashValue } from '../utils/bcrypt';
 import { catchErrors, handleError } from '../utils/catchErrors';
@@ -12,6 +17,13 @@ import ApiError from '../utils/classes/ApiError';
 import { verifyAccessToken } from '../utils/jwt';
 import { mailOptions } from '../utils/mailOptions';
 import { generateOTP } from '../utils/otp';
+import { formatPhoneNumber } from '../utils/phone';
+
+interface VerifyOtpProps {
+  otp: string;
+  queryObject: Object;
+  next: NextFunction;
+}
 
 const isVerified = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -57,11 +69,22 @@ const sendOtpVerificationEmail = catchErrors(
   },
 );
 
-const verifyOTP = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { otp, email } = req.body as VerifyOtpRequestProps;
+const verifyEmailOTP = async (req: Request, res: Response, next: NextFunction) => {
+  const { otp, email } = req.body as VerifyOtpRequestProps;
+  const queryObject = { email };
+  verifyOtp({ otp, queryObject, next });
+};
 
-    const otpModel = await OTPVerificationModel.findOne({ email }).exec();
+const verifySmsOTP = async (req: Request, res: Response, next: NextFunction) => {
+  const { otp, phoneNumber } = req.body as VerifySmsOtpRequestProps;
+  const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
+  const queryObject = { phoneNumber: formattedPhoneNumber };
+  verifyOtp({ otp, queryObject, next });
+};
+
+const verifyOtp = async ({ otp, queryObject, next }: VerifyOtpProps) => {
+  try {
+    const otpModel = await OTPVerificationModel.findOne(queryObject).exec();
     if (!otpModel) {
       throw new ApiError({
         message: HttpMessage.EXPIRED_MGS.OTP,
@@ -69,7 +92,7 @@ const verifyOTP = async (req: Request, res: Response, next: NextFunction) => {
       });
     }
 
-    const isOtpCode = await compareHash(otp, otpModel?.otp);
+    const isOtpCode = await compareHash(otp, otpModel.otp);
     if (!isOtpCode) {
       throw new ApiError({
         message: HttpMessage.INCORRECT.OTP,
@@ -78,12 +101,11 @@ const verifyOTP = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     //delete otp record when it is accepted
-    await OTPVerificationModel.deleteMany({ email });
-    res.status(StatusCodes.ACCEPTED);
+    await OTPVerificationModel.deleteMany(queryObject);
     next();
   } catch (error: AppError) {
     handleError({ message: error.message, statusCode: error.statusCode, next });
   }
 };
 
-export const otpMiddleware = { sendOtpVerificationEmail, verifyOTP, isVerified };
+export const otpMiddleware = { sendOtpVerificationEmail, verifyEmailOTP, isVerified, verifySmsOTP };

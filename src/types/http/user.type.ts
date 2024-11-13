@@ -7,4 +7,5 @@ export interface GetUsersResponseProps extends PaginationResponseProps {
 }
 
 export interface UpdateUserInfoRequestProps
-  extends Pick<UserProps,'_id'| 'firstName' | 'lastName' | 'email' | 'phoneNumber' | 'dateOfBirth'> {}
+  extends Pick<UserProps,'_id'| 'firstName' | 'lastName' | 'dateOfBirth'> {}
+
