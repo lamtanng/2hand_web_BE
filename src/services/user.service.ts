@@ -8,7 +8,7 @@ import { OTPVerificationModel } from '../models/otpVerification';
 import { RoleModel } from '../models/role';
 import { UserModel } from '../models/user';
 import { AppError } from '../types/error.type';
-import { AddressRequestProps } from '../types/http/address.type';
+import { AddressRequestProps, DeleteAddressRequestProps } from '../types/http/address.type';
 import { SendSmsOtpRequestProps, VerifySmsOtpRequestProps } from '../types/http/otp.type';
 import { GetUsersResponseProps, UpdateUserInfoRequestProps } from '../types/http/user.type';
 import { UserProps } from '../types/model/user.type';
@@ -99,7 +99,7 @@ const updateAddress = catchServiceFunc(async (req: Request, res: Response) => {
 });
 
 const deleteAddress = catchServiceFunc(async (req: Request, res: Response) => {
-  const { addressID, _id } = req.body;
+  const { addressID, _id } = req.body as DeleteAddressRequestProps;
 
   const user = await UserModel.findOne({ _id });
   if (!user) {
