@@ -16,4 +16,7 @@ export interface ProductProps{
     cateID: mongoose.Schema.Types.ObjectId,
     storeID: mongoose.Schema.Types.ObjectId,
     weight: number,
+    height?: number,
+    width?: number,
+    length?: number,
 }

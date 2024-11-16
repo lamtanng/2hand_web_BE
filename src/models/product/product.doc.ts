@@ -15,6 +15,7 @@ export const PRODUCT_COLLECTION_SCHEMA = new Schema<ProductDocument>(
       default: function () {
         return new mongoose.Types.ObjectId();
       },
+      immutable: true,
     },
     name: {
       type: String,

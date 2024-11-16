@@ -24,5 +24,6 @@ declare namespace NodeJS {
     GHN_TOKEN: string;
     CLOUDINARY_API_KEY: string;
     CLOUDINARY_API_SECRET: string;
+    CLOUDINARY_NAME: string;
   }
 }
