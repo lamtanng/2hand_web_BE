@@ -8,8 +8,7 @@ import { V1_ROUTE } from './constants/routes';
 import { errorHandler } from './middlewares/errorHandler.middleware';
 import { APIs_V1 } from './routers/v1';
 import cookieParser from 'cookie-parser';
-
-const exitHook = require('async-exit-hook');
+import exitHook from "async-exit-hook";
 dotenv.config();
 
 const startServer = () => {
@@ -23,7 +22,7 @@ const startServer = () => {
   app.use(cookieParser());
 
   //enable cors
-  app.use(cors(corsOptions));
+app.use(cors(corsOptions));
 
   // app routes
   app.use(V1_ROUTE, APIs_V1);
