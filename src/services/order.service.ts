@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Request, Response } from 'express';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import { calcShippingFeeAPI } from '../apis/ghn';
+import { calcShippingFeeAPI, getAvailableServiceAPI } from '../apis/ghn';
 import { createMoMoPayment } from '../apis/momo';
 import { MOMO } from '../constants/momo';
 import { pagination } from '../constants/pagination';
@@ -18,6 +18,8 @@ import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
 import { getMoMoCreationRequestBody } from '../utils/momo';
 import { deleteEmptyObjectFields } from '../utils/object';
+import { ProductModel } from '../models/product';
+import { GetAvailableServiceRequestProps } from '../types/http/ghn.type';
 const crypto = require('crypto');
 
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {
@@ -99,6 +101,27 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
       const orderDetailIDs = (await OrderDetailModel.insertMany(orderDetailList, { session })).map(
         (item) => item._id,
       );
+      const updatedProducts = await ProductModel.updateMany(
+        { _id: { $in: orderDetailList.map((item) => item.productID) } },
+        {
+          $inc: { quantity: { $multiply: -1, $in: orderDetailList.map((item) => item.quantity) } },
+        },
+      );
+      console.log(updatedProducts);
+      // orderDetailList.map(async (order) => {
+      //   console.log(order.quantity);
+
+      //   const updatedProduct = await ProductModel.findByIdAndUpdate(order.productID, {
+      //     quantity: { $inc: -1 as number },
+      //   });
+      //   if (!updatedProduct) {
+      //     throw new ApiError({
+      //       message: 'Order detail created failed',
+      //       statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      //     });
+      //   }
+      //   return updatedProduct;
+      // });
 
       if (!orderDetailIDs) {
         throw new ApiError({
@@ -141,7 +164,7 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
     session.endSession();
   }
 };
-  
+
 const checkPaymentTransaction = async (req: Request, res: Response) => {
   const { orderId, requestId } = req.body;
   const { accessKey, secretKey, partnerCode, lang } = MOMO;
@@ -187,6 +210,11 @@ const calcShippingFee = catchServiceFunc(async (req: Request, res: Response) => 
   return fee.data;
 });
 
+const getAvailableService = catchServiceFunc(async (req: Request, res: Response) => {
+  const service = await getAvailableServiceAPI(req.body as GetAvailableServiceRequestProps);
+  return service.data;
+});
+
 export const orderService = {
   findAll,
   addOrderWithMoMo,
@@ -195,4 +223,5 @@ export const orderService = {
   updateOrderStatus,
   calcShippingFee,
   addOrderWithCOD,
+  getAvailableService
 };

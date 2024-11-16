@@ -2,8 +2,10 @@ import Joi from 'joi';
 import { CalcShippingFeeRequestProps } from '../types/http/order.type';
 import { catchErrors } from '../utils/catchErrors';
 import { NextFunction, Request, Response } from 'express';
+import { GetAvailableServiceRequestProps } from '../types/http/ghn.type';
 
 interface CalcShippingFeeSchema extends CalcShippingFeeRequestProps {}
+interface GetAvailableServiceSchema extends GetAvailableServiceRequestProps {}
 
 const calcShippingFeeSchema = Joi.object<CalcShippingFeeSchema>({
   shopid: Joi.number().required(),
@@ -20,9 +22,20 @@ const calcShippingFeeSchema = Joi.object<CalcShippingFeeSchema>({
   cod_value: Joi.number().allow(null, '').max(10000000).min(0).default(0),
 });
 
+const getAvailableServiceSchema = Joi.object<GetAvailableServiceSchema>({
+  shop_id: Joi.number().required(),
+  from_district: Joi.number().required(),
+  to_district: Joi.number().required(),
+});
+
 const calcShippingFee = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
   await calcShippingFeeSchema.validateAsync(req.body, { abortEarly: false });
   next();
 });
 
-export const shippingValidation = { calcShippingFee };
+const getAvailableService = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
+  await getAvailableServiceSchema.validateAsync(req.body, { abortEarly: false });
+  next();
+});
+
+export const shippingValidation = { calcShippingFee, getAvailableService };

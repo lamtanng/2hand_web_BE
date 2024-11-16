@@ -9,7 +9,14 @@ const router = express.Router();
 
 const { isCheckout } = orderMiddleware;
 const { createOrder, customerFindAll } = orderValidation;
-const { addOrderWithMoMo, findAll, checkPaymentTransaction, calcShippingFee,placeOrder } = orderController;
+const {
+  addOrderWithMoMo,
+  findAll,
+  checkPaymentTransaction,
+  calcShippingFee,
+  placeOrder,
+  getAvailableService,
+} = orderController;
 const { Read, Create } = ActionPermission.Order;
 
 router.route('/').get(checkCustomerPermission(Read), customerFindAll, findAll);
@@ -18,5 +25,6 @@ router.route('/place_order').post(placeOrder);
 router.route('/callback').post(isCheckout, addOrderWithMoMo);
 router.route('/check_transaction').post(checkPaymentTransaction);
 router.route('/calc_shipping_fee').post(shippingValidation.calcShippingFee, calcShippingFee);
+router.route('/available_service').post(shippingValidation.getAvailableService, getAvailableService);
 
 export const orderRoutes = router;

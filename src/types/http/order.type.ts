@@ -1,4 +1,5 @@
 import { OrderProps } from '../model/order.type';
+import { GHNResponseProps } from './ghn.type';
 import { MoMoPaymentItemsProps } from './momoPayment.type';
 import { PaginationRequestProps } from './pagination.type';
 
@@ -20,9 +21,7 @@ export interface CalcShippingFeeRequestProps {
   width?: number;
   cod_value?: number;
 }
-export interface CalcShippingFeeResponseProps {
-  code: number;
-  message: string;
+export interface CalcShippingFeeResponseProps extends GHNResponseProps {
   data: {
     total: number;
     service_fee: number;
@@ -38,7 +37,6 @@ export interface CalcShippingFeeResponseProps {
     deliver_remote_areas_fee: number;
     cod_failed_fee: number;
   };
-  code_message: string;
 }
 
 export interface CreatedOrderProps
