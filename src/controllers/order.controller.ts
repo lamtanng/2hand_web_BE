@@ -56,11 +56,17 @@ const calcShippingFee = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const getAvailableService = catchErrors(async (req: Request, res: Response) => {
+  const result = await orderService.getAvailableService(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const orderController = {
   findAll,
   addOrderWithMoMo,
   checkPaymentTransaction,
   updateOrderStatus,
   calcShippingFee,
-  placeOrder
+  placeOrder,
+  getAvailableService,
 };

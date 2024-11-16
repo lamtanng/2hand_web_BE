@@ -21,7 +21,7 @@ axiosClient.interceptors.response.use(
   (response) => response.data,
   (error) =>
     new ApiError({
-      statusCode: error.response.status,
-      message: error.response.statusText,
+      statusCode: error.response.data.status || error.response.status,
+      message: error.response.data.message || error.response.statusText,
     }).rejectError(),
 );
