@@ -7,6 +7,7 @@ const PASSWORD = 'Password';
 const NOT_VERIFY = "Your email hasn't been verified";
 const OUT_OF_STOCK = 'Product is out of stock';
 const ACCESS_DENIED = 'Access denied';
+const ADDRESS = 'Address';
 
 const getNotFoundMsg = (title: string) => `${title} ${ReasonPhrases.NOT_FOUND}`;
 const getConflictMsg = (title: string) => `${title} already exists`;
@@ -21,6 +22,7 @@ const EXPIRED_MGS = {
 const NOT_FOUND = {
   USER: getNotFoundMsg(USER),
   TOKEN: getNotFoundMsg(TOKEN),
+  ADDRESS: getNotFoundMsg(ADDRESS).concat(' or is default'),
 };
 
 const INCORRECT = {
