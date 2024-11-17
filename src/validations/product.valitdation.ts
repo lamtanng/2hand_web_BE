@@ -1,31 +1,54 @@
-import Joi from 'joi';
-import { catchErrors } from '../utils/catchErrors';
 import { NextFunction, Request, Response } from 'express';
-import { ProductProps } from '../types/model/product.type';
-import { ProductQuality } from '../types/enum/productQuality.enum';
+import Joi from 'joi';
 import { ObjectIDRegex } from '../constants/validation';
+import { ProductQuality } from '../types/enum/productQuality.enum';
+import { ProductProps } from '../types/model/product.type';
+import { catchErrors } from '../utils/catchErrors';
+import { addressValidation } from './address.validation';
+import { CommonValidation } from './common.validation';
 
-interface ProductSchema extends ProductProps {}
+interface ProductSchema extends Omit<ProductProps, '_id'> {}
+interface UpdateProductSchema extends ProductProps {}
+
+const { idSchema } = CommonValidation;
 
 const productSchema = Joi.object<ProductSchema>({
   name: Joi.string().required().trim(),
   description: Joi.string().trim(),
-  image: [Joi.string()],
+  image: Joi.array().items(Joi.string()).allow(null, ''),
   price: Joi.number().min(0).required(),
   quantity: Joi.number().min(1).required(),
-  quality: Joi.string().valid(ProductQuality).required().trim(),
+  quality: Joi.string()
+    .valid(...Object.values(ProductQuality))
+    .required()
+    .trim(),
   slug: Joi.string(),
   isActive: Joi.boolean().default(true),
   isSoldOut: Joi.boolean().default(false),
   cateID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
   storeID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
   weight: Joi.number().min(0).required(),
+  height: Joi.number().min(0).required(),
+  width: Joi.number().min(0).required(),
+  length: Joi.number().min(0).required(),
+  address: addressValidation.addressSchema,
 });
 
-export const productValidation = catchErrors(
+const updateProductSchema = productSchema.append<UpdateProductSchema>({
+  _id: idSchema.required(),
+});
+
+const createProductValidation = catchErrors(
   async (req: Request, res: Response, next: NextFunction) => {
-    // abortEarly: false will return all errors found in the request bod
     await productSchema.validateAsync(req.body, { abortEarly: false });
     next();
   },
 );
+const updateProductValidation = catchErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    await updateProductSchema.validateAsync(req.body, { abortEarly: false });
+    next();
+  },
+);
+
+export const productValidation = { createProductValidation, updateProductValidation };
