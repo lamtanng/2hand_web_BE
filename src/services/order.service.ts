@@ -101,29 +101,26 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
       const orderDetailIDs = (await OrderDetailModel.insertMany(orderDetailList, { session })).map(
         (item) => item._id,
       );
-      const updatedProducts = await ProductModel.updateMany(
-        { _id: { $in: orderDetailList.map((item) => item.productID) } },
-        {
-          $inc: { quantity: { $multiply: -1, $in: orderDetailList.map((item) => item.quantity) } },
-        },
-      );
-      console.log(updatedProducts);
-      // orderDetailList.map(async (order) => {
-      //   console.log(order.quantity);
-
-      //   const updatedProduct = await ProductModel.findByIdAndUpdate(order.productID, {
-      //     quantity: { $inc: -1 as number },
-      //   });
-      //   if (!updatedProduct) {
-      //     throw new ApiError({
-      //       message: 'Order detail created failed',
-      //       statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-      //     });
-      //   }
-      //   return updatedProduct;
-      // });
 
       if (!orderDetailIDs) {
+        throw new ApiError({
+          message: 'Order detail created failed',
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        });
+      }
+
+      const updatedProducts = await ProductModel.bulkWrite(
+        orderDetailList.map((order) => ({
+          updateOne: {
+            filter: { _id: order.productID },
+            update: {
+              $inc: { quantity: -order.quantity },
+            },
+          },
+        })),
+      );
+
+      if (updatedProducts.modifiedCount !== orderDetailList.length) {
         throw new ApiError({
           message: 'Order detail created failed',
           statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
@@ -223,5 +220,5 @@ export const orderService = {
   updateOrderStatus,
   calcShippingFee,
   addOrderWithCOD,
-  getAvailableService
+  getAvailableService,
 };

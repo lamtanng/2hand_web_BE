@@ -8,7 +8,7 @@ interface UploadCloudinaryProps {
 }
 
 const uploadCloudinary = async ({ files, asset_folder, resource_type }: UploadCloudinaryProps) => {
-  if (!files.length) return [];
+  if (!files || !files.length) return [];
 
   const uploadedFiles = files.map(async (file) => {
     return await appCloudinary.uploader.upload(file, {
