@@ -4,6 +4,7 @@ import { ProductProps } from '../../types/model/product.type';
 import { CATEGORY_COLLECTION_NAME } from '../category/category.doc';
 import { STORE_COLLECTION_NAME } from '../store/store.doc';
 import { generateSlug } from '../../utils/slug';
+import { ADDRESS_COLLECTION_SCHEMA } from '../address/address.doc';
 
 export interface ProductDocument extends ProductProps, Document {}
 
@@ -39,7 +40,7 @@ export const PRODUCT_COLLECTION_SCHEMA = new Schema<
       required: true,
     },
     image: [
-      {
+        {
         type: String,
       },
     ],
@@ -96,6 +97,28 @@ export const PRODUCT_COLLECTION_SCHEMA = new Schema<
       required: true,
       min: 0,
       default: 0,
+    },
+    height: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
+    width: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
+    length: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
+    address: {
+      type: ADDRESS_COLLECTION_SCHEMA,
+      required: true,
     },
   },
   { timestamps: true },
