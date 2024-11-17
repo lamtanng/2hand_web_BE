@@ -31,6 +31,7 @@ const findAll = async (req: Request, res: Response) => {
       cateID: cateID && { $in: cateID },
       isSoldOut: false,
       isActive: true,
+      quantity: { $gt: 0 },
       quality: quality && { $in: quality },
       price: price && { $gte: price.min, $lte: price.max },
       storeID: storeID && { $in: storeID },

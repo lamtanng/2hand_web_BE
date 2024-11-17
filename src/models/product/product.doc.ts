@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Model, Schema } from 'mongoose';
 import { ProductQuality } from '../../types/enum/productQuality.enum';
 import { ProductProps } from '../../types/model/product.type';
 import { CATEGORY_COLLECTION_NAME } from '../category/category.doc';
@@ -7,8 +7,20 @@ import { generateSlug } from '../../utils/slug';
 
 export interface ProductDocument extends ProductProps, Document {}
 
+export interface IProductMethods {}
+export interface IProductStatics {}
+export interface IProductQueries {}
+export interface IProductModel extends Model<ProductProps, IProductQueries, IProductMethods> {}
+
 export const PRODUCT_COLLECTION_NAME = 'product';
-export const PRODUCT_COLLECTION_SCHEMA = new Schema<ProductDocument>(
+export const PRODUCT_COLLECTION_SCHEMA = new Schema<
+  ProductProps,
+  IProductModel,
+  IProductStatics,
+  IProductQueries,
+  {},
+  IProductMethods
+>(
   {
     _id: {
       type: mongoose.Schema.Types.ObjectId,
