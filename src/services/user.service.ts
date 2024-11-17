@@ -128,6 +128,12 @@ const findOneById = catchServiceFunc(async (req: Request, res: Response) => {
   return user;
 });
 
+const findOneBySlug = catchServiceFunc(async (req: Request, res: Response) => {
+  const { slug } = req.query;
+  const user = await UserModel.findOne({ slug });
+  return user;
+});
+
 const getUserById = async (
   _id: string | mongoose.Schema.Types.ObjectId | mongoose.Types.ObjectId,
 ) => {
@@ -175,4 +181,5 @@ export const userService = {
   findOneById,
   sendSmsOtp,
   createUserPhone,
+  findOneBySlug,
 };
