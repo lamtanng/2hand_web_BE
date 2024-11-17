@@ -1,18 +1,16 @@
 import { NextFunction, Request, Response } from 'express';
 import Joi from 'joi';
-import { ObjectIDRegex, PasswordRegex } from '../constants/validation';
+import { isValidPhoneNumber } from 'libphonenumber-js';
+import { ObjectIDRegex } from '../constants/validation';
+import { SendSmsOtpRequestProps, VerifySmsOtpRequestProps } from '../types/http/otp.type';
 import { UserProps } from '../types/model/user.type';
 import { catchErrors } from '../utils/catchErrors';
 import { addressValidation } from './address.validation';
-import { SendSmsOtpRequestProps, VerifySmsOtpRequestProps } from '../types/http/otp.type';
-import parsePhoneNumber, {
-  isValidPhoneNumber,
-  ParseError,
-  parsePhoneNumberWithError,
-} from 'libphonenumber-js';
 import { CommonValidation } from './common.validation';
 
 interface UserSchema extends UserProps {}
+interface UpdateUserSchema
+  extends Pick<UserProps, '_id' | 'firstName' | 'lastName' | 'dateOfBirth'> {}
 interface SendSmsOtpSchema extends SendSmsOtpRequestProps {}
 interface VerifySmsOtpSchema extends VerifySmsOtpRequestProps {}
 interface PhoneNumberSchema extends Pick<UserProps, 'phoneNumber'> {}
@@ -56,8 +54,20 @@ const verifySmsOtpSchema = sendSmsOtpSchema.append<VerifySmsOtpSchema>({
   otp: Joi.string().length(6).required(),
 });
 
+const updateUserSchema = Joi.object<UpdateUserSchema>({
+  _id: idSchema.required(),
+  firstName: Joi.string().trim(),
+  lastName: Joi.string().trim(),
+  dateOfBirth: Joi.date().iso(),
+});
+
 const userModelValidation = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
   await userSchema.validateAsync(req.body, { abortEarly: false });
+  next();
+});
+
+const updateUserValidation = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
+  await updateUserSchema.validateAsync(req.body, { abortEarly: false });
   next();
 });
 
@@ -75,4 +85,4 @@ const verifySmsOtpValidation = catchErrors(
   },
 );
 
-export const userValidation = { sendSmsOtpValidation, userModelValidation, verifySmsOtpValidation };
+export const userValidation = { sendSmsOtpValidation, userModelValidation, verifySmsOtpValidation,updateUserValidation };
