@@ -38,22 +38,32 @@ const findOneById = catchErrors(async (req: Request, res: Response) => {
   const result = await userService.findOneById(req, res);
   res.status(StatusCodes.OK).json(result).send();
 });
+
+const findOneBySlug = catchErrors(async (req: Request, res: Response) => {
+  const result = await userService.findOneBySlug(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 const getProvinces = catchErrors(async (req: Request, res: Response) => {
   const result = await addressService.getProvinces(req, res);
   res.status(StatusCodes.OK).json(result).send();
 });
+
 const getDistricts = catchErrors(async (req: Request, res: Response) => {
   const result = await addressService.getDistricts(req, res);
   res.status(StatusCodes.OK).json(result).send();
 });
+
 const getWards = catchErrors(async (req: Request, res: Response) => {
   const result = await addressService.getWards(req, res);
   res.status(StatusCodes.OK).json(result).send();
 });
+
 const sendSmsOtp = catchErrors(async (req: Request, res: Response) => {
   const result = await userService.sendSmsOtp(req, res);
   res.status(StatusCodes.OK).json(result).send();
 });
+
 const createUserPhone = catchErrors(async (req: Request, res: Response) => {
   const result = await userService.createUserPhone(req, res);
   res.status(StatusCodes.OK).json(result).send();
@@ -72,4 +82,5 @@ export const userController = {
   getWards,
   sendSmsOtp,
   createUserPhone,
+  findOneBySlug,
 };

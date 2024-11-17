@@ -10,6 +10,7 @@ export interface UserProps {
   phoneNumber: string;
   dateOfBirth: Date;
   address: AddressProps[];
+  slug: string;
   createAt?: Date;
   updateAt?: Date;
   isActive: boolean;

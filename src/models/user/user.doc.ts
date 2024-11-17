@@ -1,7 +1,8 @@
+import { randomUUID } from 'crypto';
 import mongoose, { Model, Schema } from 'mongoose';
 import { UserProps } from '../../types/model/user.type';
-import { ROLE_COLLECTION_NAME } from '../role/role.doc';
 import { ADDRESS_COLLECTION_NAME } from '../address/address.doc';
+import { ROLE_COLLECTION_NAME } from '../role/role.doc';
 
 export interface IUserMethods {
   comparePassword: (password: string) => Promise<boolean>;
@@ -58,6 +59,13 @@ export const USER_COLLECTION_SCHEMA = new Schema<
       default: new Date(),
     },
     address: [ADDRESS_COLLECTION_NAME],
+    slug: {
+      type: String,
+      unique: true,
+      default: function () {
+        return randomUUID();
+      },
+    },
     isActive: {
       type: Boolean,
       default: true,

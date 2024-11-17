@@ -19,6 +19,7 @@ export const ROLE_ROUTE = '/roles';
 //user routes
 export const USER_ROUTE = '/users';
 export const USER_BY_ID_ROUTE = '/:userID';
+export const USER_BY_SLUG_ROUTE = '/:slug';
 
 export const USER_ADDRESS_ROUTE = '/address';
 
