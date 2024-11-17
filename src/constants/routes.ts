@@ -14,6 +14,8 @@ export const SELLER_ROUTE = '/se';
 // customer routes
 export const PRODUCT_ROUTE = '/products';
 export const CATEGORY_ROUTE = '/categories';
+export const CATEGORY_BY_ID_ROUTE = '/id/:_id';
+export const CATEGORY_BY_SLUG_ROUTE = '/:slug';
 export const ROLE_ROUTE = '/roles';
 
 //user routes

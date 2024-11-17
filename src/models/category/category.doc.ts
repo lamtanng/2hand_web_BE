@@ -1,5 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import { CategoryProps } from '../../types/model/category.type';
+import { generateSlug } from '../../utils/slug';
 
 export interface CategoryDocument extends CategoryProps, Document {}
 
@@ -17,6 +18,16 @@ export const CATEGORY_COLLECTION_SCHEMA = new Schema<CategoryDocument>(
       required: true,
       unique: true,
     },
+    slug: {
+      type: String,
+      unique: true,
+      default: function () {
+        return generateSlug(this.name);
+      },
+    },
+    image: {
+      type: String,
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -26,6 +37,13 @@ export const CATEGORY_COLLECTION_SCHEMA = new Schema<CategoryDocument>(
       ref: CATEGORY_COLLECTION_NAME,
       default: null,
     },
+    childrenIDs: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: CATEGORY_COLLECTION_NAME,
+        default: null,
+      },
+    ],
   },
   { timestamps: true },
 );

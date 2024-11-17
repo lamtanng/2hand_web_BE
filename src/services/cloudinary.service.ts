@@ -2,7 +2,7 @@ import { appCloudinary } from '../config/cloudinary';
 import ApiError from '../utils/classes/ApiError';
 
 interface UploadCloudinaryProps {
-  files: string[];
+  files?: string[];
   asset_folder: string;
   resource_type?: 'image' | 'video' | 'raw' | 'auto';
 }
