@@ -7,7 +7,7 @@ import { MOMO } from '../constants/momo';
 import { pagination } from '../constants/pagination';
 import { OrderModel } from '../models/order';
 import { OrderDetailModel } from '../models/orderDetail';
-import { OrderStatusModel } from '../models/orderStatus';
+import { OrderStageModel } from '../models/orderStage';
 import { AppError } from '../types/error.type';
 import { IPNMoMoPaymentRequestProps, MoMoPaymentItemsProps } from '../types/http/momoPayment.type';
 import {
@@ -23,13 +23,13 @@ import { GetAvailableServiceRequestProps } from '../types/http/ghn.type';
 const crypto = require('crypto');
 
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {
-  const { userID, orderStatusID, paymentMethodID, storeID, _id } = req.query;
+  const { userID, orderStageID, paymentMethodID, storeID, _id } = req.query;
   const { page, limit, search, skip } = pagination(req);
 
   let queryObj: { [key: string]: string | undefined } = {
     _id: (_id || '') as string,
     userID: (userID || '') as string,
-    orderStatusID: (orderStatusID || '') as string,
+    orderStageID: (orderStageID || '') as string,
     paymentMethodID: (paymentMethodID || '') as string,
     storeID: (storeID || '') as string,
   };
@@ -38,7 +38,7 @@ const findAll = catchServiceFunc(async (req: Request, res: Response) => {
   const orders = await OrderModel.find(queryObj)
     .populate({ path: 'orderDetailIDs', populate: { path: 'productID' } })
     .populate('userID')
-    .populate('orderStatusID')
+    .populate('orderStageID')
     .populate('paymentMethodID')
     .populate('storeID');
   // .limit(limit)
@@ -48,10 +48,10 @@ const findAll = catchServiceFunc(async (req: Request, res: Response) => {
   return orders;
 });
 
-const updateOrderStatus = catchServiceFunc(async (req: Request, res: Response) => {
-  const { _id, orderStatusID } = req.body;
-  const order = await OrderModel.findByIdAndUpdate(_id, { orderStatusID }, { new: true }).populate(
-    'orderStatusID',
+const updateOrderStage = catchServiceFunc(async (req: Request, res: Response) => {
+  const { _id, orderStageID } = req.body;
+  const order = await OrderModel.findByIdAndUpdate(_id, { orderStageID }, { new: true }).populate(
+    'orderStageID',
   );
   return order;
 });
@@ -81,7 +81,7 @@ const payByMomo = catchServiceFunc(async (req: Request, res: Response) => {
 
 const createOrder = async (data: CreateCODPaymentRequestProps) => {
   const { userID, paymentMethodID, orders, receiverAddress } = data as CreateCODPaymentRequestProps;
-  const orderStatus = await OrderStatusModel.findOne({ stage: 1 });
+  const orderStage = await OrderStageModel.findOne({ stage: 1 });
 
   const session = await OrderModel.startSession();
   session.startTransaction();
@@ -131,7 +131,7 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
       const orderModel = new OrderModel({
         total,
         userID,
-        orderStatusID: orderStatus?._id,
+        orderStageID: orderStage?._id,
         paymentMethodID,
         storeID,
         shipmentCost,
@@ -217,7 +217,7 @@ export const orderService = {
   addOrderWithMoMo,
   payByMomo,
   checkPaymentTransaction,
-  updateOrderStatus,
+  updateOrderStage,
   calcShippingFee,
   addOrderWithCOD,
   getAvailableService,

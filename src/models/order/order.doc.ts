@@ -1,11 +1,11 @@
 import mongoose, { Schema } from 'mongoose';
 import { OrderProps } from '../../types/model/order.type';
-import { USER_COLLECTION_NAME } from '../user/user.doc';
-import { STORE_COLLECTION_NAME } from '../store/store.doc';
-import { ORDERSTATUS_COLLECTION_NAME } from '../orderStatus/orderStatus.doc';
-import { PAYMENTMETHOD_COLLECTION_NAME } from '../paymentMethod/paymentMethod.doc';
-import { ORDERDETAIL_COLLECTION_NAME } from '../orderDetail/orderDetail.doc';
 import { ADDRESS_COLLECTION_SCHEMA } from '../address/address.doc';
+import { ORDERDETAIL_COLLECTION_NAME } from '../orderDetail/orderDetail.doc';
+import { ORDERSTAGE_COLLECTION_NAME } from '../orderStage/orderStage.doc';
+import { PAYMENTMETHOD_COLLECTION_NAME } from '../paymentMethod/paymentMethod.doc';
+import { STORE_COLLECTION_NAME } from '../store/store.doc';
+import { USER_COLLECTION_NAME } from '../user/user.doc';
 
 export interface OrderDocument extends OrderProps, Document {}
 
@@ -52,9 +52,9 @@ export const ORDER_COLLECTION_SCHEMA = new Schema<OrderDocument>(
       ref: STORE_COLLECTION_NAME,
       required: true,
     },
-    orderStatusID: {
+    orderStageID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: ORDERSTATUS_COLLECTION_NAME,
+      ref: ORDERSTAGE_COLLECTION_NAME,
       required: true,
     },
     paymentMethodID: {

@@ -31,7 +31,7 @@ export const STORE_BY_USER_ROUTE = '/u/:userID';
 export const STORE_BY_ID_ROUTE = '/:storeID';
 
 export const REVIEW_ROUTE = '/reviews';
-export const ORDERSTATUS_ROUTE = '/orderstatuses';
+export const ORDERSTAGE_ROUTE = '/orderstages';
 export const PAYMENTMETHOD_ROUTE = '/paymentmethods';
 export const CART_ROUTE = '/cart';
 export const CART_ITEM_ROUTE = '/:productID';
