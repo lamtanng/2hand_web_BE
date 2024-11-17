@@ -5,6 +5,8 @@ import { CategoryDocument } from '../models/category/category.doc';
 import { uploadCloudinary, UploadCloudinaryProps } from './cloudinary.service';
 import { categoryFolder } from '../constants/cloudinaryFolder';
 import { UploadApiResponse } from 'cloudinary';
+import { AddCategoryRequestProps } from '../types/http/category.type';
+import { catchServiceFunc } from '../utils/catchErrors';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {
@@ -15,17 +17,13 @@ const findAll = async (reqBody: Request, res: Response) => {
   }
 };
 
-const addCate = async (reqBody: CategoryDocument, res: Response) => {
-  try {
-    const cate = reqBody;
-    //upload image to cloudinary
-    // const urlImages = await uploadCategoryImages({ files: product.image });
-    const newCate = await CategoryModel.create(cate);
-    return { newCate };
-  } catch (error) {
-    console.error(error);
-  }
-};
+const addCate = catchServiceFunc(async (req: Request, res: Response) => {
+  const cate = req.body as AddCategoryRequestProps;
+  //upload image to cloudinary
+  cate.image && (await uploadCategoryImages({ files: [cate.image] }));
+  const newCate = await CategoryModel.create(cate);
+  return newCate;
+});
 
 const uploadCategoryImages = async ({ files }: Pick<UploadCloudinaryProps, 'files'>) => {
   const uploadedFiles = await uploadCloudinary({
