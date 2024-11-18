@@ -1,3 +1,5 @@
+import { ProductProps } from '../model/product.type';
+
 export interface GHNResponseProps {
   code: number;
   message: string;
@@ -30,3 +32,6 @@ export interface GetAvailableServiceResponseProps extends GHNResponseProps {
     service_type_id: number;
   }[];
 }
+
+export interface CalcShippingFeeItemProps
+  extends Pick<ProductProps, 'name' | 'quantity' | 'height' | 'weight' | 'length' | 'width'> {}
