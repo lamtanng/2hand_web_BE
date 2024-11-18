@@ -11,6 +11,7 @@ export interface UserProps {
   dateOfBirth: Date;
   address: AddressProps[];
   slug: string;
+  avatar?: string;
   createAt?: Date;
   updateAt?: Date;
   isActive: boolean;

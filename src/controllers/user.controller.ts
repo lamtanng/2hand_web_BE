@@ -10,7 +10,7 @@ const findAll = catchErrors(async (req: Request, res: Response) => {
 });
 
 const addUser = catchErrors(async (req: Request, res: Response) => {
-  const result = await userService.addUser(req.body, res);
+  const result = await userService.addUser(req, res);
   res.status(StatusCodes.OK).json(result).send();
 });
 
