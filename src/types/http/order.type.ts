@@ -1,5 +1,5 @@
 import { OrderProps } from '../model/order.type';
-import { GHNResponseProps } from './ghn.type';
+import { CalcShippingFeeItemProps, GHNResponseProps } from './ghn.type';
 import { MoMoPaymentItemsProps } from './momoPayment.type';
 import { PaginationRequestProps } from './pagination.type';
 
@@ -20,6 +20,7 @@ export interface CalcShippingFeeRequestProps {
   length?: number;
   width?: number;
   cod_value?: number;
+  items?: CalcShippingFeeItemProps[];
 }
 export interface CalcShippingFeeResponseProps extends GHNResponseProps {
   data: {

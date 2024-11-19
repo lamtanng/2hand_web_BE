@@ -18,6 +18,9 @@ import ApiError from '../utils/classes/ApiError';
 import { generateOTP } from '../utils/otp';
 import { formatPhoneNumber } from '../utils/phone';
 import _ from 'lodash';
+import { uploadCloudinary, UploadCloudinaryProps } from './cloudinary.service';
+import { avatarFolder } from '../constants/cloudinaryFolder';
+import { UploadApiResponse } from 'cloudinary';
 
 const findAll = async (req: Request, res: Response) => {
   try {
@@ -43,31 +46,27 @@ const findAll = async (req: Request, res: Response) => {
   }
 };
 
-const addUser = async (reqBody: UserProps, res: Response) => {
-  try {
-    const user = reqBody;
-    const roleID = await RoleModel.findOne({ name: 'Customer' }, { _id: 1 });
+const addUser = catchServiceFunc(async (req: Request, res: Response) => {
+  const user = req.body;
+  const roleID = await RoleModel.findOne({ name: 'Customer' }, { _id: 1 });
 
-    if (!roleID) {
-      res.status(StatusCodes.NOT_FOUND);
-      return;
-    } else {
-      user.roleID = [roleID._id];
-    }
-
-    const newUser = await UserModel.create(user);
-    return { newUser };
-  } catch (error) {
-    console.error(error);
+  if (!roleID) {
+    res.status(StatusCodes.NOT_FOUND);
+    return;
+  } else {
+    user.roleID = [roleID._id];
   }
-};
+  const newAvatar = user?.avatar ? await uploadAvatarImages({ files: [user.avatar] }) : '';
+  const newUser = await UserModel.create({ ...user, avatar: newAvatar });
+  return { newUser };
+});
 
 const updateUserInfo = catchServiceFunc(async (req: Request, res: Response) => {
-  const { _id, firstName, lastName, dateOfBirth } = req.body as UpdateUserInfoRequestProps;
-
+  const { _id, firstName, lastName, dateOfBirth, avatar } = req.body as UpdateUserInfoRequestProps;
+  const newAvatar = avatar ? await uploadAvatarImages({ files: [avatar] }) : '';
   const updatedUser = await UserModel.findOneAndUpdate(
     { _id },
-    { firstName, lastName, dateOfBirth },
+    { firstName, lastName, dateOfBirth, avatar: newAvatar },
     { new: true },
   );
   return updatedUser;
@@ -195,6 +194,16 @@ const createUserPhone = catchServiceFunc(async (req: Request, res: Response) => 
   );
   return updatedUser;
 });
+
+const uploadAvatarImages = async ({ files }: Pick<UploadCloudinaryProps, 'files'>) => {
+  const uploadedFiles = await uploadCloudinary({
+    files,
+    asset_folder: avatarFolder,
+    resource_type: 'image',
+  });
+
+  return uploadedFiles.map((file: UploadApiResponse) => file.secure_url)[0];
+};
 
 export const userService = {
   findAll,

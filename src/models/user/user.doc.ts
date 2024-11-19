@@ -66,6 +66,10 @@ export const USER_COLLECTION_SCHEMA = new Schema<
         return randomUUID();
       },
     },
+    avatar: {
+      type: String,
+      default: null,
+    },
     isActive: {
       type: Boolean,
       default: true,
