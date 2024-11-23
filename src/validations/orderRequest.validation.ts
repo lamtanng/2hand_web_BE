@@ -15,7 +15,7 @@ const orderRequestSchema = Joi.object<OrderRequestSchema>({
   description: Joi.string().default(null),
   image: [Joi.string()],
   video: [Joi.string()],
-  task: Joi.string().valid(TaskType.Cancel, TaskType.Return).required(),
+  taskType: Joi.string().valid(TaskType.Cancel, TaskType.Return).required(),
   replyStatus: Joi.string().valid(ReplyStatus).default(ReplyStatus.Pending),
   replyMessage: Joi.string().default(null),
   reasonID: idSchema.required(),
@@ -24,7 +24,6 @@ const orderRequestSchema = Joi.object<OrderRequestSchema>({
 
 export const orderRequestValidation = catchErrors(
   async (req: Request, res: Response, next: NextFunction) => {
-    // abortEarly: false will return all errors found in the request bod
     await orderRequestSchema.validateAsync(req.body, { abortEarly: false });
     next();
   },
