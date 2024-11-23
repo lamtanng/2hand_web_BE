@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Request, Response } from 'express';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import { calcShippingFeeAPI, getAvailableServiceAPI } from '../apis/ghn';
+import { calcShippingFeeAPI, getAvailableServiceAPI, getPickupDateAPI } from '../apis/ghn';
 import { createMoMoPayment } from '../apis/momo';
 import { MOMO } from '../constants/momo';
 import { pagination } from '../constants/pagination';
@@ -203,6 +203,11 @@ const getAvailableService = catchServiceFunc(async (req: Request, res: Response)
   return service.data;
 });
 
+const getPickupDate = catchServiceFunc(async (req: Request, res: Response) => {
+  const service = await getPickupDateAPI();
+  return service.data;
+});
+
 export const orderService = {
   findAll,
   addOrderWithMoMo,
@@ -212,4 +217,5 @@ export const orderService = {
   calcShippingFee,
   addOrderWithCOD,
   getAvailableService,
+  getPickupDate,
 };
