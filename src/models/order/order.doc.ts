@@ -55,7 +55,6 @@ export const ORDER_COLLECTION_SCHEMA = new Schema<OrderDocument>(
     orderStageID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: ORDERSTAGE_COLLECTION_NAME,
-      required: true,
     },
     paymentMethodID: {
       type: mongoose.Schema.Types.ObjectId,

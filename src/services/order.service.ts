@@ -92,7 +92,6 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
   const { userID, paymentMethodID, orders, receiverAddress } = data as CreateCODPaymentRequestProps;
   const session = await OrderModel.startSession();
   session.startTransaction();
-  console.log('____');
 
   try {
     for (const order of orders) {
