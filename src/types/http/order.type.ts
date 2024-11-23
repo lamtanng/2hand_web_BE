@@ -22,6 +22,7 @@ export interface CalcShippingFeeRequestProps {
   cod_value?: number;
   items?: CalcShippingFeeItemProps[];
 }
+
 export interface CalcShippingFeeResponseProps extends GHNResponseProps {
   data: {
     total: number;
@@ -44,7 +45,27 @@ export interface CreatedOrderProps
   extends Pick<OrderProps, 'storeID' | 'total' | 'note' | 'shipmentCost'> {
   items: MoMoPaymentItemsProps[];
 }
+
 export interface CreateCODPaymentRequestProps
   extends Pick<OrderProps, 'userID' | 'total' | 'paymentMethodID' | 'receiverAddress'> {
   orders: CreatedOrderProps[];
+}
+
+export interface CalcExpectedDeliveryDateRequest {
+  ShopID?: number;
+  from_district_id: number;
+  from_ward_code: string;
+  to_district_id: number;
+  to_ward_code: string;
+  service_id?: string;
+}
+
+export interface CalcExpectedDeliveryDateResponse extends GHNResponseProps {
+  data: {
+    leadtime: number;
+    leadtime_order: {
+      from_estimate_date: string;
+      to_estimate_date: string;
+    };
+  };
 }

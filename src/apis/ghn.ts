@@ -8,6 +8,8 @@ import {
   GetAvailableServiceResponseProps,
 } from '../types/http/ghn.type';
 import {
+  CalcExpectedDeliveryDateRequest,
+  CalcExpectedDeliveryDateResponse,
   CalcShippingFeeRequestProps,
   CalcShippingFeeResponseProps,
 } from '../types/http/order.type';
@@ -21,6 +23,8 @@ const baseURL = 'https://dev-online-gateway.ghn.vn/shiip/public-api';
 const createStoreUrl = `/v2/shop/register`;
 const getServiceUrl = `/v2/shipping-order/available-services`;
 const calcShippingFeeUrl = `/v2/shipping-order/fee`;
+const getPickingShiftUrl = `/v2/shift/date`;
+const calcExpectedDeliveryDateUrl = `/v2/shipping-order/leadtime`;
 const getProvinceUrl = `${baseURL}/master-data/province`;
 const getDistrictUrl = `${baseURL}/master-data/district`;
 const getWardUrl = `${baseURL}/master-data/ward`;
@@ -42,6 +46,14 @@ export function calcShippingFeeAPI(data: CalcShippingFeeRequestProps) {
 
 export function getAvailableServiceAPI(data: GetAvailableServiceRequestProps) {
   return axiosGHN.post<GetAvailableServiceResponseProps>(getServiceUrl, data);
+}
+
+export function getPickupDateAPI() {
+  return axiosGHN.post(getPickingShiftUrl);
+}
+
+export function calcExpectedDeliveryDateAPI(data: CalcExpectedDeliveryDateRequest) {
+  return axiosGHN.post<CalcExpectedDeliveryDateResponse>(calcExpectedDeliveryDateUrl, data);
 }
 
 export function getProvinceAPI() {

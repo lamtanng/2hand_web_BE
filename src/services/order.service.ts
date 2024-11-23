@@ -1,7 +1,12 @@
 import axios from 'axios';
 import { Request, Response } from 'express';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import { calcShippingFeeAPI, getAvailableServiceAPI } from '../apis/ghn';
+import {
+  calcExpectedDeliveryDateAPI,
+  calcShippingFeeAPI,
+  getAvailableServiceAPI,
+  getPickupDateAPI,
+} from '../apis/ghn';
 import { createMoMoPayment } from '../apis/momo';
 import { MOMO } from '../constants/momo';
 import { pagination } from '../constants/pagination';
@@ -11,6 +16,7 @@ import { OrderStageModel } from '../models/orderStage';
 import { AppError } from '../types/error.type';
 import { IPNMoMoPaymentRequestProps, MoMoPaymentItemsProps } from '../types/http/momoPayment.type';
 import {
+  CalcExpectedDeliveryDateRequest,
   CalcShippingFeeResponseProps,
   CreateCODPaymentRequestProps,
 } from '../types/http/order.type';
@@ -203,6 +209,17 @@ const getAvailableService = catchServiceFunc(async (req: Request, res: Response)
   return service.data;
 });
 
+const getPickupDate = catchServiceFunc(async (req: Request, res: Response) => {
+  const service = await getPickupDateAPI();
+  return service.data;
+});
+
+const calcExpectedDeliveryDate = catchServiceFunc(async (req: Request, res: Response) => {
+  const data = req.body as CalcExpectedDeliveryDateRequest;
+  const service = await calcExpectedDeliveryDateAPI(data);
+  return service.data;
+});
+
 export const orderService = {
   findAll,
   addOrderWithMoMo,
@@ -212,4 +229,6 @@ export const orderService = {
   calcShippingFee,
   addOrderWithCOD,
   getAvailableService,
+  getPickupDate,
+  calcExpectedDeliveryDate,
 };
