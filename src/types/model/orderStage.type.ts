@@ -5,6 +5,7 @@ export interface OrderStageProps {
   _id: mongoose.Schema.Types.ObjectId;
   name: OrderStage;
   orderStageStatusID: mongoose.Types.ObjectId;
+  orderID: mongoose.Types.ObjectId;
   createAt?: Date;
   updateAt?: Date;
 }

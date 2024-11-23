@@ -20,6 +20,8 @@ import { getMoMoCreationRequestBody } from '../utils/momo';
 import { deleteEmptyObjectFields } from '../utils/object';
 import { ProductModel } from '../models/product';
 import { GetAvailableServiceRequestProps } from '../types/http/ghn.type';
+import { orderStageService } from './orderStage.service';
+import { OrderStage } from '../types/enum/orderStage.enum';
 const crypto = require('crypto');
 
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {
@@ -81,10 +83,9 @@ const payByMomo = catchServiceFunc(async (req: Request, res: Response) => {
 
 const createOrder = async (data: CreateCODPaymentRequestProps) => {
   const { userID, paymentMethodID, orders, receiverAddress } = data as CreateCODPaymentRequestProps;
-  const orderStage = await OrderStageModel.findOne({ stage: 1 });
-
   const session = await OrderModel.startSession();
   session.startTransaction();
+  console.log('____');
 
   try {
     for (const order of orders) {
@@ -102,13 +103,6 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
         (item) => item._id,
       );
 
-      if (!orderDetailIDs) {
-        throw new ApiError({
-          message: 'Order detail created failed',
-          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        });
-      }
-
       const updatedProducts = await ProductModel.bulkWrite(
         orderDetailList.map((order) => ({
           updateOne: {
@@ -120,18 +114,10 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
         })),
       );
 
-      if (updatedProducts.modifiedCount !== orderDetailList.length) {
-        throw new ApiError({
-          message: 'Order detail created failed',
-          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        });
-      }
-
       //create order
       const orderModel = new OrderModel({
         total,
         userID,
-        orderStageID: orderStage?._id,
         paymentMethodID,
         storeID,
         shipmentCost,
@@ -141,12 +127,16 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
       });
 
       const newOrder = await orderModel.save({ session });
-      if (!newOrder) {
-        throw new ApiError({
-          message: 'Order detail created failed',
-          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        });
-      }
+
+      //create orderStage
+      const orderStage = await orderStageService.createOne({
+        name: OrderStage.Confirmating,
+        orderID: newOrder._id,
+      });
+
+      //update orderID to order stage
+      newOrder.orderStageID = orderStage._id;
+      await orderModel.save({ session });
     }
 
     await session.commitTransaction();

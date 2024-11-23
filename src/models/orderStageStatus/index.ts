@@ -1,17 +1,14 @@
-import { Model, Schema } from 'mongoose';
+import mongoose from 'mongoose';
 import { OrderStageStatusProps } from '../../types/model/orderStageStatus.type';
+import {
+  IOrderStageStatusModel,
+  IOrderStageStatusQueries,
+  ORDER_STAGE_STATUS_COLLECTION_NAME,
+  ORDER_STAGE_STATUS_COLLECTION_SCHEMA,
+} from './orderStageStatus.doc';
 
-export interface IOrderStageStatusMethods {
-  comparePassword: (password: string) => Promise<boolean>;
-}
-export interface IOrderStageStatusStatics {
-  findByEmail: (email: string) => any;
-}
-export interface IOrderStageStatusQueries {
-  paginate: (page: number, limit: number) => any;
-}
-export interface IOrderStageStatusModel
-  extends Model<OrderStageStatusProps, IOrderStageStatusQueries, IOrderStageStatusMethods> {}
-
-export const ORDERSTAGESTATUS_COLLECTION_NAME = 'orderStageStatuses';
-export const ORDERSTAGESTATUS_COLLECTION_SCHEMA = new Schema<IOrderStageStatusModel>({});
+export const OrderStageStatusModel = mongoose.model<
+  OrderStageStatusProps,
+  IOrderStageStatusModel,
+  IOrderStageStatusQueries
+>(ORDER_STAGE_STATUS_COLLECTION_NAME, ORDER_STAGE_STATUS_COLLECTION_SCHEMA);

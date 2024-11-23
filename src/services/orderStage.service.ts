@@ -1,6 +1,12 @@
 import { Request, Response } from 'express';
 import { OrderStageModel } from '../models/orderStage';
 import { OrderStageDocument } from '../models/orderStage/orderStage.doc';
+import { catchServiceFunc } from '../utils/catchErrors';
+import { OrderStageStatusModel } from '../models/orderStageStatus';
+import { CreateOrderStageRequest } from '../types/http/orderStage.type';
+import { OrderStageStatus } from '../types/enum/orderStageStatus.enum';
+import { AppError } from '../types/error.type';
+import ApiError from '../utils/classes/ApiError';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {
@@ -11,23 +17,28 @@ const findAll = async (reqBody: Request, res: Response) => {
   }
 };
 
-const addStatus = async (reqBody: OrderStageDocument, res: Response) => {
+const createOneByRequest = async (req: Request, res: Response) => {
+  const { name, orderID } = req.body as CreateOrderStageRequest;
+  const newOrderStage = await createOne({ name, orderID });
+  return newOrderStage;
+};
+
+const createOne = async ({ name, orderID }: CreateOrderStageRequest) => {
   try {
-    const orderStage = reqBody;
+    const orderStageStatus = await OrderStageStatusModel.create({
+      status: OrderStageStatus.Active,
+    });
+    const newOrderStage = await OrderStageModel.create({
+      name,
+      orderStageStatusID: orderStageStatus._id,
+      orderID,
+    });
 
-    const lastStatus = await OrderStageModel.findOne().sort({ stage: -1 }).limit(1);
-    // Increment the stage for the new status
-    // if (lastStatus) {
-    //   orderStage.stage = lastStatus.stage + 1; // Increment stage
-    // } else {
-    //   orderStage.stage = 1; // Start from 1 if no status exist
-    // }
-
-    const newOrderStage = await OrderStageModel.create(orderStage);
-    return { newOrderStage };
-  } catch (error) {
-    console.error(error);
+    await orderStageStatus.updateOne({ orderStageID: newOrderStage._id });
+    return newOrderStage;
+  } catch (error: AppError) {
+    throw new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
   }
 };
 
-export const orderStageService = { findAll, addStatus };
+export const orderStageService = { findAll, createOne, createOneByRequest };

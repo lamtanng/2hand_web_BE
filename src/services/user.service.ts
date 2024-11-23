@@ -98,7 +98,6 @@ const updateAddress = catchServiceFunc(async (req: Request, res: Response) => {
 });
 
 const deleteAddress = catchServiceFunc(async (req: Request, res: Response) => {
-<<<<<<< Updated upstream
   const { addressID, _id } = req.body as DeleteAddressRequestProps;
 
   const user = await UserModel.findOne({ _id });
@@ -112,30 +111,6 @@ const deleteAddress = catchServiceFunc(async (req: Request, res: Response) => {
     user.address,
     ({ _id, isDefault }) => String(_id) === String(addressID) && !isDefault,
   );
-=======
-  const { addressID, _id } = req.body;
-  console.log(addressID);
-
-  const result = await UserModel.aggregate([
-    { $match: { _id } },
-    // { $unwind: '$address' },
-    // { $match: { 'address._id': addressID } },
-    // { $project: { _id: 0, address: 1 } },
-  ]);
-  // const result = await UserModel.updateOne(
-  //   { _id },
-  //   { $pullAll: { address: { _id: addressID, isDefault: false } } },
-  // );
-
-  console.log(result);
-
-  // if (result.modifiedCount === 0) {
-  //   return new ApiError({
-  //     message: 'Address is default or not found',
-  //     statusCode: StatusCodes.NOT_FOUND,
-  //   }).rejectError();
-  // }
->>>>>>> Stashed changes
 
   if (!removedAddress.length) {
     return new ApiError({
