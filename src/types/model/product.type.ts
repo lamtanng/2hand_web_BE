@@ -11,7 +11,7 @@ export interface ProductProps {
   quality: string;
   slug: string;
   isActive: boolean;
-  isSoldOut: boolean;
+  isPublish: boolean;
   createAt?: Date;
   updateAt?: Date;
   cateID: mongoose.Schema.Types.ObjectId;

@@ -15,6 +15,7 @@ import ApiError from '../utils/classes/ApiError';
 import { deleteEmptyObjectFields, parseJson } from '../utils/object';
 import { generateSlug } from '../utils/slug';
 import { uploadCloudinary, UploadCloudinaryProps } from './cloudinary.service';
+import { log } from 'console';
 
 const findAll = async (req: Request, res: Response) => {
   try {
@@ -25,19 +26,23 @@ const findAll = async (req: Request, res: Response) => {
     const cateID = parseJson(req.query.cateID as string);
     const price = parseJson(req.query.price as string);
     const storeID = parseJson(req.query.storeID as string);
+    const isPublish = parseJson(req.query.isPublish as string);
+    const isActive = parseJson(req.query.isActive as string);
+    // console.log(!false, typeof isPublish);
 
     const findCondition = {
       name: search && { $regex: search, $options: 'i' },
       cateID: cateID && { $in: cateID },
-      isSoldOut: false,
-      isActive: true,
+      isPublish: isPublish && String(isPublish),
+      isActive: isActive && String(isActive),
       quantity: { $gt: 0 },
       quality: quality && { $in: quality },
       price: price && { $gte: price.min, $lte: price.max },
       storeID: storeID && { $in: storeID },
     };
+    log(findCondition);
     deleteEmptyObjectFields(findCondition);
-
+    log(findCondition);
     const products = await ProductModel.find(findCondition)
       .populate('cateID')
       .populate('storeID')
