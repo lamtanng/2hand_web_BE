@@ -4,7 +4,7 @@ import { catchErrors } from '../utils/catchErrors';
 import { Request, Response } from 'express';
 
 const createOne = catchErrors(async (req: Request, res: Response) => {
-  const result = await orderStageStatusService.createOne(req, res);
+  const result = await orderStageStatusService.createOneByRequest(req, res);
   res.status(StatusCodes.OK).json(result).send();
 });
 

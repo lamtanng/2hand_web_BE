@@ -1,6 +1,4 @@
 import mongoose from 'mongoose';
 import { OrderStageStatusProps } from '../model/orderStageStatus.type';
 
-export interface c extends Omit<OrderStageStatusProps, '_id'> {
-  orderStageID: mongoose.Types.ObjectId;
-}
+export interface CreateOrderStageStatusRequest extends Omit<OrderStageStatusProps, '_id'> {}

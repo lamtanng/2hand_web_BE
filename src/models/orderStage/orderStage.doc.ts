@@ -33,7 +33,6 @@ export const ORDERSTAGE_COLLECTION_SCHEMA = new Schema<OrderStageDocument>(
     orderStageStatusID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: ORDER_STAGE_STATUS_COLLECTION_NAME,
-      required: true,
     },
     orderID: {
       type: mongoose.Schema.Types.ObjectId,

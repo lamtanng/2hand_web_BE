@@ -7,5 +7,5 @@ export interface OrderStageStatusProps {
   expectedDate?: Date;
   date?: Date;
   orderStageID: mongoose.Types.ObjectId;
-  orderRequestID: mongoose.Types.ObjectId;
+  orderRequestID?: mongoose.Types.ObjectId;
 }

@@ -22,6 +22,7 @@ import { ProductModel } from '../models/product';
 import { GetAvailableServiceRequestProps } from '../types/http/ghn.type';
 import { orderStageService } from './orderStage.service';
 import { OrderStage } from '../types/enum/orderStage.enum';
+import mongoose from 'mongoose';
 const crypto = require('crypto');
 
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {
@@ -135,7 +136,7 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
       });
 
       //update orderID to order stage
-      newOrder.orderStageID = orderStage._id;
+      newOrder.orderStageID = orderStage?._id as mongoose.Types.ObjectId;
       await orderModel.save({ session });
     }
 

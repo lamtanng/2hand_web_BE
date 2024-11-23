@@ -1,21 +1,24 @@
-import Joi from 'joi';
-import { catchErrors } from '../utils/catchErrors';
 import { NextFunction, Request, Response } from 'express';
-import { OrderStageProps } from '../types/model/orderStage.type';
+import Joi from 'joi';
+import { CreateOrderStageRequest } from '../types/http/orderStage.type';
+import { catchErrors } from '../utils/catchErrors';
 import { CommonValidation } from './common.validation';
+import { OrderStage } from '../types/enum/orderStage.enum';
 
-interface OrderStageSchema extends OrderStageProps {}
+interface OrderStageSchema extends CreateOrderStageRequest {}
 
 const { idSchema } = CommonValidation;
 
 const orderStageSchema = Joi.object<OrderStageSchema>({
-  name: Joi.string().required().trim(),
-  orderStageStatusID: idSchema.required(),
+  name: Joi.string()
+    .required()
+    .trim()
+    .valid(...Object.values(OrderStage)),
+  orderID: idSchema.required(),
 });
 
 export const orderStageValidation = catchErrors(
   async (req: Request, res: Response, next: NextFunction) => {
-    // abortEarly: false will return all errors found in the request bod
     await orderStageSchema.validateAsync(req.body, { abortEarly: false });
     next();
   },
