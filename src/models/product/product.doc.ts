@@ -40,7 +40,7 @@ export const PRODUCT_COLLECTION_SCHEMA = new Schema<
       required: true,
     },
     image: [
-        {
+      {
         type: String,
       },
     ],
@@ -78,9 +78,9 @@ export const PRODUCT_COLLECTION_SCHEMA = new Schema<
       type: Boolean,
       default: true,
     },
-    isSoldOut: {
+    isPublish: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     cateID: {
       type: mongoose.Schema.Types.ObjectId,

@@ -24,7 +24,7 @@ const productSchema = Joi.object<ProductSchema>({
     .trim(),
   slug: Joi.string(),
   isActive: Joi.boolean().default(true),
-  isSoldOut: Joi.boolean().default(false),
+  isPublish: Joi.boolean().default(true),
   cateID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
   storeID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
   weight: Joi.number().min(0).required(),
