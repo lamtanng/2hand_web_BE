@@ -4,7 +4,7 @@ import { MoMoPaymentItemsProps } from './momoPayment.type';
 import { PaginationRequestProps } from './pagination.type';
 
 export interface FindAllOrdersResponseProps
-  extends Pick<OrderProps, '_id' | 'userID' | 'orderStatusID' | 'paymentMethodID' | 'storeID'>,
+  extends Pick<OrderProps, '_id' | 'userID' | 'orderStageID' | 'paymentMethodID' | 'storeID'>,
     PaginationRequestProps {}
 
 export interface CalcShippingFeeRequestProps {

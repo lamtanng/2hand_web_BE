@@ -1,9 +1,9 @@
 import mongoose, { Schema } from 'mongoose';
-import { OrderRequestProps } from '../../types/model/orderRequest.type';
-import { REASON_COLLECTION_NAME } from '../reason/reason.doc';
-import { ORDER_COLLECTION_NAME } from '../order/order.doc';
 import { ReplyStatus } from '../../types/enum/replyStatus.enum';
 import { TaskType } from '../../types/enum/taskType.enum';
+import { OrderRequestProps } from '../../types/model/orderRequest.type';
+import { ORDER_STAGE_STATUS_COLLECTION_NAME } from '../orderStageStatus/orderStageStatus.doc';
+import { REASON_COLLECTION_NAME } from '../reason/reason.doc';
 
 export interface OrderRequestDocument extends OrderRequestProps, Document {}
 
@@ -53,9 +53,9 @@ export const ORDERREQUEST_COLLECTION_SCHEMA = new Schema<OrderRequestDocument>(
       ref: REASON_COLLECTION_NAME,
       required: true,
     },
-    orderID: {
+    orderStageStatusID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: ORDER_COLLECTION_NAME,
+      ref: 'orderStageStatuses',
       required: true,
     },
   },

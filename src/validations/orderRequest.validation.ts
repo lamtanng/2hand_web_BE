@@ -5,8 +5,11 @@ import { OrderRequestProps } from '../types/model/orderRequest.type';
 import { ReplyStatus } from '../types/enum/replyStatus.enum';
 import { TaskType } from '../types/enum/taskType.enum';
 import { ObjectIDRegex } from '../constants/validation';
+import { CommonValidation } from './common.validation';
 
 interface OrderRequestSchema extends OrderRequestProps {}
+
+const { idSchema } = CommonValidation;
 
 const orderRequestSchema = Joi.object<OrderRequestSchema>({
   description: Joi.string().default(null),
@@ -15,8 +18,8 @@ const orderRequestSchema = Joi.object<OrderRequestSchema>({
   task: Joi.string().valid(TaskType.Cancel, TaskType.Return).required(),
   replyStatus: Joi.string().valid(ReplyStatus).default(ReplyStatus.Pending),
   replyMessage: Joi.string().default(null),
-  reasonID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
-  orderID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
+  reasonID: idSchema.required(),
+  orderStageStatusID: idSchema.required(),
 });
 
 export const orderRequestValidation = catchErrors(

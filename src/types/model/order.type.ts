@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { AddressProps } from './address.type';
 
 export interface OrderProps {
-  _id: mongoose.Schema.Types.ObjectId;
+  _id: mongoose.Types.ObjectId;
   exprDate: Date;
   receiverAddress: AddressProps;
   note: string;
@@ -11,7 +11,7 @@ export interface OrderProps {
   userID: mongoose.Schema.Types.ObjectId;
   storeID: mongoose.Schema.Types.ObjectId;
   orderDetailIDs: mongoose.Schema.Types.ObjectId[];
-  orderStatusID: mongoose.Schema.Types.ObjectId;
+  orderStageID: mongoose.Types.ObjectId;
   paymentMethodID: mongoose.Schema.Types.ObjectId;
   createAt?: Date;
   updateAt?: Date;
