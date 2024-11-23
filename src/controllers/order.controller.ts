@@ -61,6 +61,11 @@ const getPickupDate = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const calcExpectedDeliveryDate = catchErrors(async (req: Request, res: Response) => {
+  const result = await orderService.calcExpectedDeliveryDate(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const orderController = {
   findAll,
   addOrderWithMoMo,
@@ -69,5 +74,6 @@ export const orderController = {
   calcShippingFee,
   placeOrder,
   getAvailableService,
-  getPickupDate
+  getPickupDate,
+  calcExpectedDeliveryDate,
 };

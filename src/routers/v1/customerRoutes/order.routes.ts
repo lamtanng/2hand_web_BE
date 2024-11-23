@@ -17,6 +17,7 @@ const {
   placeOrder,
   getAvailableService,
   getPickupDate,
+  calcExpectedDeliveryDate,
 } = orderController;
 const { Read, Create } = ActionPermission.Order;
 
@@ -30,5 +31,8 @@ router
   .route('/available_service')
   .post(shippingValidation.getAvailableService, getAvailableService);
 router.route('/pickup-date').get(getPickupDate);
+router
+  .route('/delivery-time')
+  .post(shippingValidation.calcExpectedDeliveryDate, calcExpectedDeliveryDate);
 
 export const orderRoutes = router;
