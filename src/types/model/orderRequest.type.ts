@@ -9,7 +9,7 @@ export interface OrderRequestProps {
   video?: string[];
   taskType: TaskType;
   replyStatus: ReplyStatus;
-  replyMessage: string;
+  replyMessage?: string;
   reasonID: mongoose.Types.ObjectId;
   orderStageStatusID: mongoose.Types.ObjectId;
   createAt?: Date;

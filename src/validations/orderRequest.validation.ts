@@ -1,23 +1,25 @@
-import Joi, { string } from 'joi';
-import { catchErrors } from '../utils/catchErrors';
 import { NextFunction, Request, Response } from 'express';
-import { OrderRequestProps } from '../types/model/orderRequest.type';
+import Joi from 'joi';
 import { ReplyStatus } from '../types/enum/replyStatus.enum';
 import { TaskType } from '../types/enum/taskType.enum';
-import { ObjectIDRegex } from '../constants/validation';
+import { CreateOrderRequestRequest } from '../types/http/orderRequest.type';
+import { catchErrors } from '../utils/catchErrors';
 import { CommonValidation } from './common.validation';
 
-interface OrderRequestSchema extends OrderRequestProps {}
+interface OrderRequestSchema extends CreateOrderRequestRequest {}
 
 const { idSchema } = CommonValidation;
 
 const orderRequestSchema = Joi.object<OrderRequestSchema>({
   description: Joi.string().default(null),
-  image: [Joi.string()],
-  video: [Joi.string()],
-  taskType: Joi.string().valid(TaskType.Cancel, TaskType.Return).required(),
-  replyStatus: Joi.string().valid(ReplyStatus).default(ReplyStatus.Pending),
-  replyMessage: Joi.string().default(null),
+  image: Joi.array().items(Joi.string()).allow(null, ''),
+  video: Joi.array().items(Joi.string()).allow(null, ''),
+  taskType: Joi.string()
+    .valid(...Object.values(TaskType))
+    .required(),
+  replyStatus: Joi.string()
+    .valid(...Object.values(ReplyStatus))
+    .default(ReplyStatus.Pending),
   reasonID: idSchema.required(),
   orderStageStatusID: idSchema.required(),
 });
