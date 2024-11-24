@@ -2,11 +2,15 @@ import { NextFunction, Request, Response } from 'express';
 import Joi from 'joi';
 import { ReplyStatus } from '../types/enum/replyStatus.enum';
 import { TaskType } from '../types/enum/taskType.enum';
-import { CreateOrderRequestRequest } from '../types/http/orderRequest.type';
+import {
+  CreateOrderRequestRequest,
+  ReplyOrderRequestRequest,
+} from '../types/http/orderRequest.type';
 import { catchErrors } from '../utils/catchErrors';
 import { CommonValidation } from './common.validation';
 
 interface OrderRequestSchema extends CreateOrderRequestRequest {}
+interface ReplyOrderRequestSchema extends ReplyOrderRequestRequest {}
 
 const { idSchema } = CommonValidation;
 
@@ -17,16 +21,27 @@ const orderRequestSchema = Joi.object<OrderRequestSchema>({
   taskType: Joi.string()
     .valid(...Object.values(TaskType))
     .required(),
-  replyStatus: Joi.string()
-    .valid(...Object.values(ReplyStatus))
-    .default(ReplyStatus.Pending),
   reasonID: idSchema.required(),
   orderStageStatusID: idSchema.required(),
 });
 
-export const orderRequestValidation = catchErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
-    await orderRequestSchema.validateAsync(req.body, { abortEarly: false });
-    next();
-  },
-);
+const replyOrderRequestSchema = Joi.object<ReplyOrderRequestSchema>().keys({
+  _id: idSchema.required(),
+  replyMessage: Joi.string().required(),
+  replyStatus: Joi.string().valid(ReplyStatus.Succeeded, ReplyStatus.Rejected).required(),
+});
+
+const createValidation = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
+  await orderRequestSchema.validateAsync(req.body, { abortEarly: false });
+  next();
+});
+
+const replyValidation = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
+  await replyOrderRequestSchema.validateAsync(req.body, { abortEarly: false });
+  next();
+});
+
+export const orderRequestValidation = {
+  createValidation,
+  replyValidation,
+};
