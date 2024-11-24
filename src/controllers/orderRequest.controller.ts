@@ -14,7 +14,13 @@ const addOrderRequest = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const reply = catchErrors(async (req: Request, res: Response) => {
+  const result = await orderRequestService.reply(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const orderRequestController = {
   findAll,
   addOrderRequest,
+  reply,
 };

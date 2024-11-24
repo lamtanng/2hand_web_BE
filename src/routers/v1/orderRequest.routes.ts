@@ -3,7 +3,9 @@ import { orderRequestController } from '../../controllers/orderRequest.controlle
 import { orderRequestValidation } from '../../validations/orderRequest.validation';
 const router = express.Router();
 
+const { createValidation, replyValidation } = orderRequestValidation;
 router.route('/').get(orderRequestController.findAll);
-router.route('/').post(orderRequestValidation ,orderRequestController.addOrderRequest);
+router.route('/').post(createValidation, orderRequestController.addOrderRequest);
+router.route('/').put(replyValidation, orderRequestController.reply);
 
 export const orderRequestRoutes = router;

@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { OrderRequestModel } from '../models/orderRequest';
-import { CreateOrderRequestRequest } from '../types/http/orderRequest.type';
+import {
+  CreateOrderRequestRequest,
+  ReplyOrderRequestRequest,
+} from '../types/http/orderRequest.type';
 import { catchServiceFunc } from '../utils/catchErrors';
-import { ReplyStatus } from '../types/enum/replyStatus.enum';
-import { TaskType } from '../types/enum/taskType.enum';
-import { ObjectType } from '../types/enum/objectType.enum';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {
@@ -21,4 +21,14 @@ const addOrderRequest = catchServiceFunc(async (req: Request, res: Response) => 
   return newOrderRequest;
 });
 
-export const orderRequestService = { findAll, addOrderRequest };
+const reply = catchServiceFunc(async (req: Request, res: Response) => {
+  const { _id, replyMessage, replyStatus } = req.body as ReplyOrderRequestRequest;
+  const repliedOrderRequest = await OrderRequestModel.findByIdAndUpdate(
+    _id,
+    { replyMessage, replyStatus },
+    { new: true },
+  );
+  return repliedOrderRequest;
+});
+
+export const orderRequestService = { findAll, addOrderRequest, reply };
