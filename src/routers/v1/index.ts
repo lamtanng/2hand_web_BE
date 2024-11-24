@@ -42,7 +42,6 @@ router.use(PAYMENTMETHOD_ROUTE, paymentMethodRoutes);
 router.use(REASON_ROUTE, reasonRoutes);
 
 router.use(ORDERDETAIL_ROUTE, orderDetailRoutes);
-router.use(ORDERREQUEST_ROUTE, orderRequestRoutes);
 router.use(REPORT_ROUTE, reportRoutes);
 
 export const APIs_V1 = router;

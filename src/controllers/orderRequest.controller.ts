@@ -10,7 +10,7 @@ const findAll = catchErrors(async (req: Request, res: Response) => {
 });
 
 const addOrderRequest = catchErrors(async (req: Request, res: Response) => {
-  const result = await orderRequestService.addOrderRequest(req.body, res);
+  const result = await orderRequestService.addOrderRequest(req, res);
   res.status(StatusCodes.OK).json(result).send();
 });
 
