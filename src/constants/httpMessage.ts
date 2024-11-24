@@ -1,4 +1,5 @@
 import { ReasonPhrases } from 'http-status-codes';
+import { OrderStage } from '../types/enum/orderStage.enum';
 
 const TOKEN = 'Token';
 const OTP = 'OTP';
@@ -13,6 +14,7 @@ const getNotFoundMsg = (title: string) => `${title} ${ReasonPhrases.NOT_FOUND}`;
 const getConflictMsg = (title: string) => `${title} already exists`;
 const getExpiredMsg = (title: string) => `${title} has expired`;
 const getIncorrectMsg = (title: string) => `Incorrect ${title}`;
+const getOrderStageConditionMsg = (orderStage: OrderStage) => `Stage's order must be ${orderStage}`;
 
 const EXPIRED_MGS = {
   TOKEN: getExpiredMsg(TOKEN),
@@ -34,6 +36,10 @@ const CONFLICT = {
   USER: getConflictMsg(USER),
 };
 
+const ORDER_STAGE_CONDITION = {
+  PICKING: getOrderStageConditionMsg(OrderStage.Picking),
+};
+
 export const HttpMessage = {
   NOT_FOUND,
   EXPIRED_MGS,
@@ -42,4 +48,5 @@ export const HttpMessage = {
   NOT_VERIFY,
   OUT_OF_STOCK,
   ACCESS_DENIED,
+  ORDER_STAGE_CONDITION
 };

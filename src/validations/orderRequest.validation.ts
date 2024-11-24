@@ -21,9 +21,6 @@ const orderRequestSchema = Joi.object<OrderRequestSchema>({
   taskType: Joi.string()
     .valid(...Object.values(TaskType))
     .required(),
-  replyStatus: Joi.string()
-    .valid(...Object.values(ReplyStatus))
-    .default(ReplyStatus.Pending),
   reasonID: idSchema.required(),
   orderStageStatusID: idSchema.required(),
 });
