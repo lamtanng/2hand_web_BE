@@ -8,11 +8,11 @@ export interface OrderProps {
   note: string;
   total: number;
   shipmentCost: number;
-  userID: mongoose.Schema.Types.ObjectId;
-  storeID: mongoose.Schema.Types.ObjectId;
-  orderDetailIDs: mongoose.Schema.Types.ObjectId[];
+  userID: mongoose.Types.ObjectId;
+  storeID: mongoose.Types.ObjectId;
+  orderDetailIDs: mongoose.Types.ObjectId[];
   orderStageID: mongoose.Types.ObjectId;
-  paymentMethodID: mongoose.Schema.Types.ObjectId;
+  paymentMethodID: mongoose.Types.ObjectId;
   createAt?: Date;
   updateAt?: Date;
 }
