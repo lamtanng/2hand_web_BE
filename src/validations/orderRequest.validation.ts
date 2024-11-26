@@ -8,6 +8,8 @@ import {
 } from '../types/http/orderRequest.type';
 import { catchErrors } from '../utils/catchErrors';
 import { CommonValidation } from './common.validation';
+import { OrderStage } from '../types/enum/orderStage.enum';
+import { OrderStageStatus } from '../types/enum/orderStageStatus.enum';
 
 interface OrderRequestSchema extends CreateOrderRequestRequest {}
 interface ReplyOrderRequestSchema extends ReplyOrderRequestRequest {}
@@ -22,7 +24,11 @@ const orderRequestSchema = Joi.object<OrderRequestSchema>({
     .valid(...Object.values(TaskType))
     .required(),
   reasonID: idSchema.required(),
-  orderStageStatusID: idSchema.required(),
+  orderStageID: idSchema.required(),
+  name: Joi.string().required().valid(OrderStage.Picking, OrderStage.Confirmating),
+  status: Joi.string()
+    .valid(...Object.values(OrderStageStatus))
+    .required(),
 });
 
 const replyOrderRequestSchema = Joi.object<ReplyOrderRequestSchema>().keys({

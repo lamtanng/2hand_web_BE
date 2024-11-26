@@ -29,6 +29,8 @@ import { GetAvailableServiceRequestProps } from '../types/http/ghn.type';
 import { orderStageService } from './orderStage.service';
 import { OrderStage } from '../types/enum/orderStage.enum';
 import mongoose from 'mongoose';
+import { OrderProps } from '../types/model/order.type';
+import { OrderStageProps } from '../types/model/orderStage.type';
 const crypto = require('crypto');
 
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {
@@ -47,15 +49,69 @@ const findAll = catchServiceFunc(async (req: Request, res: Response) => {
   const orders = await OrderModel.find(queryObj)
     .populate({ path: 'orderDetailIDs', populate: { path: 'productID' } })
     .populate('userID')
-    .populate('orderStageID')
     .populate('paymentMethodID')
-    .populate('storeID');
+    .populate('storeID')
+    .populate({
+      path: 'orderStageID',
+      populate: { path: 'orderStageStatusID', populate: { path: 'orderRequestID' } },
+    });
   // .limit(limit)
   // .skip(skip)
   // .find({ name: { $regex: search, $options: 'i' } });
 
   return orders;
 });
+
+const findOneById = catchServiceFunc(async (req: Request, res: Response) => {
+  const { _id } = req.params;
+  const order = await OrderModel.findById(_id)
+    .populate({ path: 'orderDetailIDs', populate: { path: 'productID' } })
+    .populate('userID')
+    .populate('paymentMethodID')
+    .populate('storeID')
+    .populate('receiverAddress')
+    .populate({
+      path: 'orderStageID',
+      populate: { path: 'orderStageStatusID', populate: { path: 'orderRequestID' } },
+    });
+  return order;
+});
+
+// const flattenOneOrder = async (orderID: mongoose.Types.ObjectId) => {
+//   try {
+//     const order = await findOne(orderID);
+//     if (!order) {
+//       throw new Error('Order not found');
+//     }
+
+//     const { orderStageID } = order;
+//     const { orderStageStatusID } = orderStageID;
+
+//     const resOrder = { ...order, orderStageID: order.orderStageID?._id };
+//     const resOrderStage = { ...orderStageID, orderStageStatusID: orderStageID._id };
+//     const resOrderStageStatus = { ...orderStageStatusID, orderRequestID: orderStageStatusID._id };
+
+//     return { order: resOrder, orderStage: resOrderStage };
+//   } catch (error: any) {}
+// };
+
+const findOne = async (orderID: mongoose.Types.ObjectId) => {
+  // interface FindOrderResultProps extends Omit<OrderProps, 'orderStageID'> {
+  //   orderStageID: Omit<OrderStageProps, 'orderStageStatusID'> extends {
+  //     orderStageStatusID: mongoose.Types.ObjectId;
+  //   }
+  // }
+  return await OrderModel.findById(orderID)
+    .populate({ path: 'orderDetailIDs', populate: { path: 'productID' } })
+    .populate('userID')
+    .populate('paymentMethodID')
+    .populate('storeID')
+    .populate('receiverAddress')
+    .populate({
+      path: 'orderStageID',
+      populate: { path: 'orderStageStatusID', populate: { path: 'orderRequestID' } },
+    });
+};
 
 const updateOrderStage = catchServiceFunc(async (req: Request, res: Response) => {
   const { _id, orderStageID } = req.body;
@@ -230,4 +286,5 @@ export const orderService = {
   getAvailableService,
   getPickupDate,
   calcExpectedDeliveryDate,
+  findOneById,
 };
