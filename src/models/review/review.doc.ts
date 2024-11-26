@@ -2,6 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 import { ReviewProps } from '../../types/model/review.type';
 import { USER_COLLECTION_NAME } from '../user/user.doc';
 import { PRODUCT_COLLECTION_NAME } from '../product/product.doc';
+import { ORDERDETAIL_COLLECTION_NAME } from '../orderDetail/orderDetail.doc';
 
 export interface ReviewDocument extends ReviewProps, Document {}
 
@@ -46,6 +47,11 @@ export const REVIEW_COLLECTION_SCHEMA = new Schema<ReviewDocument>(
     productID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: PRODUCT_COLLECTION_NAME,
+      required: true,
+    },
+    orderDetailID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: ORDERDETAIL_COLLECTION_NAME,
       required: true,
     },
     likes: {
