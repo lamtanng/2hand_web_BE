@@ -9,12 +9,12 @@ const findAll = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
-const addReason = catchErrors(async (req: Request, res: Response) => {
-  const result = await reasonService.addReason(req.body, res);
+const createReason = catchErrors(async (req: Request, res: Response) => {
+  const result = await reasonService.createReason(req.body);
   res.status(StatusCodes.OK).json(result).send();
 });
 
 export const reasonController = {
   findAll,
-  addReason,
+  createReason,
 };

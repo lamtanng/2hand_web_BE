@@ -11,7 +11,6 @@ import ApiError from '../utils/classes/ApiError';
 const createOneByRequest = catchServiceFunc(async (req: Request, res: Response) => {
   const data = req.body as OrderStageStatusProps;
   const orderStageStatus = await createOne(data);
-  console.log(orderStageStatus);
 
   const newOrder = await OrderModel.findOne(
     { orderStageID: orderStageStatus.orderStageID },

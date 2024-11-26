@@ -5,6 +5,7 @@ import {
   CATEGORY_ROUTE,
   ORDER_ROUTE,
   ORDER_STAGE_STATUS_ROUTE,
+  ORDERREQUEST_ROUTE,
   ORDERSTAGE_ROUTE,
   PRODUCT_ROUTE,
   STORE_ROUTE,
@@ -19,6 +20,7 @@ import { orderRoutes } from './order.routes';
 import { storeRoutes } from './store.routes';
 import { orderStageRoutes } from './orderStage.routes';
 import { orderStageStatusRoutes } from './orderStageStatus.routes';
+import { orderRequestRoutes } from '../orderRequest.routes';
 
 const router = express.Router();
 
@@ -29,7 +31,8 @@ router.use(CART_ROUTE, isAuthorized, cartRoutes);
 router.use(USER_ROUTE, userRoutes);
 router.use(ORDER_ROUTE, isAuthorized, orderRoutes);
 router.use(STORE_ROUTE, storeRoutes);
-router.use(ORDERSTAGE_ROUTE, isAuthorized,orderStageRoutes);
+router.use(ORDERSTAGE_ROUTE, isAuthorized, orderStageRoutes);
 router.use(ORDER_STAGE_STATUS_ROUTE, isAuthorized, orderStageStatusRoutes);
+router.use(ORDERREQUEST_ROUTE, orderRequestRoutes);
 
 export const customerRouter = router;
