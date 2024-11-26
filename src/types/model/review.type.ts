@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 export interface ReviewProps{
-    _id: mongoose.Schema.Types.ObjectId,
+    _id: mongoose.Types.ObjectId,
     content: string,
     rate: number,
     image: string[],
@@ -11,6 +11,7 @@ export interface ReviewProps{
     updateAt?: Date,
     isActive: boolean,
     replyMessage: string,
-    reviewerID: mongoose.Schema.Types.ObjectId,
-    productID: mongoose.Schema.Types.ObjectId,
+    reviewerID: mongoose.Types.ObjectId,
+    productID: mongoose.Types.ObjectId,
+    orderDetailID: mongoose.Types.ObjectId,
 }

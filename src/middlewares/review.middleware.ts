@@ -8,10 +8,10 @@ import { OrderDetailProps } from '../types/model/orderDetail.type';
 import { catchErrors, handleError } from '../utils/catchErrors';
 
 const isDelivered = catchErrors(async (req, res, next) => {
-  const { productID } = req.body as CreateReviewRequest;
+  const { orderDetailID } = req.body as CreateReviewRequest;
 
   // Check if the order stage is delivered
-  const orderDetails = (await OrderDetailModel.findById(productID).populate({
+  const orderDetails = (await OrderDetailModel.findById(orderDetailID).populate({
     path: 'orderID',
     populate: { path: 'orderStageID' },
   })) as unknown as OrderDetailProps & { orderID: { orderStageID: { name: string } } };

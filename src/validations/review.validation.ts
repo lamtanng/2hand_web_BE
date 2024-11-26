@@ -16,6 +16,7 @@ const createReviewSchema = Joi.object<CreateReviewSchema>().keys({
   video: Joi.array().items(Joi.string()).allow(null),
   productID: idSchema.required(),
   reviewerID: idSchema.required(),
+  orderDetailID: idSchema.required(),
 });
 
 const reactToReviewSchema = Joi.object<ReactToReviewSchema>().keys({
