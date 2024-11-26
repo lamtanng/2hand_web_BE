@@ -39,6 +39,7 @@ const CONFLICT = {
 const ORDER_STAGE_CONDITION = {
   REPLYING_REQUEST: getOrderStageConditionMsg(OrderStage.Picking),
   SENDING_REQUEST: getOrderStageConditionMsg(`${OrderStage.Picking} or ${OrderStage.Confirmating}`),
+  REVIEW_PRODUCT: getOrderStageConditionMsg(`${OrderStage.Delivered}`),
 };
 
 export const HttpMessage = {

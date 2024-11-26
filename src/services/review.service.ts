@@ -4,16 +4,12 @@ import { uploadCloudinary, UploadCloudinaryProps } from '../services/cloudinary.
 import { catchServiceFunc } from '../utils/catchErrors';
 import { UploadApiResponse } from 'cloudinary';
 import { reviewFolder } from '../constants/cloudinaryFolder';
-import { CreateReviewRequest } from '../types/http/review.type';
+import { CreateReviewRequest, ReactToReviewRequest } from '../types/http/review.type';
 
-const findAll = async (reqBody: Request, res: Response) => {
-  try {
-    const reviews = await ReviewModel.find().populate('productID', 'name');
-    return { reviews };
-  } catch (error) {
-    console.error(error);
-  }
-};
+const findAll = catchServiceFunc(async (reqBody: Request, res: Response) => {
+  const reviews = await ReviewModel.find().populate('productID').populate('reviewerID');
+  return reviews;
+});
 
 const createOne = catchServiceFunc(async (req: Request, res: Response) => {
   const { video, image } = req.body as CreateReviewRequest;
@@ -38,6 +34,13 @@ const createOne = catchServiceFunc(async (req: Request, res: Response) => {
   return review;
 });
 
+const reactToReview = catchServiceFunc(async (req: Request, res: Response) => {
+  const { _id, likes, replyMessage } = req.body as ReactToReviewRequest;
+  const review = await ReviewModel.findByIdAndUpdate(_id, { likes, replyMessage }, { new: true });
+
+  return review;
+});
+
 const uploadReviewFiles = async ({ files, asset_folder, resource_type }: UploadCloudinaryProps) => {
   const uploadedFiles = await uploadCloudinary({
     files,
@@ -48,4 +51,4 @@ const uploadReviewFiles = async ({ files, asset_folder, resource_type }: UploadC
   return uploadedFiles.map((file: UploadApiResponse) => file.secure_url);
 };
 
-export const reviewService = { findAll, createOne };
+export const reviewService = { findAll, createOne, reactToReview };
