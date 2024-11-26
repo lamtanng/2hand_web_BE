@@ -37,6 +37,7 @@ export const handleError = async ({ message, statusCode, next }: HandleErrorProp
     statusCode: statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
   });
   next(customError);
+  return;
 };
 
 export const catchAuthErrors = (error: AppError, next?: NextFunction) => {

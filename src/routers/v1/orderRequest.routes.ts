@@ -4,10 +4,10 @@ import { orderRequestValidation } from '../../validations/orderRequest.validatio
 import { orderRequestMiddleware } from '../../middlewares/orderRequesst.middleware';
 const router = express.Router();
 
-const { isReplied } = orderRequestMiddleware;
+const { isReplied, isSended } = orderRequestMiddleware;
 const { createValidation, replyValidation } = orderRequestValidation;
 router.route('/').get(orderRequestController.findAll);
-router.route('/').post(createValidation, orderRequestController.addOrderRequest);
-router.route('/').put(isReplied, replyValidation, orderRequestController.reply);
+router.route('/').post(createValidation, isSended, orderRequestController.addOrderRequest);
+router.route('/').put(replyValidation, isReplied, orderRequestController.replyByRequest);
 
 export const orderRequestRoutes = router;

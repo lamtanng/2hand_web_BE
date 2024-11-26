@@ -12,6 +12,11 @@ const findAll = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const findOneById = catchErrors(async (req: Request, res: Response) => {
+  const result = await orderService.findOneById(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 const addOrderWithMoMo = catchErrors(async (req: Request, res: Response) => {
   const result = await orderService.addOrderWithMoMo(req, res);
   res.status(StatusCodes.OK).json(result).send('<p>some html</p>');
@@ -76,4 +81,5 @@ export const orderController = {
   getAvailableService,
   getPickupDate,
   calcExpectedDeliveryDate,
+  findOneById,
 };

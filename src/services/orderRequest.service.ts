@@ -12,6 +12,11 @@ import { orderStageService } from './orderStage.service';
 import { OrderStage } from '../types/enum/orderStage.enum';
 import { OrderRequestDocument } from '../models/orderRequest/orderRequest.doc';
 import mongoose from 'mongoose';
+import { AppError } from '../types/error.type';
+import ApiError from '../utils/classes/ApiError';
+import { OrderStageStatus } from '../types/enum/orderStageStatus.enum';
+import { orderStageStatusService } from './orderStageStatus.service';
+import { TaskType } from '../types/enum/taskType.enum';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {
@@ -24,44 +29,113 @@ const findAll = async (reqBody: Request, res: Response) => {
 
 const addOrderRequest = catchServiceFunc(async (req: Request, res: Response) => {
   const orderRequest = req.body as CreateOrderRequestRequest;
-  const newOrderRequest = await OrderRequestModel.create(orderRequest);
-  await OrderStageStatusModel.findByIdAndUpdate(orderRequest.orderStageStatusID, {
+  const { status, name } = orderRequest;
+
+  //create new order stage status ()
+  let newOrderStageStatus;
+  if (status === OrderStageStatus.RequestToSeller) {
+    newOrderStageStatus = await orderStageStatusService.createOne({
+      orderStageID: orderRequest.orderStageID,
+      status: OrderStageStatus.RequestToAdmin,
+    });
+  } else if (status === OrderStageStatus.Active) {
+    newOrderStageStatus = await orderStageStatusService.createOne({
+      orderStageID: orderRequest.orderStageID,
+      status: OrderStageStatus.RequestToSeller,
+    });
+  }
+
+  //create new order request
+  const newOrderRequest = await OrderRequestModel.create({
+    ...orderRequest,
+    orderStageStatusID: newOrderStageStatus?._id,
+  });
+
+  //update orderStageStatusID in orderStage
+  await OrderStageStatusModel.findByIdAndUpdate(newOrderStageStatus?._id, {
     orderRequestID: newOrderRequest._id,
   });
+
+  //auto approved request if stage is Confirmating
+  if (name === OrderStage.Confirmating) {
+    console.log('auto approved request', name);
+    
+    await reply({
+      _id: newOrderRequest?._id,
+      replyStatus: ReplyStatus.Succeeded,
+      replyMessage: 'Approved',
+    });
+  }
+
   return newOrderRequest;
 });
 
-const reply = catchServiceFunc(async (req: Request, res: Response) => {
-  const { _id, replyMessage, replyStatus } = req.body as ReplyOrderRequestRequest;
-  const repliedOrderRequest = (await OrderRequestModel.findByIdAndUpdate(
-    _id,
-    { replyMessage, replyStatus },
-    { new: true },
-  ).populate({ path: 'orderStageStatusID', populate: { path: 'orderStageID' } })) as
-    | (OrderRequestDocument & { orderStageStatusID: { orderStageID: { orderID: string } } })
-    | null;
+const replyByRequest = catchServiceFunc(async (req: Request, res: Response) => {
+  const data = req.body as ReplyOrderRequestRequest;
+  const repliedOrderRequest = await reply({ ...data });
+  return repliedOrderRequest;
+});
 
-  // if approved, move order to the cancelled stage
-  if (replyStatus === ReplyStatus.Succeeded) {
+const reply = async ({
+  _id,
+  replyStatus,
+  replyMessage,
+}: ReplyOrderRequestRequest) => {
+  try {
+    //update request status (rejected or succeeded)
+    const repliedOrderRequest = (await OrderRequestModel.findByIdAndUpdate(
+      _id,
+      { replyMessage, replyStatus },
+      { new: true },
+    ).populate({ path: 'orderStageStatusID', populate: { path: 'orderStageID' } })) as
+      | (OrderRequestDocument & { orderStageStatusID: { orderStageID: { orderID: string } } })
+      | null;
+
     const orderID = repliedOrderRequest?.orderStageStatusID?.orderStageID
       ?.orderID as unknown as mongoose.Types.ObjectId;
 
+    //if request is succeeded, cancel order
+    if (replyStatus === ReplyStatus.Succeeded) {
+      await cancelOrder(orderID, repliedOrderRequest?.taskType || TaskType.Cancel);
+    }
+
+    //if request is rejected
+    if (replyStatus === ReplyStatus.Rejected) {
+      await OrderRequestModel.findByIdAndUpdate(
+        repliedOrderRequest?._id,
+        {
+          replyStatus: ReplyStatus.Rejected,
+        },
+        { new: true },
+      );
+    }
+
+    return repliedOrderRequest;
+  } catch (error: AppError) {
+    return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
+  }
+};
+
+const cancelOrder = async (orderID: mongoose.Types.ObjectId, taskType: TaskType) => {
+  try {
+    let stage = OrderStage.Cancelled;
+    if (taskType === TaskType.Return) stage = OrderStage.Returned;
+
     const orderStage = await orderStageService.createOne({
-      name: OrderStage.Cancelled,
+      name: stage,
       orderID,
     });
 
     //update order with new orderStage
-    await OrderModel.findByIdAndUpdate(
+    const updatedOrder = await OrderModel.findByIdAndUpdate(
       orderID,
       { orderStageID: orderStage?._id },
       { new: true },
-    ).populate({
-      path: 'orderStageID',
-      populate: { path: 'orderStageStatusID', populate: 'orderRequestID' },
-    });
+    );
+    return updatedOrder;
+  } catch (error: AppError) {
+    return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
   }
-  return repliedOrderRequest;
-});
+};
 
-export const orderRequestService = { findAll, addOrderRequest, reply };
+export const orderRequestService = { findAll, addOrderRequest, replyByRequest, reply };

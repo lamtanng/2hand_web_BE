@@ -18,10 +18,12 @@ const {
   getAvailableService,
   getPickupDate,
   calcExpectedDeliveryDate,
+  findOneById,
 } = orderController;
 const { Read, Create } = ActionPermission.Order;
 
 router.route('/').get(checkCustomerPermission(Read), customerFindAll, findAll);
+router.route('/:_id').get(checkCustomerPermission(Read), findOneById);
 router.route('/').post(checkCustomerPermission(Create), createOrder, addOrderWithMoMo);
 router.route('/place_order').post(placeOrder);
 router.route('/callback').post(isCheckout, addOrderWithMoMo);

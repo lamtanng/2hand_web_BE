@@ -14,7 +14,7 @@ const getNotFoundMsg = (title: string) => `${title} ${ReasonPhrases.NOT_FOUND}`;
 const getConflictMsg = (title: string) => `${title} already exists`;
 const getExpiredMsg = (title: string) => `${title} has expired`;
 const getIncorrectMsg = (title: string) => `Incorrect ${title}`;
-const getOrderStageConditionMsg = (orderStage: OrderStage) => `Stage's order must be ${orderStage}`;
+const getOrderStageConditionMsg = (orderStage: string) => `Stage's order must be ${orderStage}`;
 
 const EXPIRED_MGS = {
   TOKEN: getExpiredMsg(TOKEN),
@@ -37,7 +37,8 @@ const CONFLICT = {
 };
 
 const ORDER_STAGE_CONDITION = {
-  PICKING: getOrderStageConditionMsg(OrderStage.Picking),
+  REPLYING_REQUEST: getOrderStageConditionMsg(OrderStage.Picking),
+  SENDING_REQUEST: getOrderStageConditionMsg(`${OrderStage.Picking} or ${OrderStage.Confirmating}`),
 };
 
 export const HttpMessage = {
@@ -48,5 +49,5 @@ export const HttpMessage = {
   NOT_VERIFY,
   OUT_OF_STOCK,
   ACCESS_DENIED,
-  ORDER_STAGE_CONDITION
+  ORDER_STAGE_CONDITION,
 };
