@@ -1,11 +1,11 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-export interface OrderDetailProps{
-    _id: mongoose.Schema.Types.ObjectId,
-    quantity: number,
-    priceTotal: number,
-    productID: mongoose.Schema.Types.ObjectId,
-    // orderID: mongoose.Schema.Types.ObjectId,
-    createAt?: Date,
-    updateAt?: Date,
+export interface OrderDetailProps {
+  _id: mongoose.Types.ObjectId;
+  quantity: number;
+  priceTotal: number;
+  productID: mongoose.Types.ObjectId;
+  orderID: mongoose.Types.ObjectId;
+  createAt?: Date;
+  updateAt?: Date;
 }

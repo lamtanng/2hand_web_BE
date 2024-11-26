@@ -153,12 +153,27 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
     for (const order of orders) {
       //create order detail
       const { total, storeID, note, items, shipmentCost } = order;
+
+      //create order
+      const orderModel = new OrderModel({
+        total,
+        userID,
+        paymentMethodID,
+        storeID,
+        shipmentCost,
+        note,
+        // orderDetailIDs,
+        receiverAddress,
+      });
+      const newOrder = await orderModel.save({ session });
+
       const orderDetailList = items.map((item: MoMoPaymentItemsProps) => {
         const { quantity, totalPrice, id } = item;
         return {
           quantity,
           priceTotal: totalPrice,
           productID: id,
+          orderID: newOrder._id,
         };
       });
       const orderDetailIDs = (await OrderDetailModel.insertMany(orderDetailList, { session })).map(
@@ -176,19 +191,8 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
         })),
       );
 
-      //create order
-      const orderModel = new OrderModel({
-        total,
-        userID,
-        paymentMethodID,
-        storeID,
-        shipmentCost,
-        note,
-        orderDetailIDs,
-        receiverAddress,
-      });
-
-      const newOrder = await orderModel.save({ session });
+      //update orderDetailIDs to order
+      newOrder.orderDetailIDs = orderDetailIDs;
 
       //create orderStage
       const orderStage = await orderStageService.createOne({
