@@ -21,7 +21,7 @@ import { orderStageRoutes } from './customerRoutes/orderStage.routes';
 import { paymentMethodRoutes } from './paymentMethod.route';
 import { reasonRoutes } from './reason.routes';
 import { reportRoutes } from './report.routes';
-import { reviewRoutes } from './review.route';
+import { reviewRoutes } from './customerRoutes/review.routes';
 import { sellerRouter } from './sellerRoutes';
 
 const router = express.Router();
@@ -36,7 +36,6 @@ router.use(ADMIN_ROUTE, adminRouter);
 router.use(SELLER_ROUTE, sellerRouter);
 router.use('/', customerRouter);
 
-router.use(REVIEW_ROUTE, reviewRoutes);
 router.use(PAYMENTMETHOD_ROUTE, paymentMethodRoutes);
 
 router.use(REASON_ROUTE, reasonRoutes);
