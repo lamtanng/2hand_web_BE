@@ -13,7 +13,13 @@ const createOne = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const reactToReview = catchErrors(async (req: Request, res: Response) => {
+  const result = await reviewService.reactToReview(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const reviewController = {
   findAll,
   createOne,
+  reactToReview,
 };
