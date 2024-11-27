@@ -22,6 +22,7 @@ const createOrderStageStatusSchema = Joi.object<CreateOrderStageStatusSchema>().
   orderStageID: idSchema.required(),
   date: Joi.date(),
   expectedDate: Joi.date(),
+  
 });
 
 const updateDateSchema = Joi.object<UpdateDateSchema>().keys({
