@@ -6,6 +6,7 @@ import { ORDERSTAGE_COLLECTION_NAME } from '../orderStage/orderStage.doc';
 import { PAYMENTMETHOD_COLLECTION_NAME } from '../paymentMethod/paymentMethod.doc';
 import { STORE_COLLECTION_NAME } from '../store/store.doc';
 import { USER_COLLECTION_NAME } from '../user/user.doc';
+import { getDate } from '../../utils/format';
 
 export interface OrderDocument extends OrderProps, Document {}
 
@@ -21,11 +22,7 @@ export const ORDER_COLLECTION_SCHEMA = new Schema<OrderDocument>(
     exprDate: {
       type: Date,
       required: true,
-      default: function () {
-        const date = new Date(Date.now());
-        date.setDate(date.getDate() + 3);
-        return date;
-      },
+      default: getDate({ addedDate: 3 }),
     },
     receiverAddress: ADDRESS_COLLECTION_SCHEMA,
     note: {

@@ -32,7 +32,7 @@ const createOneByRequest = async (req: Request, res: Response) => {
   return newOrder;
 };
 
-const createOne = async ({ name, orderID }: CreateOrderStageRequest) => {
+const createOne = async ({ name, orderID, expectedDate }: CreateOrderStageRequest) => {
   try {
     const orderStage = await OrderStageModel.create({
       name,
@@ -41,6 +41,7 @@ const createOne = async ({ name, orderID }: CreateOrderStageRequest) => {
     const orderStageStatus = await orderStageStatusService.createOne({
       orderStageID: orderStage._id,
       status: OrderStageStatus.Active,
+      expectedDate,
     });
 
     return await OrderStageModel.findByIdAndUpdate(orderStage._id, {
