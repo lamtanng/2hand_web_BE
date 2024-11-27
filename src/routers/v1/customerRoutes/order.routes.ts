@@ -32,7 +32,7 @@ router.route('/calc_shipping_fee').post(shippingValidation.calcShippingFee, calc
 router
   .route('/available_service')
   .post(shippingValidation.getAvailableService, getAvailableService);
-router.route('/pickup-date').get(getPickupDate);
+router.route('/pickup-date').post(getPickupDate);
 router
   .route('/delivery-time')
   .post(shippingValidation.calcExpectedDeliveryDate, calcExpectedDeliveryDate);

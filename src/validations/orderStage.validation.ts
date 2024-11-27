@@ -15,6 +15,7 @@ const orderStageSchema = Joi.object<OrderStageSchema>({
     .trim()
     .valid(...Object.values(OrderStage)),
   orderID: idSchema.required(),
+  expectedDate: Joi.date().iso(),
 });
 
 export const orderStageValidation = catchErrors(

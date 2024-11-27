@@ -31,6 +31,7 @@ import { OrderStage } from '../types/enum/orderStage.enum';
 import mongoose from 'mongoose';
 import { OrderProps } from '../types/model/order.type';
 import { OrderStageProps } from '../types/model/orderStage.type';
+import { getDate } from '../utils/format';
 const crypto = require('crypto');
 
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {
@@ -198,6 +199,7 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
       const orderStage = await orderStageService.createOne({
         name: OrderStage.Confirmating,
         orderID: newOrder._id,
+        expectedDate: getDate({ addedDate: 2 }),
       });
 
       //update orderID to order stage
