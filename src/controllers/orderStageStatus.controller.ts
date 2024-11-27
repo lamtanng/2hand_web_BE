@@ -8,4 +8,9 @@ const createOne = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
-export const orderStageStatusController = { createOne };
+const updateDate = catchErrors(async (req: Request, res: Response) => {
+  const result = await orderStageStatusService.updateDate(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
+export const orderStageStatusController = { createOne, updateDate };

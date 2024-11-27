@@ -52,4 +52,4 @@ const createOne = async ({ name, orderID, expectedDate }: CreateOrderStageReques
   }
 };
 
-export const orderStageService = { findAll, createOne, createOneByRequest };
+export const orderStageService = { findAll, createOne, createOneByRequest, };

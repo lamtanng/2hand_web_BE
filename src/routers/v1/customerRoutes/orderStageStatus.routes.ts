@@ -3,9 +3,10 @@ import { orderStageStatusController } from '../../../controllers/orderStageStatu
 import { orderStageStatusValidation } from '../../../validations/orderStageStatus.validation';
 const router = express.Router();
 
-const { createOne } = orderStageStatusController;
-const { createValidation } = orderStageStatusValidation;
+const { createOne, updateDate } = orderStageStatusController;
+const { createValidation, updateDateValidation } = orderStageStatusValidation;
 router.route('/').get();
 router.route('/').post(createValidation, createOne);
+router.route('/').patch(updateDateValidation, updateDate);
 
 export const orderStageStatusRoutes = router;
