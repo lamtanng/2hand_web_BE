@@ -6,6 +6,7 @@ export interface OrderDetailProps {
   priceTotal: number;
   productID: mongoose.Types.ObjectId;
   orderID: mongoose.Types.ObjectId;
+  reviewID: mongoose.Types.ObjectId;
   createAt?: Date;
   updateAt?: Date;
 }

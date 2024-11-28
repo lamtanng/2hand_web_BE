@@ -5,6 +5,7 @@ import { catchServiceFunc } from '../utils/catchErrors';
 import { UploadApiResponse } from 'cloudinary';
 import { reviewFolder } from '../constants/cloudinaryFolder';
 import { CreateReviewRequest, ReactToReviewRequest } from '../types/http/review.type';
+import { OrderDetailModel } from '../models/orderDetail';
 
 const findAll = catchServiceFunc(async (reqBody: Request, res: Response) => {
   const reviews = await ReviewModel.find().populate('productID').populate('reviewerID');
@@ -12,7 +13,7 @@ const findAll = catchServiceFunc(async (reqBody: Request, res: Response) => {
 });
 
 const createOne = catchServiceFunc(async (req: Request, res: Response) => {
-  const { video, image } = req.body as CreateReviewRequest;
+  const { video, image, orderDetailID } = req.body as CreateReviewRequest;
 
   const uploadedVideos = await uploadReviewFiles({
     files: video,
@@ -30,6 +31,8 @@ const createOne = catchServiceFunc(async (req: Request, res: Response) => {
     image: uploadedImages,
     video: uploadedVideos,
   });
+
+  await OrderDetailModel.findByIdAndUpdate(orderDetailID, { reviewID: review._id });
 
   return review;
 });
