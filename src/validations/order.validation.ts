@@ -29,12 +29,12 @@ const orderSchema = Joi.object<OrderSchema>({
 });
 
 const findAllSchema = Joi.object<FindAllOrdersResponseProps>({
-  userID: idSchema.empty(''),
-  storeID: idSchema.empty(''),
-  orderStageID: idSchema.empty(''),
-  paymentMethodID: idSchema.empty(''),
-  _id: idSchema.empty(''),
-}).concat(paginationSchema);
+  userID: idSchema.allow(null, ''),
+  storeID: idSchema.allow(null, ''),
+  orderStageID: idSchema.allow(null, ''),
+  paymentMethodID: idSchema.allow(null, ''),
+  _id: idSchema.allow(null, ''),
+}).concat(paginationSchema);2
 
 const customerFindAllSchema = Joi.object<FindAllOrdersResponseProps>({
   userID: idSchema.required(),

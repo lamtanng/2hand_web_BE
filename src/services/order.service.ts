@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { Request, Response } from 'express';
-import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import { ReasonPhrases } from 'http-status-codes';
+import mongoose from 'mongoose';
 import {
   calcExpectedDeliveryDateAPI,
   calcShippingFeeAPI,
@@ -12,55 +13,66 @@ import { MOMO } from '../constants/momo';
 import { pagination } from '../constants/pagination';
 import { OrderModel } from '../models/order';
 import { OrderDetailModel } from '../models/orderDetail';
-import { OrderStageModel } from '../models/orderStage';
+import { ProductModel } from '../models/product';
+import { OrderStage } from '../types/enum/orderStage.enum';
 import { AppError } from '../types/error.type';
+import { GetAvailableServiceRequestProps } from '../types/http/ghn.type';
 import { IPNMoMoPaymentRequestProps, MoMoPaymentItemsProps } from '../types/http/momoPayment.type';
 import {
   CalcExpectedDeliveryDateRequest,
-  CalcShippingFeeResponseProps,
   CreateCODPaymentRequestProps,
 } from '../types/http/order.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
-import { getMoMoCreationRequestBody } from '../utils/momo';
-import { deleteEmptyObjectFields } from '../utils/object';
-import { ProductModel } from '../models/product';
-import { GetAvailableServiceRequestProps } from '../types/http/ghn.type';
-import { orderStageService } from './orderStage.service';
-import { OrderStage } from '../types/enum/orderStage.enum';
-import mongoose from 'mongoose';
-import { OrderProps } from '../types/model/order.type';
-import { OrderStageProps } from '../types/model/orderStage.type';
 import { getDate } from '../utils/format';
+import { getMoMoCreationRequestBody } from '../utils/momo';
+import { deleteEmptyObjectFields, parseJson, parseJsonObject } from '../utils/object';
+import { orderStageService } from './orderStage.service';
+import { PaginationResponseProps } from '../types/http/pagination.type';
+import { populate } from 'dotenv';
 const crypto = require('crypto');
 
+interface FindALlQueryProps {
+  userID: string;
+  orderStageID: string;
+  paymentMethodID: string;
+  storeID: string;
+  _id: string;
+}
+
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {
-  const { userID, orderStageID, paymentMethodID, storeID, _id } = req.query;
+  const { userID, orderStageID, paymentMethodID, storeID, _id } =
+    req.query as unknown as FindALlQueryProps;
   const { page, limit, search, skip } = pagination(req);
 
-  let queryObj: { [key: string]: string | undefined } = {
+  let queryObj = {
     _id: (_id || '') as string,
     userID: (userID || '') as string,
     orderStageID: (orderStageID || '') as string,
     paymentMethodID: (paymentMethodID || '') as string,
     storeID: (storeID || '') as string,
+    name: search && { $regex: search, $options: 'i' },
   };
-  deleteEmptyObjectFields(queryObj);
 
-  const orders = await OrderModel.find(queryObj)
+  deleteEmptyObjectFields(queryObj);
+  console.log(queryObj);
+  const orders = await OrderModel.find({ userID: '673b3c703cd6066db7d50788' })
     .populate({ path: 'orderDetailIDs', populate: { path: 'productID' } })
     .populate('userID')
     .populate('paymentMethodID')
     .populate('storeID')
     .populate({
       path: 'orderStageID',
-      populate: { path: 'orderStageStatusID', populate: { path: 'orderRequestID' } },
-    });
-  // .limit(limit)
-  // .skip(skip)
-  // .find({ name: { $regex: search, $options: 'i' } });
+      populate: {
+        path: 'orderStageStatusID',
+        populate: { path: 'orderRequestID', populate: 'reasonID' },
+      },
+    })
+    .limit(limit)
+    .skip(skip);
 
-  return orders;
+  const total = await OrderModel.countDocuments(queryObj);
+  return { page, limit, total, data: orders } as PaginationResponseProps;
 });
 
 const findOneById = catchServiceFunc(async (req: Request, res: Response) => {
@@ -73,7 +85,10 @@ const findOneById = catchServiceFunc(async (req: Request, res: Response) => {
     .populate('receiverAddress')
     .populate({
       path: 'orderStageID',
-      populate: { path: 'orderStageStatusID', populate: { path: 'orderRequestID' } },
+      populate: {
+        path: 'orderStageStatusID',
+        populate: { path: 'orderRequestID', populate: 'reasonID' },
+      },
     });
   return order;
 });
