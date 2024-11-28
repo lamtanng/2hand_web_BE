@@ -31,8 +31,12 @@ export const ORDERDETAIL_COLLECTION_SCHEMA = new Schema<orderDetailDocument>(
     },
     orderID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "order",
+      ref: 'order',
       required: true,
+    },
+    reviewID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'review',
     },
   },
   { timestamps: true },
