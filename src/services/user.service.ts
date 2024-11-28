@@ -21,6 +21,7 @@ import _ from 'lodash';
 import { uploadCloudinary, UploadCloudinaryProps } from './cloudinary.service';
 import { avatarFolder } from '../constants/cloudinaryFolder';
 import { UploadApiResponse } from 'cloudinary';
+import { PaginationResponseProps } from '../types/http/pagination.type';
 
 const findAll = async (req: Request, res: Response) => {
   try {
@@ -39,7 +40,7 @@ const findAll = async (req: Request, res: Response) => {
       .exec();
 
     const total = await UserModel.countDocuments(searchUserFilter);
-    const response: GetUsersResponseProps = { page, limit, total, users };
+    const response: PaginationResponseProps = { page, limit, total, data: users };
     return response;
   } catch (error: AppError) {
     return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
