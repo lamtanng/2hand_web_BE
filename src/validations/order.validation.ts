@@ -11,6 +11,7 @@ import { catchErrors } from '../utils/catchErrors';
 import { paginationSchema } from './pagination.validation';
 import { CommonValidation } from './common.validation';
 import { MoMoPaymentItemsProps } from '../types/http/momoPayment.type';
+import { OrderStage } from '../types/enum/orderStage.enum';
 
 interface OrderSchema extends OrderProps {}
 const { idSchema } = CommonValidation;
@@ -31,10 +32,11 @@ const orderSchema = Joi.object<OrderSchema>({
 const findAllSchema = Joi.object<FindAllOrdersResponseProps>({
   userID: idSchema.allow(null, ''),
   storeID: idSchema.allow(null, ''),
-  orderStageID: idSchema.allow(null, ''),
+  stages: Joi.string().allow(null, ''),
   paymentMethodID: idSchema.allow(null, ''),
   _id: idSchema.allow(null, ''),
-}).concat(paginationSchema);2
+}).concat(paginationSchema);
+2;  
 
 const customerFindAllSchema = Joi.object<FindAllOrdersResponseProps>({
   userID: idSchema.required(),
