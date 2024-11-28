@@ -18,8 +18,20 @@ const reactToReview = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const findAllByReviewerID = catchErrors(async (req: Request, res: Response) => {
+  const result = await reviewService.findAllByReviewerID(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
+const findAllByProductID = catchErrors(async (req: Request, res: Response) => {
+  const result = await reviewService.findAllByProductID(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const reviewController = {
   findAll,
   createOne,
   reactToReview,
+  findAllByReviewerID,
+  findAllByProductID,
 };
