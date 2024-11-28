@@ -53,7 +53,10 @@ const findAll = catchServiceFunc(async (req: Request, res: Response) => {
   const orders = await OrderModel.find({
     ...queryObj,
   })
-    .populate({ path: 'orderDetailIDs', populate: { path: 'productID' } })
+    .populate({
+      path: 'orderDetailIDs',
+      populate: ['productID', 'reviewID'],
+    })
     .populate('userID')
     .populate('paymentMethodID')
     .populate('storeID')
@@ -74,7 +77,10 @@ const findAll = catchServiceFunc(async (req: Request, res: Response) => {
 const findOneById = catchServiceFunc(async (req: Request, res: Response) => {
   const { _id } = req.params;
   const order = await OrderModel.findById(_id)
-    .populate({ path: 'orderDetailIDs', populate: { path: 'productID' } })
+    .populate({
+      path: 'orderDetailIDs',
+      populate: ['productID', 'reviewID'],
+    })
     .populate('userID')
     .populate('paymentMethodID')
     .populate('storeID')
