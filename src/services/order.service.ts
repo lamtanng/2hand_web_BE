@@ -13,6 +13,7 @@ import { MOMO } from '../constants/momo';
 import { pagination } from '../constants/pagination';
 import { OrderModel } from '../models/order';
 import { OrderDetailModel } from '../models/orderDetail';
+import { OrderStageModel } from '../models/orderStage';
 import { ProductModel } from '../models/product';
 import { OrderStage } from '../types/enum/orderStage.enum';
 import { AppError } from '../types/error.type';
@@ -22,41 +23,36 @@ import {
   CalcExpectedDeliveryDateRequest,
   CreateCODPaymentRequestProps,
 } from '../types/http/order.type';
+import { PaginationResponseProps } from '../types/http/pagination.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
 import { getDate } from '../utils/format';
 import { getMoMoCreationRequestBody } from '../utils/momo';
-import { deleteEmptyObjectFields, parseJson, parseJsonObject } from '../utils/object';
+import { deleteEmptyObjectFields, parseJson } from '../utils/object';
 import { orderStageService } from './orderStage.service';
-import { PaginationResponseProps } from '../types/http/pagination.type';
-import { populate } from 'dotenv';
 const crypto = require('crypto');
 
-interface FindALlQueryProps {
-  userID: string;
-  orderStageID: string;
-  paymentMethodID: string;
-  storeID: string;
-  _id: string;
-}
-
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {
-  const { userID, orderStageID, paymentMethodID, storeID, _id } =
-    req.query as unknown as FindALlQueryProps;
+  const { userID, stages, paymentMethodID, storeID, _id } = req.query;
   const { page, limit, search, skip } = pagination(req);
 
   let queryObj = {
     _id: (_id || '') as string,
     userID: (userID || '') as string,
-    orderStageID: (orderStageID || '') as string,
     paymentMethodID: (paymentMethodID || '') as string,
     storeID: (storeID || '') as string,
     name: search && { $regex: search, $options: 'i' },
+    orderStageID: stages && {
+      $in: await OrderStageModel.find({
+        name: { $in: parseJson(stages as string) },
+      }),
+    },
   };
 
   deleteEmptyObjectFields(queryObj);
-  console.log(queryObj);
-  const orders = await OrderModel.find({ userID: '673b3c703cd6066db7d50788' })
+  const orders = await OrderModel.find({
+    ...queryObj,
+  })
     .populate({ path: 'orderDetailIDs', populate: { path: 'productID' } })
     .populate('userID')
     .populate('paymentMethodID')
