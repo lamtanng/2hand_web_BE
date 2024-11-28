@@ -51,4 +51,30 @@ const uploadReviewFiles = async ({ files, asset_folder, resource_type }: UploadC
   return uploadedFiles.map((file: UploadApiResponse) => file.secure_url);
 };
 
-export const reviewService = { findAll, createOne, reactToReview };
+const findAllByReviewerID = catchServiceFunc(async (req: Request, res: Response) => {
+  const { reviewerID } = req.params;
+  const reviews = await ReviewModel.find({ reviewerID })
+    .populate('productID')
+    .populate('reviewerID')
+    .populate('orderDetailID');
+
+  return reviews;
+});
+
+const findAllByProductID = catchServiceFunc(async (req: Request, res: Response) => {
+  const { productID } = req.params;
+  const reviews = await ReviewModel.find({ productID })
+    .populate('productID')
+    .populate('reviewerID')
+    .populate('orderDetailID');
+
+  return reviews;
+});
+
+export const reviewService = {
+  findAll,
+  createOne,
+  reactToReview,
+  findAllByReviewerID,
+  findAllByProductID,
+};

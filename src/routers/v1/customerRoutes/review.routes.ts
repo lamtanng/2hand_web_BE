@@ -8,6 +8,8 @@ const { createValidation, reactToReviewValidation } = reviewValidation;
 const { isDelivered } = reviewMiddleware;
 
 router.route('/').get(reviewController.findAll);
+router.route('/reviewer/:reviewerID').get(reviewController.findAllByReviewerID);
+router.route('/product/:productID').get(reviewController.findAllByProductID);
 router.route('/').post(createValidation, isDelivered, reviewController.createOne);
 router.route('/').put(reactToReviewValidation, reviewController.reactToReview);
 
