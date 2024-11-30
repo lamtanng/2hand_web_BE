@@ -22,7 +22,7 @@ const {
 } = orderController;
 const { Read, Create } = ActionPermission.Order;
 
-router.route('/').get(checkCustomerPermission(Read), customerFindAll, findAll);
+router.route('/').get(checkCustomerPermission(Read), findAll);
 router.route('/:_id').get(checkCustomerPermission(Read), findOneById);
 router.route('/').post(checkCustomerPermission(Create), createOrder, addOrderWithMoMo);
 router.route('/place_order').post(placeOrder);

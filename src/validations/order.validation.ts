@@ -35,6 +35,7 @@ const findAllSchema = Joi.object<FindAllOrdersResponseProps>({
   stages: Joi.string().allow(null, ''),
   paymentMethodID: idSchema.allow(null, ''),
   _id: idSchema.allow(null, ''),
+  
 }).concat(paginationSchema);
 2;  
 
