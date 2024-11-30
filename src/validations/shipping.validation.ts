@@ -1,11 +1,15 @@
 import Joi from 'joi';
-import { CalcShippingFeeRequestProps } from '../types/http/order.type';
+import {
+  CalcExpectedDeliveryDateRequest,
+  CalcShippingFeeRequestProps,
+} from '../types/http/order.type';
 import { catchErrors } from '../utils/catchErrors';
 import { NextFunction, Request, Response } from 'express';
 import { CalcShippingFeeItemProps, GetAvailableServiceRequestProps } from '../types/http/ghn.type';
 
 interface CalcShippingFeeSchema extends CalcShippingFeeRequestProps {}
 interface GetAvailableServiceSchema extends GetAvailableServiceRequestProps {}
+interface CalcExpectedDeliveryDateSchema extends CalcExpectedDeliveryDateRequest {}
 
 const calcShippingFeeSchema = Joi.object<CalcShippingFeeSchema>({
   shopid: Joi.number().required(),
@@ -40,6 +44,15 @@ const getAvailableServiceSchema = Joi.object<GetAvailableServiceSchema>({
   to_district: Joi.number().required(),
 });
 
+const calcExpectedDeliveryDateSchema = Joi.object<CalcExpectedDeliveryDateSchema>({
+  ShopID: Joi.number().allow(null, ''),
+  from_district_id: Joi.number().required(),
+  from_ward_code: Joi.string().required(),
+  to_district_id: Joi.number().required(),
+  to_ward_code: Joi.string().required(),
+  service_id: Joi.number().allow(null, ''),
+});
+
 const calcShippingFee = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
   await calcShippingFeeSchema.validateAsync(req.body, { abortEarly: false });
   next();
@@ -50,4 +63,15 @@ const getAvailableService = catchErrors(async (req: Request, res: Response, next
   next();
 });
 
-export const shippingValidation = { calcShippingFee, getAvailableService };
+const calcExpectedDeliveryDate = catchErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    await calcExpectedDeliveryDateSchema.validateAsync(req.body, { abortEarly: false });
+    next();
+  },
+);
+
+export const shippingValidation = {
+  calcShippingFee,
+  getAvailableService,
+  calcExpectedDeliveryDate,
+};

@@ -1,57 +1,140 @@
 import axios from 'axios';
 import { Request, Response } from 'express';
-import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import { calcShippingFeeAPI, getAvailableServiceAPI } from '../apis/ghn';
+import { ReasonPhrases } from 'http-status-codes';
+import mongoose from 'mongoose';
+import {
+  calcExpectedDeliveryDateAPI,
+  calcShippingFeeAPI,
+  getAvailableServiceAPI,
+  getPickupDateAPI,
+} from '../apis/ghn';
 import { createMoMoPayment } from '../apis/momo';
 import { MOMO } from '../constants/momo';
 import { pagination } from '../constants/pagination';
 import { OrderModel } from '../models/order';
 import { OrderDetailModel } from '../models/orderDetail';
-import { OrderStatusModel } from '../models/orderStatus';
+import { OrderStageModel } from '../models/orderStage';
+import { ProductModel } from '../models/product';
+import { OrderStage } from '../types/enum/orderStage.enum';
 import { AppError } from '../types/error.type';
+import { GetAvailableServiceRequestProps } from '../types/http/ghn.type';
 import { IPNMoMoPaymentRequestProps, MoMoPaymentItemsProps } from '../types/http/momoPayment.type';
 import {
-  CalcShippingFeeResponseProps,
+  CalcExpectedDeliveryDateRequest,
   CreateCODPaymentRequestProps,
 } from '../types/http/order.type';
+import { PaginationResponseProps } from '../types/http/pagination.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
+import { getDate } from '../utils/format';
 import { getMoMoCreationRequestBody } from '../utils/momo';
-import { deleteEmptyObjectFields } from '../utils/object';
-import { ProductModel } from '../models/product';
-import { GetAvailableServiceRequestProps } from '../types/http/ghn.type';
+import { deleteEmptyObjectFields, parseJson } from '../utils/object';
+import { orderStageService } from './orderStage.service';
 const crypto = require('crypto');
 
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {
-  const { userID, orderStatusID, paymentMethodID, storeID, _id } = req.query;
+  const { userID, stages, paymentMethodID, storeID, _id } = req.query;
   const { page, limit, search, skip } = pagination(req);
 
-  let queryObj: { [key: string]: string | undefined } = {
+  let queryObj = {
     _id: (_id || '') as string,
     userID: (userID || '') as string,
-    orderStatusID: (orderStatusID || '') as string,
     paymentMethodID: (paymentMethodID || '') as string,
     storeID: (storeID || '') as string,
+    name: search && { $regex: search, $options: 'i' },
+    orderStageID: stages && {
+      $in: await OrderStageModel.find({
+        name: { $in: parseJson(stages as string) },
+      }),
+    },
   };
+
   deleteEmptyObjectFields(queryObj);
-
-  const orders = await OrderModel.find(queryObj)
-    .populate({ path: 'orderDetailIDs', populate: { path: 'productID' } })
+  const orders = await OrderModel.find({
+    ...queryObj,
+  })
+    .populate({
+      path: 'orderDetailIDs',
+      populate: ['productID', 'reviewID'],
+    })
     .populate('userID')
-    .populate('orderStatusID')
     .populate('paymentMethodID')
-    .populate('storeID');
-  // .limit(limit)
-  // .skip(skip)
-  // .find({ name: { $regex: search, $options: 'i' } });
+    .populate('storeID')
+    .populate({
+      path: 'orderStageID',
+      populate: {
+        path: 'orderStageStatusID',
+        populate: { path: 'orderRequestID', populate: 'reasonID' },
+      },
+    })
+    .limit(limit)
+    .skip(skip);
 
-  return orders;
+  const total = await OrderModel.countDocuments(queryObj);
+  return { page, limit, total, data: orders } as PaginationResponseProps;
 });
 
-const updateOrderStatus = catchServiceFunc(async (req: Request, res: Response) => {
-  const { _id, orderStatusID } = req.body;
-  const order = await OrderModel.findByIdAndUpdate(_id, { orderStatusID }, { new: true }).populate(
-    'orderStatusID',
+const findOneById = catchServiceFunc(async (req: Request, res: Response) => {
+  const { _id } = req.params;
+  const order = await OrderModel.findById(_id)
+    .populate({
+      path: 'orderDetailIDs',
+      populate: ['productID', 'reviewID'],
+    })
+    .populate('userID')
+    .populate('paymentMethodID')
+    .populate('storeID')
+    .populate('receiverAddress')
+    .populate({
+      path: 'orderStageID',
+      populate: {
+        path: 'orderStageStatusID',
+        populate: { path: 'orderRequestID', populate: 'reasonID' },
+      },
+    });
+  return order;
+});
+
+// const flattenOneOrder = async (orderID: mongoose.Types.ObjectId) => {
+//   try {
+//     const order = await findOne(orderID);
+//     if (!order) {
+//       throw new Error('Order not found');
+//     }
+
+//     const { orderStageID } = order;
+//     const { orderStageStatusID } = orderStageID;
+
+//     const resOrder = { ...order, orderStageID: order.orderStageID?._id };
+//     const resOrderStage = { ...orderStageID, orderStageStatusID: orderStageID._id };
+//     const resOrderStageStatus = { ...orderStageStatusID, orderRequestID: orderStageStatusID._id };
+
+//     return { order: resOrder, orderStage: resOrderStage };
+//   } catch (error: any) {}
+// };
+
+const findOne = async (orderID: mongoose.Types.ObjectId) => {
+  // interface FindOrderResultProps extends Omit<OrderProps, 'orderStageID'> {
+  //   orderStageID: Omit<OrderStageProps, 'orderStageStatusID'> extends {
+  //     orderStageStatusID: mongoose.Types.ObjectId;
+  //   }
+  // }
+  return await OrderModel.findById(orderID)
+    .populate({ path: 'orderDetailIDs', populate: { path: 'productID' } })
+    .populate('userID')
+    .populate('paymentMethodID')
+    .populate('storeID')
+    .populate('receiverAddress')
+    .populate({
+      path: 'orderStageID',
+      populate: { path: 'orderStageStatusID', populate: { path: 'orderRequestID' } },
+    });
+};
+
+const updateOrderStage = catchServiceFunc(async (req: Request, res: Response) => {
+  const { _id, orderStageID } = req.body;
+  const order = await OrderModel.findByIdAndUpdate(_id, { orderStageID }, { new: true }).populate(
+    'orderStageID',
   );
   return order;
 });
@@ -81,8 +164,6 @@ const payByMomo = catchServiceFunc(async (req: Request, res: Response) => {
 
 const createOrder = async (data: CreateCODPaymentRequestProps) => {
   const { userID, paymentMethodID, orders, receiverAddress } = data as CreateCODPaymentRequestProps;
-  const orderStatus = await OrderStatusModel.findOne({ stage: 1 });
-
   const session = await OrderModel.startSession();
   session.startTransaction();
 
@@ -90,24 +171,32 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
     for (const order of orders) {
       //create order detail
       const { total, storeID, note, items, shipmentCost } = order;
+
+      //create order
+      const orderModel = new OrderModel({
+        total,
+        userID,
+        paymentMethodID,
+        storeID,
+        shipmentCost,
+        note,
+        // orderDetailIDs,
+        receiverAddress,
+      });
+      const newOrder = await orderModel.save({ session });
+
       const orderDetailList = items.map((item: MoMoPaymentItemsProps) => {
         const { quantity, totalPrice, id } = item;
         return {
           quantity,
           priceTotal: totalPrice,
           productID: id,
+          orderID: newOrder._id,
         };
       });
       const orderDetailIDs = (await OrderDetailModel.insertMany(orderDetailList, { session })).map(
         (item) => item._id,
       );
-
-      if (!orderDetailIDs) {
-        throw new ApiError({
-          message: 'Order detail created failed',
-          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        });
-      }
 
       const updatedProducts = await ProductModel.bulkWrite(
         orderDetailList.map((order) => ({
@@ -120,33 +209,19 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
         })),
       );
 
-      if (updatedProducts.modifiedCount !== orderDetailList.length) {
-        throw new ApiError({
-          message: 'Order detail created failed',
-          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        });
-      }
+      //update orderDetailIDs to order
+      newOrder.orderDetailIDs = orderDetailIDs;
 
-      //create order
-      const orderModel = new OrderModel({
-        total,
-        userID,
-        orderStatusID: orderStatus?._id,
-        paymentMethodID,
-        storeID,
-        shipmentCost,
-        note,
-        orderDetailIDs,
-        receiverAddress,
+      //create orderStage
+      const orderStage = await orderStageService.createOne({
+        name: OrderStage.Confirmating,
+        orderID: newOrder._id,
+        expectedDate: getDate({ addedDate: 2 }),
       });
 
-      const newOrder = await orderModel.save({ session });
-      if (!newOrder) {
-        throw new ApiError({
-          message: 'Order detail created failed',
-          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        });
-      }
+      //update orderID to order stage
+      newOrder.orderStageID = orderStage?._id as mongoose.Types.ObjectId;
+      await orderModel.save({ session });
     }
 
     await session.commitTransaction();
@@ -212,13 +287,27 @@ const getAvailableService = catchServiceFunc(async (req: Request, res: Response)
   return service.data;
 });
 
+const getPickupDate = catchServiceFunc(async (req: Request, res: Response) => {
+  const service = await getPickupDateAPI();
+  return service.data;
+});
+
+const calcExpectedDeliveryDate = catchServiceFunc(async (req: Request, res: Response) => {
+  const data = req.body as CalcExpectedDeliveryDateRequest;
+  const service = await calcExpectedDeliveryDateAPI(data);
+  return service.data;
+});
+
 export const orderService = {
   findAll,
   addOrderWithMoMo,
   payByMomo,
   checkPaymentTransaction,
-  updateOrderStatus,
+  updateOrderStage,
   calcShippingFee,
   addOrderWithCOD,
   getAvailableService,
+  getPickupDate,
+  calcExpectedDeliveryDate,
+  findOneById,
 };

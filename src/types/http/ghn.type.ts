@@ -15,6 +15,7 @@ export interface CreateGHNStoreRequestProps {
   address: string;
   token?: string;
 }
+
 export interface CreateGHNStoreResponseProps {
   shop_id: number;
 }

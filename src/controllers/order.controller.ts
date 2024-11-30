@@ -12,19 +12,19 @@ const findAll = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const findOneById = catchErrors(async (req: Request, res: Response) => {
+  const result = await orderService.findOneById(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 const addOrderWithMoMo = catchErrors(async (req: Request, res: Response) => {
   const result = await orderService.addOrderWithMoMo(req, res);
   res.status(StatusCodes.OK).json(result).send('<p>some html</p>');
 });
 
-const updateOrderStatus = catchErrors(async (req: Request, res: Response) => {
-  const result = await orderService.updateOrderStatus(req, res);
+const updateOrderStage = catchErrors(async (req: Request, res: Response) => {
+  const result = await orderService.updateOrderStage(req, res);
   res.status(StatusCodes.OK).json(result).send('<p>some html</p>');
-});
-
-const payByMomo = catchErrors(async (req: Request, res: Response) => {
-  const result = await orderService.payByMomo(req, res);
-  res.status(StatusCodes.OK).json(result).send();
 });
 
 const placeOrder = catchErrors(async (req: Request, res: Response) => {
@@ -61,12 +61,25 @@ const getAvailableService = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const getPickupDate = catchErrors(async (req: Request, res: Response) => {
+  const result = await orderService.getPickupDate(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
+const calcExpectedDeliveryDate = catchErrors(async (req: Request, res: Response) => {
+  const result = await orderService.calcExpectedDeliveryDate(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const orderController = {
   findAll,
   addOrderWithMoMo,
   checkPaymentTransaction,
-  updateOrderStatus,
+  updateOrderStage,
   calcShippingFee,
   placeOrder,
   getAvailableService,
+  getPickupDate,
+  calcExpectedDeliveryDate,
+  findOneById,
 };

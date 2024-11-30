@@ -109,31 +109,36 @@ const WARD_ADDRESS_SCHEMA = new Schema<WardAddressProps>({
 });
 
 export const ADDRESS_COLLECTION_NAME = 'address';
-export const ADDRESS_COLLECTION_SCHEMA = new Schema<AddressProps>({
-  _id: {
-    type: mongoose.Schema.Types.ObjectId,
-    default: function () {
-      return new mongoose.Types.ObjectId();
+export const ADDRESS_COLLECTION_SCHEMA = new Schema<AddressProps>(
+  {
+    _id: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: function () {
+        return new mongoose.Types.ObjectId();
+      },
+    },
+    address: {
+      type: String,
+      required: true,
+    },
+    province: {
+      type: PROVINCE_ADDRESS_SCHEMA,
+      required: true,
+    },
+    district: {
+      type: DISTRICT_ADDRESS_SCHEMA,
+      required: true,
+    },
+    ward: {
+      type: WARD_ADDRESS_SCHEMA,
+      required: true,
+    },
+    isDefault: {
+      type: Boolean,
+      default: false,
     },
   },
-  address: {
-    type: String,
-    required: true,
+  {
+    timestamps: true,
   },
-  province: {
-    type: PROVINCE_ADDRESS_SCHEMA,
-    required: true,
-  },
-  district: {
-    type: DISTRICT_ADDRESS_SCHEMA,
-    required: true,
-  },
-  ward: {
-    type: WARD_ADDRESS_SCHEMA,
-    required: true,
-  },
-  isDefault: {
-    type: Boolean,
-    default: false,
-  },
-});
+);

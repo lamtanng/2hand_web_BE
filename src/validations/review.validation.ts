@@ -1,26 +1,40 @@
-import Joi from 'joi';
-import { catchErrors } from '../utils/catchErrors';
 import { NextFunction, Request, Response } from 'express';
-import { ReviewProps } from '../types/model/review.type';
-import { ObjectIDRegex } from '../constants/validation';
+import Joi from 'joi';
+import { CreateReviewRequest, ReactToReviewRequest } from '../types/http/review.type';
+import { catchErrors } from '../utils/catchErrors';
+import { CommonValidation } from './common.validation';
 
-interface ReviewSchema extends ReviewProps {}
+interface CreateReviewSchema extends CreateReviewRequest {}
+interface ReactToReviewSchema extends ReactToReviewRequest {}
 
-const reviewSchema = Joi.object<ReviewSchema>({
+const { idSchema } = CommonValidation;
+
+const createReviewSchema = Joi.object<CreateReviewSchema>().keys({
   content: Joi.string().default(null),
-  rate: Joi.number().min(1).max(5).required(),
-  image: [Joi.string()],
-  video: [Joi.string()],
-  isActive: Joi.boolean().default(true),
-  replyMessage: Joi.string().default(null),
-  reviewerID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
-  productID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
+  rate: Joi.number().min(1).max(5),
+  image: Joi.array().items(Joi.string()).allow(null),
+  video: Joi.array().items(Joi.string()).allow(null),
+  productID: idSchema.required(),
+  reviewerID: idSchema.required(),
+  orderDetailID: idSchema.required(),
 });
 
-export const reivewValidation = catchErrors(
+const reactToReviewSchema = Joi.object<ReactToReviewSchema>().keys({
+  _id: idSchema.required(),
+  likes: Joi.number().allow(null),
+  replyMessage: Joi.string().allow(null),
+});
+
+const createValidation = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
+  await createReviewSchema.validateAsync(req.body, { abortEarly: false });
+  next();
+});
+
+const reactToReviewValidation = catchErrors(
   async (req: Request, res: Response, next: NextFunction) => {
-    // abortEarly: false will return all errors found in the request bod
-    await reviewSchema.validateAsync(req.body, { abortEarly: false });
+    await reactToReviewSchema.validateAsync(req.body, { abortEarly: false });
     next();
   },
 );
+
+export const reviewValidation = { createValidation, reactToReviewValidation };

@@ -16,6 +16,7 @@ import { deleteEmptyObjectFields, parseJson } from '../utils/object';
 import { generateSlug } from '../utils/slug';
 import { uploadCloudinary, UploadCloudinaryProps } from './cloudinary.service';
 import { log } from 'console';
+import { PaginationResponseProps } from '../types/http/pagination.type';
 
 const findAll = async (req: Request, res: Response) => {
   try {
@@ -40,9 +41,7 @@ const findAll = async (req: Request, res: Response) => {
       price: price && { $gte: price.min, $lte: price.max },
       storeID: storeID && { $in: storeID },
     };
-    log(findCondition);
     deleteEmptyObjectFields(findCondition);
-    log(findCondition);
     const products = await ProductModel.find(findCondition)
       .populate('cateID')
       .populate('storeID')
@@ -51,11 +50,11 @@ const findAll = async (req: Request, res: Response) => {
       .sort(sort);
 
     const total = await ProductModel.countDocuments(findCondition);
-    const response = {
+    const response: PaginationResponseProps = {
       page,
       limit,
       total,
-      products,
+      data: products,
     };
     return { response };
   } catch (error: AppError) {

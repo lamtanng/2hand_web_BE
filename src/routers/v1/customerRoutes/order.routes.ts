@@ -16,15 +16,25 @@ const {
   calcShippingFee,
   placeOrder,
   getAvailableService,
+  getPickupDate,
+  calcExpectedDeliveryDate,
+  findOneById,
 } = orderController;
 const { Read, Create } = ActionPermission.Order;
 
 router.route('/').get(checkCustomerPermission(Read), customerFindAll, findAll);
+router.route('/:_id').get(checkCustomerPermission(Read), findOneById);
 router.route('/').post(checkCustomerPermission(Create), createOrder, addOrderWithMoMo);
 router.route('/place_order').post(placeOrder);
 router.route('/callback').post(isCheckout, addOrderWithMoMo);
 router.route('/check_transaction').post(checkPaymentTransaction);
 router.route('/calc_shipping_fee').post(shippingValidation.calcShippingFee, calcShippingFee);
-router.route('/available_service').post(shippingValidation.getAvailableService, getAvailableService);
+router
+  .route('/available_service')
+  .post(shippingValidation.getAvailableService, getAvailableService);
+router.route('/pickup-date').post(getPickupDate);
+router
+  .route('/delivery-time')
+  .post(shippingValidation.calcExpectedDeliveryDate, calcExpectedDeliveryDate);
 
 export const orderRoutes = router;
