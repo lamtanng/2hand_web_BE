@@ -36,6 +36,8 @@ const findAll = catchServiceFunc(async (req: Request, res: Response) => {
   const { userID, stages, paymentMethodID, storeID, _id } = req.query;
   const { page, limit, search, skip } = pagination(req);
 
+  const sort = parseJson(req.query.sort as string);
+
   let queryObj = {
     _id: (_id || '') as string,
     userID: (userID || '') as string,
@@ -68,7 +70,8 @@ const findAll = catchServiceFunc(async (req: Request, res: Response) => {
       },
     })
     .limit(limit)
-    .skip(skip);
+    .skip(skip)
+    .sort(sort);
 
   const total = await OrderModel.countDocuments(queryObj);
   return { page, limit, total, data: orders } as PaginationResponseProps;
