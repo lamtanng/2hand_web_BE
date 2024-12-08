@@ -35,6 +35,11 @@ const update = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const statistics = catchErrors(async (req: Request, res: Response) => {
+  const result = await storeService.statistics(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const storeController = {
   findAll,
   addStore,
@@ -42,4 +47,5 @@ export const storeController = {
   findOneByUserId,
   createGHNStore,
   update,
+  statistics,
 };

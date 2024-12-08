@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Request, Response } from 'express';
-import { ReasonPhrases } from 'http-status-codes';
+import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
 import {
   calcExpectedDeliveryDateAPI,
@@ -22,6 +22,7 @@ import { IPNMoMoPaymentRequestProps, MoMoPaymentItemsProps } from '../types/http
 import {
   CalcExpectedDeliveryDateRequest,
   CreateCODPaymentRequestProps,
+  CreatedOrderProps,
 } from '../types/http/order.type';
 import { PaginationResponseProps } from '../types/http/pagination.type';
 import { catchServiceFunc } from '../utils/catchErrors';
@@ -30,6 +31,9 @@ import { getDate } from '../utils/format';
 import { getMoMoCreationRequestBody } from '../utils/momo';
 import { deleteEmptyObjectFields, parseJson } from '../utils/object';
 import { orderStageService } from './orderStage.service';
+import { OrderStageStatusModel } from '../models/orderStageStatus';
+import { ORDERREQUEST_COLLECTION_NAME } from '../models/orderRequest/orderRequest.doc';
+import { HttpMessage } from '../constants/httpMessage';
 const crypto = require('crypto');
 
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {
@@ -61,7 +65,7 @@ const findAll = catchServiceFunc(async (req: Request, res: Response) => {
     })
     .populate('userID')
     .populate('paymentMethodID')
-    .populate('storeID')
+    .populate({ path: 'storeID', populate: 'userID' })
     .populate({
       path: 'orderStageID',
       populate: {
@@ -86,7 +90,7 @@ const findOneById = catchServiceFunc(async (req: Request, res: Response) => {
     })
     .populate('userID')
     .populate('paymentMethodID')
-    .populate('storeID')
+    .populate({ path: 'storeID', populate: 'userID' })
     .populate('receiverAddress')
     .populate({
       path: 'orderStageID',
@@ -98,39 +102,82 @@ const findOneById = catchServiceFunc(async (req: Request, res: Response) => {
   return order;
 });
 
-// const flattenOneOrder = async (orderID: mongoose.Types.ObjectId) => {
-//   try {
-//     const order = await findOne(orderID);
-//     if (!order) {
-//       throw new Error('Order not found');
-//     }
+const tracking = catchServiceFunc(async (req: Request, res: Response) => {
+  const order = (await findOne(req.params.orderID)) as unknown as any;
 
-//     const { orderStageID } = order;
-//     const { orderStageStatusID } = orderStageID;
+  const { orderStageID } = order;
 
-//     const resOrder = { ...order, orderStageID: order.orderStageID?._id };
-//     const resOrderStage = { ...orderStageID, orderStageStatusID: orderStageID._id };
-//     const resOrderStageStatus = { ...orderStageStatusID, orderRequestID: orderStageStatusID._id };
+  const stages = await OrderStageModel.find({ orderID: order._id })
+    .sort({ createdAt: 1 })
+    .populate('orderStageStatusID');
 
-//     return { order: resOrder, orderStage: resOrderStage };
-//   } catch (error: any) {}
-// };
+  const statuses = await OrderStageStatusModel.aggregate([
+    {
+      $match: {
+        orderStageID: { $in: stages.map((stage) => stage._id) }, // Filter by orderStageIDs
+      },
+    },
+    {
+      $lookup: {
+        from: 'requests', // Replace with your request collection name
+        localField: 'orderRequestID', // Reference field in OrderStageStatusModel
+        foreignField: '_id', // Matching field in request collection
+        as: 'request', // Alias for joined request documents
+      },
+    },
+    {
+      $unwind: '$request', // Deconstruct the request array (optional)
+    },
+    {
+      $project: {
+        _id: 1,
+        orderStatus: {
+          $map: {
+            input: { $concatArrays: ['$status', '$request'] }, // Combine data
+            as: 'combined',
+            in: {
+              status: '$$combined.0', // Project status from combined array
+              request: '$$combined.1', // Project request from combined array
+            },
+          },
+        },
+      },
+    },
+  ]);
 
-const findOne = async (orderID: mongoose.Types.ObjectId) => {
+  // {
+  //   $unwind: '$request', // Deconstruct the request array (optional)
+  // },
+  const { orderStageStatusID } = orderStageID;
+
+  // const resOrder = { ...order, orderStageID: order.orderStageID?._id };
+  // const resOrderStage = { ...orderStageID, orderStageStatusID: orderStageID._id };
+  // const resOrderStageStatus = { ...orderStageStatusID, orderRequestID: orderStageStatusID._id };
+
+  return { statuses };
+});
+
+const findOne = async (orderID: mongoose.Types.ObjectId | string) => {
   // interface FindOrderResultProps extends Omit<OrderProps, 'orderStageID'> {
   //   orderStageID: Omit<OrderStageProps, 'orderStageStatusID'> extends {
   //     orderStageStatusID: mongoose.Types.ObjectId;
   //   }
   // }
   return await OrderModel.findById(orderID)
-    .populate({ path: 'orderDetailIDs', populate: { path: 'productID' } })
+    .populate({
+      path: 'orderDetailIDs',
+      populate: ['productID', 'reviewID'],
+    })
     .populate('userID')
     .populate('paymentMethodID')
     .populate('storeID')
     .populate('receiverAddress')
     .populate({
       path: 'orderStageID',
-      populate: { path: 'orderStageStatusID', populate: { path: 'orderRequestID' } },
+      populate: {
+        path: 'orderStageStatusID',
+        populate: { path: 'orderRequestID', populate: 'reasonID' },
+      },
     });
 };
 
@@ -167,10 +214,20 @@ const payByMomo = catchServiceFunc(async (req: Request, res: Response) => {
 
 const createOrder = async (data: CreateCODPaymentRequestProps) => {
   const { userID, paymentMethodID, orders, receiverAddress } = data as CreateCODPaymentRequestProps;
+
   const session = await OrderModel.startSession();
   session.startTransaction();
 
   try {
+    // const outOfStockProducts = await inInStock(orders);
+    // if (outOfStockProducts.length) {
+    //   return new ApiError({
+    //     message: HttpMessage.OUT_OF_STOCK,
+    //     statusCode: StatusCodes.NOT_FOUND,
+    //     data: outOfStockProducts,
+    //   });
+    // }
+
     for (const order of orders) {
       //create order detail
       const { total, storeID, note, items, shipmentCost } = order;
@@ -301,6 +358,23 @@ const calcExpectedDeliveryDate = catchServiceFunc(async (req: Request, res: Resp
   return service.data;
 });
 
+const inInStock = async (orders: CreateCODPaymentRequestProps['orders']) => {
+  console.log(orders);
+  const allProducts = orders.flatMap((order) =>
+    order.items.map(({ id, name }) => ({ _id: id, name })),
+  );
+  console.log(allProducts);
+  const inStockProducts = await ProductModel.find({
+    _id: { $in: allProducts.map(({ _id }) => _id) },
+  });
+
+  const outOfStockProducts = allProducts.filter(({ _id }) => {
+    return !inStockProducts.some((product) => String(product._id) === _id && product.quantity > 0);
+  });
+
+  return outOfStockProducts;
+};
+
 export const orderService = {
   findAll,
   addOrderWithMoMo,
@@ -313,4 +387,5 @@ export const orderService = {
   getPickupDate,
   calcExpectedDeliveryDate,
   findOneById,
+  tracking,
 };
