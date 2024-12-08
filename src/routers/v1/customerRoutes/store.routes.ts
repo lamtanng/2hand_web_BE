@@ -7,11 +7,12 @@ import { storeValidation } from '../../../validations/store.validation';
 const router = express.Router();
 
 const { createStoreValidation, updateValidation } = storeValidation;
-const { addStore, findAll, findOneById, findOneByUserId, update } = storeController;
+const { addStore, findAll, findOneById, findOneByUserId, update,statistics } = storeController;
 router.route('/').get(findAll);
 router.route('/').post(createStoreValidation, addStore);
 router.route('/').patch(updateValidation, update);
 router.route(STORE_BY_ID_ROUTE).get(findOneById);
 router.route(STORE_BY_USER_ROUTE).get(findOneByUserId);
+router.route(STORE_BY_USER_ROUTE).get(statistics);
 
 export const storeRoutes = router;

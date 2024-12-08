@@ -6,6 +6,8 @@ import { CreateCODPaymentRequestProps } from '../types/http/order.type';
 import { PaymentMethodModel } from '../models/paymentMethod';
 import ApiError from '../utils/classes/ApiError';
 import { PaymentMethod } from '../types/enum/paymentMethod.enum';
+import { HttpMessage } from '../constants/httpMessage';
+import { ProductModel } from '../models/product';
 
 const findAll = catchErrors(async (req: Request, res: Response) => {
   const result = await orderService.findAll(req, res);
@@ -30,9 +32,10 @@ const updateOrderStage = catchErrors(async (req: Request, res: Response) => {
 const placeOrder = catchErrors(async (req: Request, res: Response) => {
   const { paymentMethodID } = req.body as CreateCODPaymentRequestProps;
   const paymentMethod = await PaymentMethodModel.findOne({ _id: paymentMethodID });
+
   if (!paymentMethod) {
     throw new ApiError({
-      message: 'Payment method not found',
+      message: HttpMessage.NOT_FOUND.PAYMENT_METHOD,
       statusCode: StatusCodes.NOT_FOUND,
     });
   }
@@ -71,6 +74,11 @@ const calcExpectedDeliveryDate = catchErrors(async (req: Request, res: Response)
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const tracking = catchErrors(async (req: Request, res: Response) => {
+  const result = await orderService.tracking(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const orderController = {
   findAll,
   addOrderWithMoMo,
@@ -82,4 +90,5 @@ export const orderController = {
   getPickupDate,
   calcExpectedDeliveryDate,
   findOneById,
+  tracking,
 };

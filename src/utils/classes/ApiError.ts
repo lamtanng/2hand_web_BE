@@ -5,17 +5,18 @@
 export interface ApiErrorProps {
   statusCode: number;
   message: string;
+  data?: any;
 }
 
 class ApiError extends Error {
   //declare statusCode variable to use 'this' in the constructor
   statusCode: number;
-
-  constructor({ statusCode, message }: ApiErrorProps) {
+  data?: any;
+  constructor({ statusCode, message, data }: ApiErrorProps) {
     super(message);
     // this.name = 'ApiError';
     this.statusCode = statusCode;
-
+    this.data = data;
     // Ghi lại Stack Trace (dấu vết ngăn xếp) để thuận tiện cho việc debug
     Error.captureStackTrace(this, this.constructor);
   }

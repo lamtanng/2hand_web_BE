@@ -10,6 +10,7 @@ export const errorHandler = (err: AppError, req: Request, res: Response, next: N
     statusCode: err.statusCode || err.status || StatusCodes.INTERNAL_SERVER_ERROR,
     message: err.message || err.statusText || ReasonPhrases.INTERNAL_SERVER_ERROR,
     stack: env.BUILD_MODE === 'dev' ? err.stack : {},
+    data: err.data,
   };
 
   // Đoạn này có thể mở rộng nhiều về sau như ghi Error Log vào file, bắn thông báo lỗi vào group Slack, Telegram, Email...vv Hoặc có thể viết riêng Code ra một file Middleware khác tùy dự án.
