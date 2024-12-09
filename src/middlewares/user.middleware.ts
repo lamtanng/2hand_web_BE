@@ -9,7 +9,7 @@ const isPhoneNumberExists = catchErrors(async (req: Request, res: Response, next
   const { phoneNumber } = req.body as SendSmsOtpRequestProps;
   const existingPhoneNumber = await UserModel.findOne({ phoneNumber });
   if (existingPhoneNumber) {
-    handleError({
+    handleError({   
       message: HttpMessage.CONFLICT.PHONE_NUMBER,
       statusCode: StatusCodes.CONFLICT,
       next,

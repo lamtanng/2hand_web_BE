@@ -8,7 +8,7 @@ import { CreateReviewRequest, ReactToReviewRequest } from '../types/http/review.
 import { OrderDetailModel } from '../models/orderDetail';
 
 const findAll = catchServiceFunc(async (reqBody: Request, res: Response) => {
-  const reviews = await ReviewModel.find().populate('productID').populate('reviewerID');
+  const reviews = await ReviewModel.find().findAll();
   return reviews;
 });
 
@@ -56,20 +56,14 @@ const uploadReviewFiles = async ({ files, asset_folder, resource_type }: UploadC
 
 const findAllByReviewerID = catchServiceFunc(async (req: Request, res: Response) => {
   const { reviewerID } = req.params;
-  const reviews = await ReviewModel.find({ reviewerID })
-    .populate('productID')
-    .populate('reviewerID')
-    .populate('orderDetailID');
+  const reviews = await ReviewModel.find({ reviewerID }).findAll();
 
   return reviews;
 });
 
 const findAllByProductID = catchServiceFunc(async (req: Request, res: Response) => {
   const { productID } = req.params;
-  const reviews = await ReviewModel.find({ productID })
-    .populate('productID')
-    .populate('reviewerID')
-    .populate('orderDetailID');
+  const reviews = await ReviewModel.find({ productID }).findAll();
 
   return reviews;
 });

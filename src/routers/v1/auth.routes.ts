@@ -13,9 +13,10 @@ import { isAuthorized } from '../../middlewares/auth.middleware';
 import { otpMiddleware } from '../../middlewares/otp.middleware';
 import { loginValidation } from '../../validations/authValidation/login.validation';
 import { signupValidation } from '../../validations/authValidation/signup.validation';
+import { userController } from '../../controllers/user.controller';
 
 const router = express.Router();
-
+const {sendOtpVerificationEmail} = userController
 router.route(LOGIN_ROUTE).post(loginValidation, authController.login);
 router
   .route(SIGNUP_ROUTE)

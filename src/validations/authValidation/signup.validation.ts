@@ -5,13 +5,16 @@ import { HttpMessage } from '../../constants/httpMessage';
 import { UserModel } from '../../models/user';
 import { SignUpRequestProps } from '../../types/http/signup.type';
 import { catchErrors, handleError } from '../../utils/catchErrors';
+import { CommonValidation } from '../common.validation';
 
 interface SignupSchema extends SignUpRequestProps {}
 
+const { passwordSchema } = CommonValidation;
+
 const registerSchema = Joi.object<SignupSchema>({
   email: Joi.string().email().required().trim().strict(),
-  password: Joi.string().min(6).required().trim().strict(),
-  confirmPassword: Joi.string().min(6).required().trim().strict().valid(Joi.ref('password')),
+  password: passwordSchema,
+  confirmPassword: passwordSchema.valid(Joi.ref('password')),
 });
 
 export const signupValidation = catchErrors(
