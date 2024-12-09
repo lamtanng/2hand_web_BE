@@ -36,6 +36,12 @@ import { ORDERREQUEST_COLLECTION_NAME } from '../models/orderRequest/orderReques
 import { HttpMessage } from '../constants/httpMessage';
 import { ORDERSTAGE_COLLECTION_NAME } from '../models/orderStage/orderStage.doc';
 import { ORDER_STAGE_STATUS_COLLECTION_NAME } from '../models/orderStageStatus/orderStageStatus.doc';
+import { OrderRequestModel } from '../models/orderRequest';
+import { OrderStageStatus } from '../types/enum/orderStageStatus.enum';
+import { OrderStageStatusProps } from '../types/model/orderStageStatus.type';
+import { OrderRequestProps } from '../types/model/orderRequest.type';
+import { OrderStageProps } from '../types/model/orderStage.type';
+import { ReasonProps } from '../types/model/reason.type';
 const crypto = require('crypto');
 
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {
@@ -106,151 +112,31 @@ const findOneById = catchServiceFunc(async (req: Request, res: Response) => {
 
 const tracking = catchServiceFunc(async (req: Request, res: Response) => {
   const order = (await findOne(req.params.orderID)) as unknown as any;
-
-  const { orderStageID } = order;
-
   const stages = await OrderStageModel.find({ orderID: order._id }).sort({ createdAt: 1 });
 
-  const orderStatus = []
-  for (const stage of stages) {
-    const status = await OrderStageStatusModel.findOne({ orderStageID: stage._id });
-    orderStatus.push(status);
-  }
-  const status = await OrderStageStatusModel.find({
-    orderStageID: { $in: stages.map((stage) => stage._id) },
-  });
+  // Interface: interface TrackingOrderProps extends Pick<OrderStageProps, '_id' | 'name' | 'orderID'> {
+  //   orderStageStatus: (Omit<OrderStageStatusProps, 'orderRequestID'> & {
+  //     orderRequestID: Omit<OrderRequestProps, 'reasonID'> & {
+  //       reasonID: ReasonProps;
+  //     };
+  //   })[];
+  // }
+  const orderTracking = await Promise.all(
+    stages.map(async (stage) => {
+      const statuses = await OrderStageStatusModel.find({ orderStageID: stage._id })
+        .sort({ createdAt: 1 })
+        .populate({ path: 'orderRequestID', populate: 'reasonID' });
 
-  const statuses = await OrderStageStatusModel.aggregate([
-    {
-      $match: {
-        orderStageID: { $in: stages.map((stage) => stage._id) }, // Filter by orderStageIDs
-      },
-    },
-    {
-      $lookup: {
-        from: 'orderrequests', // Replace with your request collection name
-        localField: 'orderRequestID', // Reference field in OrderStageStatusModel
-        foreignField: '_id', // Matching field in request collection
-        as: 'request', // Alias for joined request documents
-      },
-    },
-    // {
-    //   $unwind: { path: '$request', preserveNullAndEmptyArrays: true }, // Deconstruct the request array (optional)
-    // },
-    // {
-    //   $project: {
-    //     _id: 1,
-    //     orderRequest: [
-    //       {
-    //         _id: '$request', // Project orderStageID
-    //         // $map: {
-    //         //   input: { $concatArrays: ['$status', '$request'] }, // Combine data
-    //         //   as: 'combined',
-    //         //   in: {
-    //         //     status: '$$combined.0', // Project status from combined array
-    //         //     request: '$$combined.1', // Project request from combined array
-    //         //   },
-    //         // },
-    //       },
-    //     ],
-    //   },
-    // },
-  ]);
-  const tracking = await OrderStageModel.aggregate([
-    // Bắt đầu từ Order
-    { $match: { orderID: new mongoose.Types.ObjectId(req.params.orderID) } },
+      return {
+        _id: stage._id,
+        name: stage.name,
+        orderID: stage.orderID,
+        orderStageStatus: statuses,
+      };
+    }),
+  );
 
-    // Lookup để lấy các OrderStage
-    // {
-    //   $lookup: {
-    //     from: 'orderstages',
-    //     localField: 'orderStageID',
-    //     foreignField: '_id',
-    //     as: 'stages',
-    //   },
-    // },
-
-    // // Unwind các stages
-    // { $unwind: '$stages' },
-
-    // // Lookup để lấy các Status
-    {
-      $lookup: {
-        from: 'orderstagestatuses',
-        localField: 'orderStageStatusID',
-        foreignField: '_id',
-        as: 'statuses',
-      },
-    },
-
-    // // Lookup để lấy thông tin OrderRequest
-    // {
-    //   $lookup: {
-    //     from: 'orderrequests',
-    //     localField: 'stages.statuses.orderRequestID',
-    //     foreignField: '_id',
-    //     as: 'stages.statuses.requests',
-    //   },
-    // },
-
-    // Giai đoạn project để định dạng kết quả
-    // {
-    //   $project: {
-    //     tracking: {
-    //       stage: {
-    //         _id: '$stages._id',
-    //         // status: {
-    //         //   $map: {
-    //         //     input: '$stages.statuses',
-    //         //     as: 'status',
-    //         //     in: {
-    //         //       _id: '$$status._id',
-    //         //       requestID: {
-    //         //         $ifNull: [
-    //         //           {
-    //         //             $arrayElemAt: [
-    //         //               {
-    //         //                 $filter: {
-    //         //                   input: '$stages.statuses.requests',
-    //         //                   cond: { $eq: ['$$this._id', '$$status.orderRequestID'] },
-    //         //                 },
-    //         //               },
-    //         //               0,
-    //         //             ],
-    //         //           },
-    //         //           null,
-    //         //         ],
-    //         //       },
-    //         //     },
-    //         //   },
-    //         // },
-    //       },
-    //     },
-    //   },
-    // },
-
-    // Giai đoạn group cuối để tạo mảng tracking
-    // {
-    //   $group: {
-    //     _id: null,
-    //     tracking: { $push: '$tracking.stage' },
-    //   },
-    // },
-
-    // Loại bỏ trường _id không cần thiết
-    // { $project: { _id: 0, tracking: 1 } },
-  ]);
-
-  // {
-  //   $unwind: '$request', // Deconstruct the request array (optional)
-  // },
-  const { orderStageStatusID } = orderStageID;
-
-  // const resOrder = { ...order, orderStageID: order.orderStageID?._id };
-  // const resOrderStage = { ...orderStageID, orderStageStatusID: orderStageID._id };
-  // const resOrderStageStatus = { ...orderStageStatusID, orderRequestID: orderStageStatusID._id };
-
-  return { status };
+  return orderTracking;
 });
 
 const findOne = async (orderID: mongoose.Types.ObjectId | string) => {
