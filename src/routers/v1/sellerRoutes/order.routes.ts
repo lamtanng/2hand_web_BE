@@ -9,6 +9,6 @@ const { sellerFindAll } = orderValidation;
 const { findAll } = orderController;
 const { Read } = ActionPermission.Order;
 
-router.route('/').get(checkSellerPermission(Read), sellerFindAll, findAll);
+router.route('/').get(checkSellerPermission(Read), findAll);
 
 export const orderRoutes = router;
