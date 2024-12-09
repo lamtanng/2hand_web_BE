@@ -1,4 +1,6 @@
 import { parsePhoneNumber } from 'libphonenumber-js';
 
-export const formatPhoneNumber = (phoneNumber: string) =>
-  parsePhoneNumber(phoneNumber, 'VI')?.formatNational();
+export const formatPhoneNumber = (phoneNumber: string) => {
+  const removedPrefix = parsePhoneNumber(phoneNumber, 'VI')?.formatNational();
+  return removedPrefix.replace(/\s+/g, '');
+};

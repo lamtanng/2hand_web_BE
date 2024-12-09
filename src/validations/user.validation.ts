@@ -7,16 +7,17 @@ import { UserProps } from '../types/model/user.type';
 import { catchErrors } from '../utils/catchErrors';
 import { addressValidation } from './address.validation';
 import { CommonValidation } from './common.validation';
-import { UpdateUserInfoRequestProps } from '../types/http/user.type';
+import { ResetPasswordRequestProps, UpdateUserInfoRequestProps } from '../types/http/user.type';
 
 interface UserSchema extends UserProps {}
 interface UpdateUserSchema extends UpdateUserInfoRequestProps {}
 interface SendSmsOtpSchema extends SendSmsOtpRequestProps {}
 interface VerifySmsOtpSchema extends VerifySmsOtpRequestProps {}
 interface PhoneNumberSchema extends Pick<UserProps, 'phoneNumber'> {}
+interface ResetPasswordSchema extends ResetPasswordRequestProps {}
 
 const { addressSchema } = addressValidation;
-const { idSchema } = CommonValidation;
+const { idSchema, passwordSchema } = CommonValidation;
 
 const phoneNumberSchema = Joi.object<PhoneNumberSchema>({
   phoneNumber: Joi.string()
@@ -63,6 +64,12 @@ const updateUserSchema = Joi.object<UpdateUserSchema>({
   avatar: Joi.string().trim().allow(null, ''),
 });
 
+const resetPasswordSchema = Joi.object<ResetPasswordSchema>().keys({
+  email: Joi.string().email().required().trim().strict(),
+  password: passwordSchema,
+  confirmPassword: passwordSchema.valid(Joi.ref('password')),
+});
+
 const userModelValidation = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
   await userSchema.validateAsync(req.body, { abortEarly: false });
   next();
@@ -89,9 +96,17 @@ const verifySmsOtpValidation = catchErrors(
   },
 );
 
+const resetPasswordValidation = catchErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    await resetPasswordSchema.validateAsync(req.body, { abortEarly: false });
+    next();
+  },
+);
+
 export const userValidation = {
   sendSmsOtpValidation,
   userModelValidation,
   verifySmsOtpValidation,
   updateUserValidation,
+  resetPasswordValidation,
 };

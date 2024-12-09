@@ -1,13 +1,25 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Model, Schema } from 'mongoose';
 import { ReviewProps } from '../../types/model/review.type';
 import { USER_COLLECTION_NAME } from '../user/user.doc';
 import { PRODUCT_COLLECTION_NAME } from '../product/product.doc';
 import { ORDERDETAIL_COLLECTION_NAME } from '../orderDetail/orderDetail.doc';
 
-export interface ReviewDocument extends ReviewProps, Document {}
+export interface IReviewMethods {}
+export interface IReviewStatics {}
+export interface IReviewQueries {
+  findAll: () => any;
+}
+export interface IReviewModel extends Model<ReviewProps, IReviewQueries, IReviewMethods> {}
 
 export const REVIEW_COLLECTION_NAME = 'review';
-export const REVIEW_COLLECTION_SCHEMA = new Schema<ReviewDocument>(
+export const REVIEW_COLLECTION_SCHEMA = new Schema<
+  ReviewProps,
+  IReviewModel,
+  IReviewStatics,
+  IReviewQueries,
+  {},
+  IReviewMethods
+>(
   {
     _id: {
       type: mongoose.Schema.Types.ObjectId,

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { StatusCodes } from 'http-status-codes';
+import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
 import { sendOTPSms } from '../apis/sms';
 import { HttpMessage } from '../constants/httpMessage';
@@ -9,8 +9,16 @@ import { RoleModel } from '../models/role';
 import { UserModel } from '../models/user';
 import { AppError } from '../types/error.type';
 import { AddressRequestProps, DeleteAddressRequestProps } from '../types/http/address.type';
-import { SendSmsOtpRequestProps, VerifySmsOtpRequestProps } from '../types/http/otp.type';
-import { GetUsersResponseProps, UpdateUserInfoRequestProps } from '../types/http/user.type';
+import {
+  SendOtpRequestProps,
+  SendSmsOtpRequestProps,
+  VerifySmsOtpRequestProps,
+} from '../types/http/otp.type';
+import {
+  GetUsersResponseProps,
+  ResetPasswordRequestProps,
+  UpdateUserInfoRequestProps,
+} from '../types/http/user.type';
 import { UserProps } from '../types/model/user.type';
 import { hashValue } from '../utils/bcrypt';
 import { catchServiceFunc } from '../utils/catchErrors';
@@ -22,6 +30,12 @@ import { uploadCloudinary, UploadCloudinaryProps } from './cloudinary.service';
 import { avatarFolder } from '../constants/cloudinaryFolder';
 import { UploadApiResponse } from 'cloudinary';
 import { PaginationResponseProps } from '../types/http/pagination.type';
+import { JwtProvider } from '../providers/JwtProvider';
+import { verifyAccessToken } from '../utils/jwt';
+import { emailTransporter } from '../constants/emailTransporter';
+import { mailOptions } from '../utils/mailOptions';
+import { env } from '../config/environment';
+import { EmailType } from '../types/enum/emailType.enum';
 
 const findAll = async (req: Request, res: Response) => {
   try {
@@ -152,7 +166,6 @@ const sendSmsOtp = catchServiceFunc(async (req: Request, res: Response) => {
   const { phoneNumber } = req.body as SendSmsOtpRequestProps;
   const otp = generateOTP();
   const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
-
   const result = await sendOTPSms({ phoneNumber: formattedPhoneNumber, otp });
 
   const hashedOtp = await hashValue(String(otp));
@@ -163,9 +176,62 @@ const sendSmsOtp = catchServiceFunc(async (req: Request, res: Response) => {
 
 const createUserPhone = catchServiceFunc(async (req: Request, res: Response) => {
   const { phoneNumber, _id } = req.body as VerifySmsOtpRequestProps;
+  const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
+
   const updatedUser = await UserModel.findOneAndUpdate(
     { _id },
-    { phoneNumber: phoneNumber },
+    { phoneNumber: formattedPhoneNumber },
+    { new: true },
+  );
+  return updatedUser;
+});
+
+const sendOtpVerificationEmail = catchServiceFunc(async (req: Request, res: Response) => {
+  const { email } = req.body as SendOtpRequestProps;
+  if (!email) {
+    throw new ApiError({
+      message: ReasonPhrases.BAD_REQUEST,
+      statusCode: StatusCodes.BAD_REQUEST,
+    });
+    return;
+  }
+
+  const otp = generateOTP();
+  await emailTransporter.sendMail(
+    mailOptions.getEmailVerificationOptions({
+      to: email,
+      OTPCode: otp,
+    }),
+  );
+  console.log('>>>>');
+  const hashedOtp = await hashValue(String(otp));
+  return await OTPVerificationModel.create({ otp: hashedOtp, email });
+});
+
+// const sendSmsResetPassword = catchServiceFunc(async (req: Request, res: Response) => {
+//   const { _id, email, slug } = (await verifyAccessToken(req.cookies?.accessToken)) as UserProps;
+//   // const {} = await getUserById(_id);
+
+//   await emailTransporter.sendMail(
+//     mailOptions.getResetPasswordOptions({
+//       to: email,
+//       resetUrl: `${env.CLIENT_ORIGIN}/reset-password/${slug}`,
+//     }),
+//   );
+
+//   const hashedOtp = await hashValue(String(otp));
+//   await OTPVerificationModel.create({ otp: hashedOtp, phoneNumber: formattedPhoneNumber });
+
+//   return result;
+// });
+
+const resetPassword = catchServiceFunc(async (req: Request, res: Response) => {
+  const { email, password } = req.body as ResetPasswordRequestProps;
+  const hashedPassword = await hashValue(password);
+  //replace with email
+  const updatedUser = await UserModel.findOneAndUpdate(
+    { phoneNumber: email },
+    { password: hashedPassword },
     { new: true },
   );
   return updatedUser;
@@ -192,4 +258,6 @@ export const userService = {
   sendSmsOtp,
   createUserPhone,
   findOneBySlug,
+  sendOtpVerificationEmail,
+  resetPassword,
 };
