@@ -70,6 +70,18 @@ const isDeleted = catchErrors(async (req: Request, res: Response, next: NextFunc
         },
       },
     },
+    {
+      $project: {
+        _id: 1,
+        orderID: {
+          _id: '$order._id',
+          orderStageID: {
+            _id: '$order.orderStageID._id',
+            name: '$order.orderStageID.name',
+          },
+        },
+      },
+    },
   ]);
 
   if (product.length) {
