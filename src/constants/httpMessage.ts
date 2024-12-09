@@ -4,6 +4,7 @@ import { OrderStage } from '../types/enum/orderStage.enum';
 const TOKEN = 'Token';
 const OTP = 'OTP';
 const USER = 'User';
+const PHONE_NUMBER = 'Phone number';
 const PASSWORD = 'Password';
 const NOT_VERIFY = "Your email hasn't been verified";
 const OUT_OF_STOCK = 'Product is out of stock';
@@ -37,6 +38,7 @@ const INCORRECT = {
 
 const CONFLICT = {
   USER: getConflictMsg(USER),
+  PHONE_NUMBER: getConflictMsg(PHONE_NUMBER),
 };
 
 const ORDER_STAGE_CONDITION = {

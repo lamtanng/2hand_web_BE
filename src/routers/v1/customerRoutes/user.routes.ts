@@ -16,6 +16,7 @@ import {
 import { userAddressRoutes } from './address.routes';
 import { otpMiddleware } from '../../../middlewares/otp.middleware';
 import { userValidation } from '../../../validations/user.validation';
+import { userMiddleware } from '../../../middlewares/user.middleware';
 const router = express.Router();
 
 const {
@@ -32,12 +33,13 @@ const { Read, Create, Update, Delete } = ActionPermission.User;
 const { verifySmsOTP } = otpMiddleware;
 const { userModelValidation, sendSmsOtpValidation, verifySmsOtpValidation, updateUserValidation } =
   userValidation;
+const { isPhoneNumberExists } = userMiddleware;
 
 router.route(USER_BY_ID_ROUTE).get(findOneById);
 router.route('/').get(findOneBySlug);
 router.route('/').post(checkCustomerPermission(Create), userModelValidation, addUser);
 router.route('/').put(checkCustomerPermission(Update), updateUserValidation, updateUserInfo);
-router.route(SEND_OTP_ROUTE).post(sendSmsOtpValidation, sendSmsOtp);
+router.route(SEND_OTP_ROUTE).post(sendSmsOtpValidation, isPhoneNumberExists, sendSmsOtp);
 router.route(VERIFY_OTP_ROUTE).post(verifySmsOtpValidation, verifySmsOTP, createUserPhone);
 router.use(USER_ADDRESS_ROUTE, userAddressRoutes);
 router.route('/').get(checkAdminPermission(Read), findAll); //for admin
