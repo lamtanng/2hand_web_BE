@@ -4,6 +4,7 @@ import { productFolder } from '../constants/cloudinaryFolder';
 import { pagination } from '../constants/pagination';
 import { ProductModel } from '../models/product';
 import { AppError } from '../types/error.type';
+import { PaginationResponseProps } from '../types/http/pagination.type';
 import {
   DeleteProductRequestProps,
   ToggleProductRequestProps,
@@ -15,8 +16,6 @@ import ApiError from '../utils/classes/ApiError';
 import { deleteEmptyObjectFields, parseJson } from '../utils/object';
 import { generateSlug } from '../utils/slug';
 import { uploadCloudinary, UploadCloudinaryProps } from './cloudinary.service';
-import { log } from 'console';
-import { PaginationResponseProps } from '../types/http/pagination.type';
 
 const findAll = async (req: Request, res: Response) => {
   try {
@@ -114,15 +113,10 @@ const updateProduct = catchServiceFunc(async (req: Request, res: Response) => {
   );
 });
 
-const deleteProduct = async (req: Request, res: Response) => {
-  try {
-    //check conditions
-    const { _id } = req.query as unknown as DeleteProductRequestProps;
-    return await ProductModel.deleteOne({ _id });
-  } catch (error: AppError) {
-    return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
-  }
-};
+const deleteProduct = catchServiceFunc(async (req: Request, res: Response) => {
+  const { _id } = req.query as unknown as DeleteProductRequestProps;
+  return await ProductModel.deleteOne({ _id });
+});
 
 const toggleActiveProduct = async (req: Request, res: Response) => {
   try {

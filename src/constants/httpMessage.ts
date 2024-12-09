@@ -7,6 +7,7 @@ const USER = 'User';
 const PASSWORD = 'Password';
 const NOT_VERIFY = "Your email hasn't been verified";
 const OUT_OF_STOCK = 'Product is out of stock';
+const PRODUCT_IS_USED = 'Product is used';
 const ACCESS_DENIED = 'Access denied';
 const ADDRESS = 'Address';
 const PAYMENT_METHOD = 'Payment method';
@@ -53,4 +54,5 @@ export const HttpMessage = {
   OUT_OF_STOCK,
   ACCESS_DENIED,
   ORDER_STAGE_CONDITION,
+  PRODUCT_IS_USED
 };
