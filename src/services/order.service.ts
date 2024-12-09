@@ -34,6 +34,8 @@ import { orderStageService } from './orderStage.service';
 import { OrderStageStatusModel } from '../models/orderStageStatus';
 import { ORDERREQUEST_COLLECTION_NAME } from '../models/orderRequest/orderRequest.doc';
 import { HttpMessage } from '../constants/httpMessage';
+import { ORDERSTAGE_COLLECTION_NAME } from '../models/orderStage/orderStage.doc';
+import { ORDER_STAGE_STATUS_COLLECTION_NAME } from '../models/orderStageStatus/orderStageStatus.doc';
 const crypto = require('crypto');
 
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {
@@ -107,9 +109,16 @@ const tracking = catchServiceFunc(async (req: Request, res: Response) => {
 
   const { orderStageID } = order;
 
-  const stages = await OrderStageModel.find({ orderID: order._id })
-    .sort({ createdAt: 1 })
-    .populate('orderStageStatusID');
+  const stages = await OrderStageModel.find({ orderID: order._id }).sort({ createdAt: 1 });
+
+  const orderStatus = []
+  for (const stage of stages) {
+    const status = await OrderStageStatusModel.findOne({ orderStageID: stage._id });
+    orderStatus.push(status);
+  }
+  const status = await OrderStageStatusModel.find({
+    orderStageID: { $in: stages.map((stage) => stage._id) },
+  });
 
   const statuses = await OrderStageStatusModel.aggregate([
     {
@@ -119,30 +128,117 @@ const tracking = catchServiceFunc(async (req: Request, res: Response) => {
     },
     {
       $lookup: {
-        from: 'requests', // Replace with your request collection name
+        from: 'orderrequests', // Replace with your request collection name
         localField: 'orderRequestID', // Reference field in OrderStageStatusModel
         foreignField: '_id', // Matching field in request collection
         as: 'request', // Alias for joined request documents
       },
     },
+    // {
+    //   $unwind: { path: '$request', preserveNullAndEmptyArrays: true }, // Deconstruct the request array (optional)
+    // },
+    // {
+    //   $project: {
+    //     _id: 1,
+    //     orderRequest: [
+    //       {
+    //         _id: '$request', // Project orderStageID
+    //         // $map: {
+    //         //   input: { $concatArrays: ['$status', '$request'] }, // Combine data
+    //         //   as: 'combined',
+    //         //   in: {
+    //         //     status: '$$combined.0', // Project status from combined array
+    //         //     request: '$$combined.1', // Project request from combined array
+    //         //   },
+    //         // },
+    //       },
+    //     ],
+    //   },
+    // },
+  ]);
+  const tracking = await OrderStageModel.aggregate([
+    // Bắt đầu từ Order
+    { $match: { orderID: new mongoose.Types.ObjectId(req.params.orderID) } },
+
+    // Lookup để lấy các OrderStage
+    // {
+    //   $lookup: {
+    //     from: 'orderstages',
+    //     localField: 'orderStageID',
+    //     foreignField: '_id',
+    //     as: 'stages',
+    //   },
+    // },
+
+    // // Unwind các stages
+    // { $unwind: '$stages' },
+
+    // // Lookup để lấy các Status
     {
-      $unwind: '$request', // Deconstruct the request array (optional)
-    },
-    {
-      $project: {
-        _id: 1,
-        orderStatus: {
-          $map: {
-            input: { $concatArrays: ['$status', '$request'] }, // Combine data
-            as: 'combined',
-            in: {
-              status: '$$combined.0', // Project status from combined array
-              request: '$$combined.1', // Project request from combined array
-            },
-          },
-        },
+      $lookup: {
+        from: 'orderstagestatuses',
+        localField: 'orderStageStatusID',
+        foreignField: '_id',
+        as: 'statuses',
       },
     },
+
+    // // Lookup để lấy thông tin OrderRequest
+    // {
+    //   $lookup: {
+    //     from: 'orderrequests',
+    //     localField: 'stages.statuses.orderRequestID',
+    //     foreignField: '_id',
+    //     as: 'stages.statuses.requests',
+    //   },
+    // },
+
+    // Giai đoạn project để định dạng kết quả
+    // {
+    //   $project: {
+    //     tracking: {
+    //       stage: {
+    //         _id: '$stages._id',
+    //         // status: {
+    //         //   $map: {
+    //         //     input: '$stages.statuses',
+    //         //     as: 'status',
+    //         //     in: {
+    //         //       _id: '$$status._id',
+    //         //       requestID: {
+    //         //         $ifNull: [
+    //         //           {
+    //         //             $arrayElemAt: [
+    //         //               {
+    //         //                 $filter: {
+    //         //                   input: '$stages.statuses.requests',
+    //         //                   cond: { $eq: ['$$this._id', '$$status.orderRequestID'] },
+    //         //                 },
+    //         //               },
+    //         //               0,
+    //         //             ],
+    //         //           },
+    //         //           null,
+    //         //         ],
+    //         //       },
+    //         //     },
+    //         //   },
+    //         // },
+    //       },
+    //     },
+    //   },
+    // },
+
+    // Giai đoạn group cuối để tạo mảng tracking
+    // {
+    //   $group: {
+    //     _id: null,
+    //     tracking: { $push: '$tracking.stage' },
+    //   },
+    // },
+
+    // Loại bỏ trường _id không cần thiết
+    // { $project: { _id: 0, tracking: 1 } },
   ]);
 
   // {
@@ -154,7 +250,7 @@ const tracking = catchServiceFunc(async (req: Request, res: Response) => {
   // const resOrderStage = { ...orderStageID, orderStageStatusID: orderStageID._id };
   // const resOrderStageStatus = { ...orderStageStatusID, orderRequestID: orderStageStatusID._id };
 
-  return { statuses };
+  return { status };
 });
 
 const findOne = async (orderID: mongoose.Types.ObjectId | string) => {
@@ -214,20 +310,10 @@ const payByMomo = catchServiceFunc(async (req: Request, res: Response) => {
 
 const createOrder = async (data: CreateCODPaymentRequestProps) => {
   const { userID, paymentMethodID, orders, receiverAddress } = data as CreateCODPaymentRequestProps;
-
   const session = await OrderModel.startSession();
   session.startTransaction();
 
   try {
-    // const outOfStockProducts = await inInStock(orders);
-    // if (outOfStockProducts.length) {
-    //   return new ApiError({
-    //     message: HttpMessage.OUT_OF_STOCK,
-    //     statusCode: StatusCodes.NOT_FOUND,
-    //     data: outOfStockProducts,
-    //   });
-    // }
-
     for (const order of orders) {
       //create order detail
       const { total, storeID, note, items, shipmentCost } = order;
@@ -357,23 +443,6 @@ const calcExpectedDeliveryDate = catchServiceFunc(async (req: Request, res: Resp
   const service = await calcExpectedDeliveryDateAPI(data);
   return service.data;
 });
-
-const inInStock = async (orders: CreateCODPaymentRequestProps['orders']) => {
-  console.log(orders);
-  const allProducts = orders.flatMap((order) =>
-    order.items.map(({ id, name }) => ({ _id: id, name })),
-  );
-  console.log(allProducts);
-  const inStockProducts = await ProductModel.find({
-    _id: { $in: allProducts.map(({ _id }) => _id) },
-  });
-
-  const outOfStockProducts = allProducts.filter(({ _id }) => {
-    return !inStockProducts.some((product) => String(product._id) === _id && product.quantity > 0);
-  });
-
-  return outOfStockProducts;
-};
 
 export const orderService = {
   findAll,
