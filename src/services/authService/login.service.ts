@@ -1,8 +1,8 @@
-import { Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { HttpMessage } from '../../constants/httpMessage';
 import { UserModel } from '../../models/user';
-import { LoginResponseProps } from '../../types/http/login.type';
+import { LoginRequestProps, LoginResponseProps } from '../../types/http/login.type';
 import { UserProps } from '../../types/model/user.type';
 import ApiError from '../../utils/classes/ApiError';
 import {
@@ -11,12 +11,16 @@ import {
   signAccessToken,
   signRefreshToken,
 } from '../../utils/jwt';
+import { catchServiceFunc } from '../../utils/catchErrors';
+import { formatPhoneNumber } from '../../utils/phone';
 
-const login = async (reqBody: UserProps, res: Response) => {
-  const { email, password } = reqBody;
-
+const login = catchServiceFunc(async (req: Request, res: Response) => {
+  const { phoneNumber, password } = req.body as LoginRequestProps;
+  const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
   //check if the user exists
-  const existUser = await UserModel.findOne({ email }).populate('roleID', 'id name').exec();
+  const existUser = await UserModel.findOne({ formattedPhoneNumber })
+    .populate('roleID', 'id name')
+    .exec();
   if (!existUser) {
     return new ApiError({
       message: HttpMessage.NOT_FOUND.USER,
@@ -46,6 +50,6 @@ const login = async (reqBody: UserProps, res: Response) => {
     refreshToken,
   };
   return response;
-};
+});
 
 export const loginService = { login };

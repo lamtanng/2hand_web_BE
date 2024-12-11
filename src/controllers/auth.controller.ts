@@ -7,7 +7,7 @@ import { signupService } from '../services/authService/signup.service';
 import { catchErrors } from '../utils/catchErrors';
 
 const login = catchErrors(async (req: Request, res: Response) => {
-  const result = await loginService.login(req.body, res);
+  const result = await loginService.login(req, res);
   res.status(StatusCodes.OK).json(result).send();
 });
 
@@ -20,7 +20,7 @@ const logout = catchErrors(async (req: Request, res: Response) => {
   const logout = await logoutService(res);
   res.status(StatusCodes.OK).json(logout).send();
 });
-  
+
 const refreshToken = catchErrors(async (req: Request, res: Response) => {
   const refreshToken = await refreshTokenService(req, res);
   res.status(StatusCodes.OK).json(refreshToken).send();
