@@ -27,7 +27,7 @@ const updateReason = catchServiceFunc(async (req: Request, res: Response) => {
     { ...updateReason },
     { new: true },
   );
-  return { newReason };
+  return newReason;
 });
 
 export const reasonService = { findAll, createReason, updateReason };
