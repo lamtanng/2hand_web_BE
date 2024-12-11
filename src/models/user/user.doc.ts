@@ -41,7 +41,6 @@ export const USER_COLLECTION_SCHEMA = new Schema<
     },
     email: {
       type: String,
-      unique: true,
       default: null,
     },
     password: {

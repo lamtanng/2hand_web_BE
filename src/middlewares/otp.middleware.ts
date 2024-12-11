@@ -65,7 +65,7 @@ const verifySignupOTP = async (req: Request, res: Response, next: NextFunction) 
 };
 
 const verifySmsOTP = async (req: Request, res: Response, next: NextFunction) => {
-  const { otp, phoneNumber } = req.body as VerifySmsOtpRequestProps;
+  const { otp, phoneNumber } = req.body as VerifySmsOtpRequestProps | VerifyOtpRequestProps;
   const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
   const queryObject = { phoneNumber: formattedPhoneNumber };
   verifyOtp({ otp, queryObject, next });
