@@ -5,10 +5,18 @@ import { CreateReasonRequest, UpdateReasonRequest } from '../types/http/reason.t
 import { AppError } from '../types/error.type';
 import ApiError from '../utils/classes/ApiError';
 import { catchServiceFunc } from '../utils/catchErrors';
+import { deleteEmptyObjectFields, parseJson } from '../utils/object';
 
-const findAll = async (reqBody: Request, res: Response) => {
+const findAll = async (req: Request, res: Response) => {
   try {
-    const reasons = await ReasonModel.find({});
+    const role = parseJson(req.query.role as string);
+
+    const findCondition = {
+      role: role && { $in: role },
+    };
+    deleteEmptyObjectFields(findCondition);
+
+    const reasons = await ReasonModel.find(findCondition);
     return { reasons };
   } catch (error) {
     console.error(error);
