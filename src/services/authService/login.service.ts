@@ -18,7 +18,7 @@ const login = catchServiceFunc(async (req: Request, res: Response) => {
   const { phoneNumber, password } = req.body as LoginRequestProps;
   const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
   //check if the user exists
-  const existUser = await UserModel.findOne({ formattedPhoneNumber })
+  const existUser = await UserModel.findOne({ phoneNumber: formattedPhoneNumber })
     .populate('roleID', 'id name')
     .exec();
   if (!existUser) {
