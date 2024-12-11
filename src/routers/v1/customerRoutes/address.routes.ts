@@ -7,7 +7,7 @@ const router = express.Router();
 
 const { createReceiveAddress, updateAddress, deleteAddress, getProvinces, getDistricts, getWards } =
   userController;
-const { Read, Create, Update, Delete } = ActionPermission.User;
+const { Update } = ActionPermission.User;
 const { userAddress } = addressValidation;
 router.route('/').post(checkCustomerPermission(Update), userAddress, createReceiveAddress);
 router.route('/').put(checkCustomerPermission(Update), userAddress, updateAddress);

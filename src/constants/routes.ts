@@ -29,6 +29,7 @@ export const USER_ADDRESS_ROUTE = '/address';
 export const STORE_ROUTE = '/stores';
 export const STORE_BY_USER_ROUTE = '/u/:userID';
 export const STORE_BY_ID_ROUTE = '/:storeID';
+export const STORE_STATISTIC_ROUTE = '/statistics';
 
 // order stage status
 export const ORDER_STAGE_STATUS_ROUTE = '/order-stage-status';
