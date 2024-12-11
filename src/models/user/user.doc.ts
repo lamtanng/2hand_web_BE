@@ -41,8 +41,8 @@ export const USER_COLLECTION_SCHEMA = new Schema<
     },
     email: {
       type: String,
-      required: true,
       unique: true,
+      default: null,
     },
     password: {
       type: String,
@@ -52,7 +52,8 @@ export const USER_COLLECTION_SCHEMA = new Schema<
     phoneNumber: {
       type: String,
       length: 10,
-      default: null,
+      required: true,
+      unique: true,
     },
     dateOfBirth: {
       type: Date,

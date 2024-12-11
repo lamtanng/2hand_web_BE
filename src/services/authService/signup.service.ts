@@ -9,7 +9,11 @@ export const signupService = async (req: Request) => {
   const { phoneNumber, password } = req.body as SignUpRequestProps;
   const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
   const roleId = await RoleModel.findOne({ name: Role.Customer }, { _id: 1 });
-  const user = new UserModel({ formattedPhoneNumber, password, roleID: [roleId?._id] });
+  const user = new UserModel({
+    phoneNumber: formattedPhoneNumber,
+    password,
+    roleID: [roleId?._id],
+  });
   const newUser = await UserModel.create(user);
   return newUser;
 };

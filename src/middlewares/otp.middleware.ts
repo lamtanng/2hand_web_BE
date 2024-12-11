@@ -58,7 +58,7 @@ const sendOtpVerificationEmail = catchErrors(
   },
 );
 
-const verifyEmailOTP = async (req: Request, res: Response, next: NextFunction) => {
+const verifySignupOTP = async (req: Request, res: Response, next: NextFunction) => {
   const { otp, phoneNumber } = req.body as VerifyOtpRequestProps;
   const queryObject = { phoneNumber };
   verifyOtp({ otp, queryObject, next });
@@ -97,4 +97,4 @@ const verifyOtp = async ({ otp, queryObject, next }: VerifyOtpProps) => {
   }
 };
 
-export const otpMiddleware = { sendOtpVerificationEmail, verifyEmailOTP, isVerified, verifySmsOTP };
+export const otpMiddleware = { sendOtpVerificationEmail, verifySignupOTP, isVerified, verifySmsOTP };
