@@ -14,7 +14,7 @@ const router = express.Router();
 
 // Children routes
 router.use(ROLE_ROUTE, isAuthorized, roleRoutes);
-router.use(DASHBOARD_ROUTE, isAuthorized, dashboardRouter);
+router.use(isAuthorized, dashboardRouter);
 router.use(ORDER_ROUTE, isAuthorized, orderRoutes);
 
 export const adminRouter = router;

@@ -4,7 +4,8 @@ export const deleteEmptyObjectFields = (obj: any) =>
   });
 
 export const parseJson = (json: string) => {
-  return JSON.parse((json || null) as string);
+  const jsonStr = json || null;
+  return JSON.parse(jsonStr as string);
 };
 
 export function parseJsonObject<TObject>(jsonObject: TObject): Partial<TObject> {

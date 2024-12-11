@@ -9,7 +9,13 @@ import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
 import { RoleModel } from '../models/role';
 import { Role } from '../types/enum/role.enum';
-import { ObjectId } from 'mongoose';
+import mongoose, { ObjectId } from 'mongoose';
+import { OrderModel } from '../models/order';
+import { deleteEmptyObjectFields, parseJson } from '../utils/object';
+import { ORDERSTAGE_COLLECTION_NAME } from '../models/orderStage/orderStage.doc';
+import { get } from 'lodash';
+import { ProductModel } from '../models/product';
+import { adminService } from './admin.service';
 
 const findAll = async (reqBody: Request, res: Response) => {
   try {
@@ -88,22 +94,61 @@ const findOneByUserId = catchServiceFunc(async (req: Request, res: Response) => 
 const update = catchServiceFunc(async (req: Request, res: Response) => {
   const { _id } = req.body as UpdateStoreRequestProps;
   const store = await StoreModel.findById(_id);
-  console.log(store);
   const updatedStore = await StoreModel.findByIdAndUpdate(_id, { ...req.body }, { new: true });
   return updatedStore;
 });
 
 const statistics = catchServiceFunc(async (req: Request, res: Response) => {
-  const { storeID } = req.params;
-  const store = await StoreModel.findById(storeID);
+  const storeID = parseJson(req.query.storeID as string);
+  const startDate = parseJson(req.query.startDate as string);
+  const endDate = parseJson(req.query.endDate as string);
 
+  function getDateRanges(date: Date) {
+    const newDate = new Date(date);
+    console.log(newDate.getDate(), newDate.getDay());
 
-  //revenue: total, by week, by month, by year
-  //order: total, by stage, by week, by month, by year
-  //product: total, by stage, by category, by week, by month, by year
-  //customer: total, by week, by month, by year
-  
-  return { id: '', revenue: 0, totalOrder: 0, totalProduct: 0 };
+    // Lấy ngày đầu tuần (Thứ Hai)
+    const weekStart = new Date(newDate);
+    weekStart.setDate(newDate.getDate() - newDate.getDay() + 1); // Thứ Hai là ngày 1
+    if (newDate.getDay() === 0) {
+      weekStart.setDate(newDate.getDate() - 6); // Chủ Nhật là ngày cuối cùng của tuần trước
+    }
+
+    // Lấy ngày cuối tuần (Chủ Nhật)
+    const weekEnd = new Date(newDate);
+    weekEnd.setDate(weekStart.getDate() + 6);
+
+    // Lấy ngày đầu tháng
+    const monthStart = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
+
+    // Lấy ngày cuối tháng
+    const monthEnd = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0);
+
+    // Lấy ngày đầu năm
+    const yearStart = new Date(newDate.getFullYear(), 0, 1);
+
+    // Lấy ngày cuối năm
+    const yearEnd = new Date(newDate.getFullYear(), 11, 31);
+
+    return { newDate, weekStart, weekEnd, monthStart, monthEnd, yearStart, yearEnd };
+  }
+
+  const datee = getDateRanges(new Date(2024, 11, 15, 12, 10, 0));
+
+  const findQuery = {
+    createdAt: {
+      $gte: datee.yearStart,
+      $lte: datee.yearEnd,
+    },
+    storeID: storeID ? new mongoose.Types.ObjectId(storeID) : null,
+  };
+  deleteEmptyObjectFields(findQuery);
+
+  // count orders by stage
+  const orders = await adminService.getOrderStatistics(findQuery);
+  const productTotal = await ProductModel.find(findQuery).countDocuments();
+
+  return { orders, productTotal };
 });
 
 export const storeService = {

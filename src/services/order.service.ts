@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Request, Response } from 'express';
-import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import { ReasonPhrases } from 'http-status-codes';
 import mongoose from 'mongoose';
 import {
   calcExpectedDeliveryDateAPI,
@@ -14,6 +14,7 @@ import { pagination } from '../constants/pagination';
 import { OrderModel } from '../models/order';
 import { OrderDetailModel } from '../models/orderDetail';
 import { OrderStageModel } from '../models/orderStage';
+import { OrderStageStatusModel } from '../models/orderStageStatus';
 import { ProductModel } from '../models/product';
 import { OrderStage } from '../types/enum/orderStage.enum';
 import { AppError } from '../types/error.type';
@@ -22,7 +23,6 @@ import { IPNMoMoPaymentRequestProps, MoMoPaymentItemsProps } from '../types/http
 import {
   CalcExpectedDeliveryDateRequest,
   CreateCODPaymentRequestProps,
-  CreatedOrderProps,
 } from '../types/http/order.type';
 import { PaginationResponseProps } from '../types/http/pagination.type';
 import { catchServiceFunc } from '../utils/catchErrors';
@@ -31,17 +31,6 @@ import { getDate } from '../utils/format';
 import { getMoMoCreationRequestBody } from '../utils/momo';
 import { deleteEmptyObjectFields, parseJson } from '../utils/object';
 import { orderStageService } from './orderStage.service';
-import { OrderStageStatusModel } from '../models/orderStageStatus';
-import { ORDERREQUEST_COLLECTION_NAME } from '../models/orderRequest/orderRequest.doc';
-import { HttpMessage } from '../constants/httpMessage';
-import { ORDERSTAGE_COLLECTION_NAME } from '../models/orderStage/orderStage.doc';
-import { ORDER_STAGE_STATUS_COLLECTION_NAME } from '../models/orderStageStatus/orderStageStatus.doc';
-import { OrderRequestModel } from '../models/orderRequest';
-import { OrderStageStatus } from '../types/enum/orderStageStatus.enum';
-import { OrderStageStatusProps } from '../types/model/orderStageStatus.type';
-import { OrderRequestProps } from '../types/model/orderRequest.type';
-import { OrderStageProps } from '../types/model/orderStage.type';
-import { ReasonProps } from '../types/model/reason.type';
 const crypto = require('crypto');
 
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {

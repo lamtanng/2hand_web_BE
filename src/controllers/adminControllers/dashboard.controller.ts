@@ -2,16 +2,13 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { UserModel } from '../../models/user';
 import { catchErrors } from '../../utils/catchErrors';
+import { adminService } from '../../services/admin.service';
 
-const access = catchErrors(async (req: Request, res: Response) => {
-  //navigate to service layer to execute the business logic
-  //   const result = await loginService.login(req.body, res);
-
-  const userList = await UserModel.find({ role: { $all: ['user'] } }).exec();
-
-  res.status(StatusCodes.OK).json(userList).send();
+const statistics = catchErrors(async (req: Request, res: Response) => {
+  const results = await adminService.statistics(req, res);
+  res.status(StatusCodes.OK).json(results).send();
 });
 
 export const dashboardController = {
-  access,
+  statistics,
 };
