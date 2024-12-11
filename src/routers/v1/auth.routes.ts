@@ -20,13 +20,13 @@ const router = express.Router();
 const { sendSmsOtp } = userController;
 const { verifySmsOTP } = otpMiddleware;
 const { isPhoneNumberExists } = userMiddleware;
-const { sendSmsOtpValidation, verifySmsOtpValidation } = userValidation;
+const { sendSmsOtpValidation, verifySignupValidation } = userValidation;
 
 router.route(LOGIN_ROUTE).post(loginValidation, authController.login);
 router.route(SIGNUP_ROUTE).post(signupValidation, isPhoneNumberExists, sendSmsOtp);
 router.route(LOGOUT_ROUTE).delete(isAuthorized, authController.logout);
 router.route(REFRESH_TOKEN_ROUTE).put(isAuthorized, authController.refreshToken);
-router.route(VERIFY_OTP_ROUTE).post(verifySmsOtpValidation, verifySmsOTP, authController.signup);
+router.route(VERIFY_OTP_ROUTE).post(verifySignupValidation, verifySmsOTP, authController.signup);
 router.route(SEND_OTP_ROUTE).post(sendSmsOtpValidation, isPhoneNumberExists, sendSmsOtp);
 
 export const authRouter = router;

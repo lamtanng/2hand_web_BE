@@ -1,7 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
 import Joi from 'joi';
 import { ObjectIDRegex, PasswordRegex } from '../constants/validation';
-import { SendSmsOtpRequestProps, VerifySmsOtpRequestProps } from '../types/http/otp.type';
+import {
+  SendSmsOtpRequestProps,
+  VerifyOtpRequestProps,
+  VerifySmsOtpRequestProps,
+} from '../types/http/otp.type';
 import { ResetPasswordRequestProps, UpdateUserInfoRequestProps } from '../types/http/user.type';
 import { UserProps } from '../types/model/user.type';
 import { catchErrors } from '../utils/catchErrors';
@@ -13,6 +17,7 @@ interface UpdateUserSchema extends UpdateUserInfoRequestProps {}
 interface SendSmsOtpSchema extends SendSmsOtpRequestProps {}
 interface VerifySmsOtpSchema extends VerifySmsOtpRequestProps {}
 interface ResetPasswordSchema extends ResetPasswordRequestProps {}
+interface VerifySignupSchema extends VerifyOtpRequestProps {}
 
 const { addressSchema } = addressValidation;
 const { idSchema, passwordSchema, phoneNumberSchema } = CommonValidation;
@@ -55,6 +60,12 @@ const resetPasswordSchema = Joi.object<ResetPasswordSchema>().keys({
   confirmPassword: passwordSchema.valid(Joi.ref('password')),
 });
 
+const verifySignupSchema = Joi.object<VerifySignupSchema>().keys({
+  phoneNumber: phoneNumberSchema,
+  password: passwordSchema,
+  otp: Joi.string().length(6).required(),
+});
+
 const userModelValidation = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
   await userSchema.validateAsync(req.body, { abortEarly: false });
   next();
@@ -88,10 +99,18 @@ const resetPasswordValidation = catchErrors(
   },
 );
 
+const verifySignupValidation = catchErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    await verifySignupSchema.validateAsync(req.body, { abortEarly: false });
+    next();
+  },
+);
+
 export const userValidation = {
   sendSmsOtpValidation,
   userModelValidation,
   verifySmsOtpValidation,
   updateUserValidation,
   resetPasswordValidation,
+  verifySignupValidation,
 };

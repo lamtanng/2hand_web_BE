@@ -1,22 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
-import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import { emailTransporter } from '../constants/emailTransporter';
+import { StatusCodes } from 'http-status-codes';
 import { HttpMessage } from '../constants/httpMessage';
 import { OTPVerificationModel } from '../models/otpVerification';
 import { AppError } from '../types/error.type';
-import {
-  SendOtpRequestProps,
-  SendSmsOtpRequestProps,
-  VerifyOtpRequestProps,
-  VerifySmsOtpRequestProps,
-} from '../types/http/otp.type';
+import { VerifyOtpRequestProps, VerifySmsOtpRequestProps } from '../types/http/otp.type';
 import { UserProps } from '../types/model/user.type';
-import { compareHash, hashValue } from '../utils/bcrypt';
+import { compareHash } from '../utils/bcrypt';
 import { catchErrors, handleError } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
 import { verifyAccessToken } from '../utils/jwt';
-import { mailOptions } from '../utils/mailOptions';
-import { generateOTP } from '../utils/otp';
 import { formatPhoneNumber } from '../utils/phone';
 
 interface VerifyOtpProps {
@@ -52,7 +44,6 @@ const sendOtpVerificationEmail = catchErrors(
     //   });
     //   return;
     // }
-
     // const otp = generateOTP();
     // await emailTransporter.sendMail(
     //   mailOptions.getEmailVerificationOptions({
@@ -60,10 +51,8 @@ const sendOtpVerificationEmail = catchErrors(
     //     OTPCode: otp,
     //   }),
     // );
-
     // const hashedOtp = await hashValue(String(otp));
     // await OTPVerificationModel.create({ otp: hashedOtp, email });
-
     // res.status(StatusCodes.OK);
     // next();
   },
