@@ -3,7 +3,10 @@ import { OrderModel } from '../models/order';
 import { OrderStageModel } from '../models/orderStage';
 import { OrderStageStatusModel } from '../models/orderStageStatus';
 import { AppError } from '../types/error.type';
-import { CreateOrderStageStatusRequest } from '../types/http/orderStageStatus.type';
+import {
+  CreateOrderStageStatusRequest,
+  UpdateDateRequest,
+} from '../types/http/orderStageStatus.type';
 import { OrderStageStatusProps } from '../types/model/orderStageStatus.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
@@ -11,7 +14,6 @@ import ApiError from '../utils/classes/ApiError';
 const createOneByRequest = catchServiceFunc(async (req: Request, res: Response) => {
   const data = req.body as OrderStageStatusProps;
   const orderStageStatus = await createOne(data);
-  console.log(orderStageStatus);
 
   const newOrder = await OrderModel.findOne(
     { orderStageID: orderStageStatus.orderStageID },
@@ -32,4 +34,10 @@ const createOne = async (data: CreateOrderStageStatusRequest) => {
   }
 };
 
-export const orderStageStatusService = { createOne, createOneByRequest };
+const updateDate = catchServiceFunc(async (req: Request, res: Response) => {
+  const { _id, date } = req.body as UpdateDateRequest;
+  const status = await OrderStageStatusModel.findByIdAndUpdate(_id, { date }, { new: true });
+  return status;
+});
+
+export const orderStageStatusService = { createOne, createOneByRequest, updateDate };

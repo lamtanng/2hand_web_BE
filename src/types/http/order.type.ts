@@ -1,11 +1,14 @@
+import { OrderStage } from '../enum/orderStage.enum';
 import { OrderProps } from '../model/order.type';
 import { CalcShippingFeeItemProps, GHNResponseProps } from './ghn.type';
 import { MoMoPaymentItemsProps } from './momoPayment.type';
 import { PaginationRequestProps } from './pagination.type';
 
 export interface FindAllOrdersResponseProps
-  extends Pick<OrderProps, '_id' | 'userID' | 'orderStageID' | 'paymentMethodID' | 'storeID'>,
-    PaginationRequestProps {}
+  extends Pick<OrderProps, '_id' | 'userID' | 'paymentMethodID' | 'storeID'>,
+    PaginationRequestProps {
+  stages: OrderStage;
+}
 
 export interface CalcShippingFeeRequestProps {
   shopid: number;

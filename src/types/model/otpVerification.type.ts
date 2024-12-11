@@ -5,7 +5,7 @@ export interface OTPVerificationProps {
   otp: string;
   userID: ObjectId;
   email?: string;
-  phoneNumber?: string;
+  phoneNumber: string;
   createdAt: Date;
   expiredAt: Date;
 }

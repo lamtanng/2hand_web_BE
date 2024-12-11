@@ -22,7 +22,7 @@ export const ROLE_ROUTE = '/roles';
 export const USER_ROUTE = '/users';
 export const USER_BY_ID_ROUTE = '/:userID';
 export const USER_BY_SLUG_ROUTE = '/:slug';
-
+export const USER_RESET_PASSWORD_ROUTE = '/reset-password';
 export const USER_ADDRESS_ROUTE = '/address';
 
 //store routes
@@ -33,13 +33,22 @@ export const STORE_BY_ID_ROUTE = '/:storeID';
 // order stage status
 export const ORDER_STAGE_STATUS_ROUTE = '/order-stage-status';
 
+//order routes
+export const ORDER_ROUTE = '/orders';
+export const ORDER_TRACKING_ROUTE = '/tracking/:orderID';
+export const ORDER_DELIVERY_TIME_ROUTE = '/tracking/:orderID';
+export const ORDER_PICKUP_ROUTE = '/pickup-date';
+export const ORDER_AVAILABLE_SERVICE_ROUTE = '/available_service';
+export const ORDER_SHIPPING_FEE_ROUTE = '/calc_shipping_fee';
+export const ORDER_PLACE_ROUTE = '/place_order';
+
+
 export const REVIEW_ROUTE = '/reviews';
 export const ORDERSTAGE_ROUTE = '/orderstages';
 export const PAYMENTMETHOD_ROUTE = '/paymentmethods';
 export const CART_ROUTE = '/cart';
 export const CART_ITEM_ROUTE = '/:productID';
 export const REASON_ROUTE = '/reasons';
-export const ORDER_ROUTE = '/orders';
 export const ORDERDETAIL_ROUTE = '/orderdetails';
 export const ORDERREQUEST_ROUTE = '/orderrequests';
 export const REPORT_ROUTE = '/reports';

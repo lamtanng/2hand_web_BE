@@ -30,7 +30,7 @@ export const ORDERREQUEST_COLLECTION_SCHEMA = new Schema<OrderRequestDocument>(
         type: String,
       },
     ],
-    task: {
+    taskType: {
       type: String,
       enum: {
         values: [TaskType.Cancel, TaskType.Return],
@@ -43,6 +43,7 @@ export const ORDERREQUEST_COLLECTION_SCHEMA = new Schema<OrderRequestDocument>(
         values: [ReplyStatus.Pending, ReplyStatus.Succeeded, ReplyStatus.Rejected],
       },
       default: ReplyStatus.Pending,
+      required: true,
     },
     replyMessage: {
       type: String,

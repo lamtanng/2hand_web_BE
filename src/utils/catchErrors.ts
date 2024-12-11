@@ -16,7 +16,7 @@ export const catchErrors = (asyncFunc: AsyncController): AsyncController => {
     try {
       await asyncFunc(req, res, next);
     } catch (error: AppError) {
-      handleError({ message: error.message, statusCode: error.statusCode, next });
+      handleError({ message: error.message, statusCode: error.statusCode, data: error.data, next });
     }
   };
 };
@@ -26,17 +26,23 @@ export const catchServiceFunc = (asyncFunc: ServiceFunc) => {
     try {
       return await asyncFunc(req, res);
     } catch (error: AppError) {
-      return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
+      return new ApiError({
+        message: error.message,
+        statusCode: error.statusCode,
+        data: error.data,
+      }).rejectError();
     }
   };
 };
 
-export const handleError = async ({ message, statusCode, next }: HandleErrorProps) => {
+export const handleError = async ({ message, statusCode, data, next }: HandleErrorProps) => {
   const customError = new ApiError({
     message: message,
     statusCode: statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
+    data,
   });
   next(customError);
+  return;
 };
 
 export const catchAuthErrors = (error: AppError, next?: NextFunction) => {

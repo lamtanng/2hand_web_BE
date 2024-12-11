@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { Request, Response } from 'express';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import mongoose from 'mongoose';
 import {
   calcExpectedDeliveryDateAPI,
   calcShippingFeeAPI,
@@ -13,49 +14,154 @@ import { pagination } from '../constants/pagination';
 import { OrderModel } from '../models/order';
 import { OrderDetailModel } from '../models/orderDetail';
 import { OrderStageModel } from '../models/orderStage';
+import { ProductModel } from '../models/product';
+import { OrderStage } from '../types/enum/orderStage.enum';
 import { AppError } from '../types/error.type';
+import { GetAvailableServiceRequestProps } from '../types/http/ghn.type';
 import { IPNMoMoPaymentRequestProps, MoMoPaymentItemsProps } from '../types/http/momoPayment.type';
 import {
   CalcExpectedDeliveryDateRequest,
-  CalcShippingFeeResponseProps,
   CreateCODPaymentRequestProps,
+  CreatedOrderProps,
 } from '../types/http/order.type';
+import { PaginationResponseProps } from '../types/http/pagination.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
+import { getDate } from '../utils/format';
 import { getMoMoCreationRequestBody } from '../utils/momo';
-import { deleteEmptyObjectFields } from '../utils/object';
-import { ProductModel } from '../models/product';
-import { GetAvailableServiceRequestProps } from '../types/http/ghn.type';
+import { deleteEmptyObjectFields, parseJson } from '../utils/object';
 import { orderStageService } from './orderStage.service';
-import { OrderStage } from '../types/enum/orderStage.enum';
-import mongoose from 'mongoose';
+import { OrderStageStatusModel } from '../models/orderStageStatus';
+import { ORDERREQUEST_COLLECTION_NAME } from '../models/orderRequest/orderRequest.doc';
+import { HttpMessage } from '../constants/httpMessage';
+import { ORDERSTAGE_COLLECTION_NAME } from '../models/orderStage/orderStage.doc';
+import { ORDER_STAGE_STATUS_COLLECTION_NAME } from '../models/orderStageStatus/orderStageStatus.doc';
+import { OrderRequestModel } from '../models/orderRequest';
+import { OrderStageStatus } from '../types/enum/orderStageStatus.enum';
+import { OrderStageStatusProps } from '../types/model/orderStageStatus.type';
+import { OrderRequestProps } from '../types/model/orderRequest.type';
+import { OrderStageProps } from '../types/model/orderStage.type';
+import { ReasonProps } from '../types/model/reason.type';
 const crypto = require('crypto');
 
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {
-  const { userID, orderStageID, paymentMethodID, storeID, _id } = req.query;
+  const { userID, stages, paymentMethodID, storeID, _id } = req.query;
   const { page, limit, search, skip } = pagination(req);
 
-  let queryObj: { [key: string]: string | undefined } = {
+  const sort = parseJson(req.query.sort as string);
+
+  let queryObj = {
     _id: (_id || '') as string,
     userID: (userID || '') as string,
-    orderStageID: (orderStageID || '') as string,
     paymentMethodID: (paymentMethodID || '') as string,
     storeID: (storeID || '') as string,
+    name: search && { $regex: search, $options: 'i' },
+    orderStageID: stages && {
+      $in: await OrderStageModel.find({
+        name: { $in: parseJson(stages as string) },
+      }),
+    },
   };
+
   deleteEmptyObjectFields(queryObj);
-
-  const orders = await OrderModel.find(queryObj)
-    .populate({ path: 'orderDetailIDs', populate: { path: 'productID' } })
+  const orders = await OrderModel.find({
+    ...queryObj,
+  })
+    .populate({
+      path: 'orderDetailIDs',
+      populate: ['productID', 'reviewID'],
+    })
     .populate('userID')
-    .populate('orderStageID')
     .populate('paymentMethodID')
-    .populate('storeID');
-  // .limit(limit)
-  // .skip(skip)
-  // .find({ name: { $regex: search, $options: 'i' } });
+    .populate({ path: 'storeID', populate: 'userID' })
+    .populate({
+      path: 'orderStageID',
+      populate: {
+        path: 'orderStageStatusID',
+        populate: { path: 'orderRequestID', populate: 'reasonID' },
+      },
+    })
+    .limit(limit)
+    .skip(skip)
+    .sort(sort);
 
-  return orders;
+  const total = await OrderModel.countDocuments(queryObj);
+  return { page, limit, total, data: orders } as PaginationResponseProps;
 });
+
+const findOneById = catchServiceFunc(async (req: Request, res: Response) => {
+  const { _id } = req.params;
+  const order = await OrderModel.findById(_id)
+    .populate({
+      path: 'orderDetailIDs',
+      populate: ['productID', 'reviewID'],
+    })
+    .populate('userID')
+    .populate('paymentMethodID')
+    .populate({ path: 'storeID', populate: 'userID' })
+    .populate('receiverAddress')
+    .populate({
+      path: 'orderStageID',
+      populate: {
+        path: 'orderStageStatusID',
+        populate: { path: 'orderRequestID', populate: 'reasonID' },
+      },
+    });
+  return order;
+});
+
+const tracking = catchServiceFunc(async (req: Request, res: Response) => {
+  const order = (await findOne(req.params.orderID)) as unknown as any;
+  const stages = await OrderStageModel.find({ orderID: order._id }).sort({ createdAt: 1 });
+
+  // Interface: interface TrackingOrderProps extends Pick<OrderStageProps, '_id' | 'name' | 'orderID'> {
+  //   orderStageStatus: (Omit<OrderStageStatusProps, 'orderRequestID'> & {
+  //     orderRequestID: Omit<OrderRequestProps, 'reasonID'> & {
+  //       reasonID: ReasonProps;
+  //     };
+  //   })[];
+  // }
+  const orderTracking = await Promise.all(
+    stages.map(async (stage) => {
+      const statuses = await OrderStageStatusModel.find({ orderStageID: stage._id })
+        .sort({ createdAt: 1 })
+        .populate({ path: 'orderRequestID', populate: 'reasonID' });
+
+      return {
+        _id: stage._id,
+        name: stage.name,
+        orderID: stage.orderID,
+        orderStageStatus: statuses,
+      };
+    }),
+  );
+
+  return orderTracking;
+});
+
+const findOne = async (orderID: mongoose.Types.ObjectId | string) => {
+  // interface FindOrderResultProps extends Omit<OrderProps, 'orderStageID'> {
+  //   orderStageID: Omit<OrderStageProps, 'orderStageStatusID'> extends {
+  //     orderStageStatusID: mongoose.Types.ObjectId;
+  //   }
+  // }
+  return await OrderModel.findById(orderID)
+    .populate({
+      path: 'orderDetailIDs',
+      populate: ['productID', 'reviewID'],
+    })
+    .populate('userID')
+    .populate('paymentMethodID')
+    .populate('storeID')
+    .populate('receiverAddress')
+    .populate({
+      path: 'orderStageID',
+      populate: {
+        path: 'orderStageStatusID',
+        populate: { path: 'orderRequestID', populate: 'reasonID' },
+      },
+    });
+};
 
 const updateOrderStage = catchServiceFunc(async (req: Request, res: Response) => {
   const { _id, orderStageID } = req.body;
@@ -97,12 +203,27 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
     for (const order of orders) {
       //create order detail
       const { total, storeID, note, items, shipmentCost } = order;
+
+      //create order
+      const orderModel = new OrderModel({
+        total,
+        userID,
+        paymentMethodID,
+        storeID,
+        shipmentCost,
+        note,
+        // orderDetailIDs,
+        receiverAddress,
+      });
+      const newOrder = await orderModel.save({ session });
+
       const orderDetailList = items.map((item: MoMoPaymentItemsProps) => {
         const { quantity, totalPrice, id } = item;
         return {
           quantity,
           priceTotal: totalPrice,
           productID: id,
+          orderID: newOrder._id,
         };
       });
       const orderDetailIDs = (await OrderDetailModel.insertMany(orderDetailList, { session })).map(
@@ -120,24 +241,14 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
         })),
       );
 
-      //create order
-      const orderModel = new OrderModel({
-        total,
-        userID,
-        paymentMethodID,
-        storeID,
-        shipmentCost,
-        note,
-        orderDetailIDs,
-        receiverAddress,
-      });
-
-      const newOrder = await orderModel.save({ session });
+      //update orderDetailIDs to order
+      newOrder.orderDetailIDs = orderDetailIDs;
 
       //create orderStage
       const orderStage = await orderStageService.createOne({
         name: OrderStage.Confirmating,
         orderID: newOrder._id,
+        expectedDate: getDate({ addedDate: 2 }),
       });
 
       //update orderID to order stage
@@ -230,4 +341,6 @@ export const orderService = {
   getAvailableService,
   getPickupDate,
   calcExpectedDeliveryDate,
+  findOneById,
+  tracking,
 };

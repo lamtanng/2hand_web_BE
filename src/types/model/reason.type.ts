@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
-import { ObjectType } from "../enum/objectType.enum";
+    import mongoose from "mongoose";
 import { TaskType } from "../enum/taskType.enum";
+import { ObjectType } from "../enum/objectType.enum";
 
 export interface ReasonProps{
     _id: mongoose.Schema.Types.ObjectId,

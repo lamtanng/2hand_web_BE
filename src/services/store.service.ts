@@ -4,7 +4,7 @@ import { StoreModel } from '../models/store';
 import { UserModel } from '../models/user';
 import { AppError } from '../types/error.type';
 import { CreateGHNStoreRequestProps } from '../types/http/ghn.type';
-import { CreateStoreRequestProps } from '../types/http/store.type';
+import { CreateStoreRequestProps, UpdateStoreRequestProps } from '../types/http/store.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
 import { RoleModel } from '../models/role';
@@ -85,4 +85,33 @@ const findOneByUserId = catchServiceFunc(async (req: Request, res: Response) => 
   return store;
 });
 
-export const storeService = { findAll, addStore, findOneById, findOneByUserId, createGHNStore };
+const update = catchServiceFunc(async (req: Request, res: Response) => {
+  const { _id } = req.body as UpdateStoreRequestProps;
+  const store = await StoreModel.findById(_id);
+  console.log(store);
+  const updatedStore = await StoreModel.findByIdAndUpdate(_id, { ...req.body }, { new: true });
+  return updatedStore;
+});
+
+const statistics = catchServiceFunc(async (req: Request, res: Response) => {
+  const { storeID } = req.params;
+  const store = await StoreModel.findById(storeID);
+
+
+  //revenue: total, by week, by month, by year
+  //order: total, by stage, by week, by month, by year
+  //product: total, by stage, by category, by week, by month, by year
+  //customer: total, by week, by month, by year
+  
+  return { id: '', revenue: 0, totalOrder: 0, totalProduct: 0 };
+});
+
+export const storeService = {
+  findAll,
+  addStore,
+  findOneById,
+  findOneByUserId,
+  createGHNStore,
+  update,
+  statistics,
+};

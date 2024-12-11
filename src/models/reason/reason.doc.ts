@@ -16,13 +16,12 @@ export const REASON_COLLECTION_SCHEMA = new Schema<ReasonDocument>({
   name: {
     type: String,
     required: true,
-    unique: true,
   },
   objectType: {
     type: String,
     required: true,
     enum: {
-      values: [...Object.values(ObjectType)],
+      values: [ObjectType.Product, ObjectType.Review, ObjectType.Store, ObjectType.User],
     },
   },
   taskType: {

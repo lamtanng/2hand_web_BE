@@ -44,7 +44,7 @@ export const ORDER_STAGE_STATUS_COLLECTION_SCHEMA = new Schema<
     },
     date: {
       type: Date,
-      default: new Date(),
+      default: null,
     },
     orderStageID: {
       type: mongoose.Schema.Types.ObjectId,

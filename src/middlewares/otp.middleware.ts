@@ -1,22 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
-import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import { emailTransporter } from '../constants/emailTransporter';
+import { StatusCodes } from 'http-status-codes';
 import { HttpMessage } from '../constants/httpMessage';
 import { OTPVerificationModel } from '../models/otpVerification';
 import { AppError } from '../types/error.type';
-import {
-  SendOtpRequestProps,
-  SendSmsOtpRequestProps,
-  VerifyOtpRequestProps,
-  VerifySmsOtpRequestProps,
-} from '../types/http/otp.type';
+import { VerifyOtpRequestProps, VerifySmsOtpRequestProps } from '../types/http/otp.type';
 import { UserProps } from '../types/model/user.type';
-import { compareHash, hashValue } from '../utils/bcrypt';
+import { compareHash } from '../utils/bcrypt';
 import { catchErrors, handleError } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
 import { verifyAccessToken } from '../utils/jwt';
-import { mailOptions } from '../utils/mailOptions';
-import { generateOTP } from '../utils/otp';
 import { formatPhoneNumber } from '../utils/phone';
 
 interface VerifyOtpProps {
@@ -43,40 +35,37 @@ const isVerified = async (req: Request, res: Response, next: NextFunction) => {
 
 const sendOtpVerificationEmail = catchErrors(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { email } = req.body as SendOtpRequestProps;
-    if (!email) {
-      handleError({
-        message: ReasonPhrases.BAD_REQUEST,
-        statusCode: StatusCodes.BAD_REQUEST,
-        next,
-      });
-      return;
-    }
-
-    const otp = generateOTP();
-    await emailTransporter.sendMail(
-      mailOptions.getEmailVerificationOptions({
-        to: email,
-        OTPCode: otp,
-      }),
-    );
-
-    const hashedOtp = await hashValue(String(otp));
-    await OTPVerificationModel.create({ otp: hashedOtp, email });
-
-    res.status(StatusCodes.OK);
-    next();
+    // const { phoneNumber } = req.body as SendOtpRequestProps;
+    // if (!phoneNumber) {
+    //   handleError({
+    //     message: ReasonPhrases.BAD_REQUEST,
+    //     statusCode: StatusCodes.BAD_REQUEST,
+    //     next,
+    //   });
+    //   return;
+    // }
+    // const otp = generateOTP();
+    // await emailTransporter.sendMail(
+    //   mailOptions.getEmailVerificationOptions({
+    //     to: email,
+    //     OTPCode: otp,
+    //   }),
+    // );
+    // const hashedOtp = await hashValue(String(otp));
+    // await OTPVerificationModel.create({ otp: hashedOtp, email });
+    // res.status(StatusCodes.OK);
+    // next();
   },
 );
 
-const verifyEmailOTP = async (req: Request, res: Response, next: NextFunction) => {
-  const { otp, email } = req.body as VerifyOtpRequestProps;
-  const queryObject = { email };
+const verifySignupOTP = async (req: Request, res: Response, next: NextFunction) => {
+  const { otp, phoneNumber } = req.body as VerifyOtpRequestProps;
+  const queryObject = { phoneNumber };
   verifyOtp({ otp, queryObject, next });
 };
 
 const verifySmsOTP = async (req: Request, res: Response, next: NextFunction) => {
-  const { otp, phoneNumber } = req.body as VerifySmsOtpRequestProps;
+  const { otp, phoneNumber } = req.body as VerifySmsOtpRequestProps | VerifyOtpRequestProps;
   const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
   const queryObject = { phoneNumber: formattedPhoneNumber };
   verifyOtp({ otp, queryObject, next });
@@ -108,4 +97,4 @@ const verifyOtp = async ({ otp, queryObject, next }: VerifyOtpProps) => {
   }
 };
 
-export const otpMiddleware = { sendOtpVerificationEmail, verifyEmailOTP, isVerified, verifySmsOTP };
+export const otpMiddleware = { sendOtpVerificationEmail, verifySignupOTP, isVerified, verifySmsOTP };

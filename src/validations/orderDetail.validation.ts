@@ -3,14 +3,17 @@ import { catchErrors } from '../utils/catchErrors';
 import { NextFunction, Request, Response } from 'express';
 import { OrderDetailProps } from '../types/model/orderDetail.type';
 import { ObjectIDRegex } from '../constants/validation';
+import { CreateOrderDetailRequest } from '../types/http/orderDetails.type';
+import { CommonValidation } from './common.validation';
 
-interface OrderDetailSchema extends OrderDetailProps {}
+interface CreateOrderDetailSchema extends CreateOrderDetailRequest {}
 
-const orderDetailSchema = Joi.object<OrderDetailSchema>({
+const { idSchema } = CommonValidation;
+const orderDetailSchema = Joi.object<CreateOrderDetailSchema>().keys({
   quantity: Joi.number().min(1).required(),
   priceTotal: Joi.number().min(0).required(),
-  productID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
-  // orderID: Joi.string().regex(ObjectIDRegex, 'valid id').required(),
+  productID: idSchema.required(),
+  orderID: idSchema.required(),
 });
 
 export const orderDetailValidation = catchErrors(
