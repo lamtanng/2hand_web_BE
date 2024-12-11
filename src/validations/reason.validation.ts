@@ -2,12 +2,17 @@ import { NextFunction, Request, Response } from 'express';
 import Joi from 'joi';
 import { ObjectType } from '../types/enum/objectType.enum';
 import { TaskType } from '../types/enum/taskType.enum';
-import { CreateReasonRequest } from '../types/http/reason.type';
+import { CreateReasonRequest, UpdateReasonRequest } from '../types/http/reason.type';
 import { catchErrors } from '../utils/catchErrors';
+import { Role } from '../types/enum/role.enum';
+import { CommonValidation } from './common.validation';
 
-interface ReasonSchema extends CreateReasonRequest {}
+interface NewReasonSchema extends CreateReasonRequest {}
+interface UpdateReasonSchema extends UpdateReasonRequest {}
 
-const reasonSchema = Joi.object<ReasonSchema>({
+const { idSchema } = CommonValidation;
+
+const newReasonSchema = Joi.object<NewReasonSchema>({
   name: Joi.string().required().trim(),
   objectType: Joi.string()
     .valid(...Object.values(ObjectType))
@@ -15,11 +20,26 @@ const reasonSchema = Joi.object<ReasonSchema>({
   taskType: Joi.string()
     .valid(...Object.values(TaskType))
     .required(),
+  role: Joi.string()
+    .valid(...Object.values(Role))
+    .required(),
 });
 
-export const reasonValidation = catchErrors(
+const updateReasonSchema = Joi.object<UpdateReasonSchema>({
+  _id: idSchema.required(),
+  name: Joi.string().required().trim(),
+});
+
+export const addReasonValidation = catchErrors(
   async (req: Request, res: Response, next: NextFunction) => {
-    await reasonSchema.validateAsync(req.body, { abortEarly: false });
+    await newReasonSchema.validateAsync(req.body, { abortEarly: false });
+    next();
+  },
+);
+
+export const updateReasonValidation = catchErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    await updateReasonSchema.validateAsync(req.body, { abortEarly: false });
     next();
   },
 );
