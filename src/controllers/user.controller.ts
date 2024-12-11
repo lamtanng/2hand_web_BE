@@ -69,10 +69,10 @@ const createUserPhone = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
-const sendOtpVerificationEmail = catchErrors(async (req: Request, res: Response) => {
-  const result = await userService.sendOtpVerificationEmail(req, res);
-  res.status(StatusCodes.OK).json(result).send();
-});
+// const sendOtpVerificationEmail = catchErrors(async (req: Request, res: Response) => {
+//   const result = await userService.sendOtpVerificationEmail(req, res);
+//   res.status(StatusCodes.OK).json(result).send();
+// });
 
 const resetPassword = catchErrors(async (req: Request, res: Response) => {
   const result = await userService.resetPassword(req, res);
@@ -93,6 +93,6 @@ export const userController = {
   sendSmsOtp,
   createUserPhone,
   findOneBySlug,
-  sendOtpVerificationEmail,
+  // sendOtpVerificationEmail,
   resetPassword,
 };

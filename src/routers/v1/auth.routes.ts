@@ -8,22 +8,25 @@ import {
   VERIFY_OTP_ROUTE,
 } from '../../constants/routes';
 import { authController } from '../../controllers/auth.controller';
-import { otpController } from '../../controllers/otp.controller';
+import { userController } from '../../controllers/user.controller';
 import { isAuthorized } from '../../middlewares/auth.middleware';
 import { otpMiddleware } from '../../middlewares/otp.middleware';
+import { userMiddleware } from '../../middlewares/user.middleware';
 import { loginValidation } from '../../validations/authValidation/login.validation';
 import { signupValidation } from '../../validations/authValidation/signup.validation';
-import { userController } from '../../controllers/user.controller';
+import { userValidation } from '../../validations/user.validation';
 
 const router = express.Router();
-const {sendOtpVerificationEmail} = userController
+const { sendSmsOtp } = userController;
+const { verifySmsOTP } = otpMiddleware;
+const { isPhoneNumberExists } = userMiddleware;
+const { sendSmsOtpValidation, verifySmsOtpValidation } = userValidation;
+
 router.route(LOGIN_ROUTE).post(loginValidation, authController.login);
-router
-  .route(SIGNUP_ROUTE)
-  .post(signupValidation, otpMiddleware.sendOtpVerificationEmail, otpController);
+router.route(SIGNUP_ROUTE).post(signupValidation, isPhoneNumberExists, sendSmsOtp);
 router.route(LOGOUT_ROUTE).delete(isAuthorized, authController.logout);
 router.route(REFRESH_TOKEN_ROUTE).put(isAuthorized, authController.refreshToken);
-router.route(VERIFY_OTP_ROUTE).post(otpMiddleware.verifyEmailOTP, authController.signup);
-router.route(SEND_OTP_ROUTE).post(otpMiddleware.sendOtpVerificationEmail, otpController);
+router.route(VERIFY_OTP_ROUTE).post(verifySmsOtpValidation, verifySmsOTP, authController.signup);
+router.route(SEND_OTP_ROUTE).post(sendSmsOtpValidation, isPhoneNumberExists, sendSmsOtp);
 
 export const authRouter = router;

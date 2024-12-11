@@ -4,9 +4,7 @@ import {
   SEND_OTP_ROUTE,
   USER_ADDRESS_ROUTE,
   USER_BY_ID_ROUTE,
-  USER_BY_SLUG_ROUTE,
   USER_RESET_PASSWORD_ROUTE,
-  USER_ROUTE,
   VERIFY_OTP_ROUTE,
 } from '../../../constants/routes';
 import { userController } from '../../../controllers/user.controller';
@@ -14,10 +12,10 @@ import {
   checkAdminPermission,
   checkCustomerPermission,
 } from '../../../middlewares/auth.middleware';
-import { userAddressRoutes } from './address.routes';
 import { otpMiddleware } from '../../../middlewares/otp.middleware';
-import { userValidation } from '../../../validations/user.validation';
 import { userMiddleware } from '../../../middlewares/user.middleware';
+import { userValidation } from '../../../validations/user.validation';
+import { userAddressRoutes } from './address.routes';
 const router = express.Router();
 
 const {
@@ -41,7 +39,6 @@ const {
   resetPasswordValidation,
 } = userValidation;
 const { isPhoneNumberExists } = userMiddleware;
-const { sendOtpVerificationEmail } = otpMiddleware;
 
 router.route(USER_BY_ID_ROUTE).get(findOneById);
 router.route('/').get(findOneBySlug);

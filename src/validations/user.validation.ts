@@ -1,38 +1,21 @@
 import { NextFunction, Request, Response } from 'express';
 import Joi from 'joi';
-import { isValidPhoneNumber } from 'libphonenumber-js';
 import { ObjectIDRegex, PasswordRegex } from '../constants/validation';
 import { SendSmsOtpRequestProps, VerifySmsOtpRequestProps } from '../types/http/otp.type';
+import { ResetPasswordRequestProps, UpdateUserInfoRequestProps } from '../types/http/user.type';
 import { UserProps } from '../types/model/user.type';
 import { catchErrors } from '../utils/catchErrors';
 import { addressValidation } from './address.validation';
 import { CommonValidation } from './common.validation';
-import { ResetPasswordRequestProps, UpdateUserInfoRequestProps } from '../types/http/user.type';
 
 interface UserSchema extends UserProps {}
 interface UpdateUserSchema extends UpdateUserInfoRequestProps {}
 interface SendSmsOtpSchema extends SendSmsOtpRequestProps {}
 interface VerifySmsOtpSchema extends VerifySmsOtpRequestProps {}
-interface PhoneNumberSchema extends Pick<UserProps, 'phoneNumber'> {}
 interface ResetPasswordSchema extends ResetPasswordRequestProps {}
 
 const { addressSchema } = addressValidation;
-const { idSchema, passwordSchema } = CommonValidation;
-
-const phoneNumberSchema = Joi.object<PhoneNumberSchema>({
-  phoneNumber: Joi.string()
-    .required()
-    .custom((value: string, helpers) => {
-      if (!value.startsWith('+84')) {
-        return helpers.message({ custom: 'Phone number must start with +84' });
-      }
-
-      if (!isValidPhoneNumber(value, 'VI')) {
-        return helpers.error('any.invalid');
-      }
-      return true;
-    }),
-});
+const { idSchema, passwordSchema, phoneNumberSchema } = CommonValidation;
 
 const userSchema = Joi.object<UserSchema>({
   firstName: Joi.string().default(null).trim(),
@@ -49,7 +32,9 @@ const userSchema = Joi.object<UserSchema>({
   avatar: Joi.string().default(null).trim().allow(null, ''),
 });
 
-const sendSmsOtpSchema = phoneNumberSchema.append<SendSmsOtpSchema>({});
+const sendSmsOtpSchema = Joi.object<SendSmsOtpSchema>({
+  phoneNumber: phoneNumberSchema,
+});
 
 const verifySmsOtpSchema = sendSmsOtpSchema.append<VerifySmsOtpSchema>({
   _id: idSchema.required(),
@@ -65,7 +50,7 @@ const updateUserSchema = Joi.object<UpdateUserSchema>({
 });
 
 const resetPasswordSchema = Joi.object<ResetPasswordSchema>().keys({
-  email: Joi.string().email().required().trim().strict(),
+  phoneNumber: phoneNumberSchema,
   password: passwordSchema,
   confirmPassword: passwordSchema.valid(Joi.ref('password')),
 });
