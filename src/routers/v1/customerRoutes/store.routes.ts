@@ -1,11 +1,10 @@
 import express from 'express';
-import { storeController } from '../../../controllers/store.controller';
-import { isAuthorized } from '../../../middlewares/auth.middleware';
 import {
   STORE_BY_ID_ROUTE,
   STORE_BY_USER_ROUTE,
   STORE_STATISTIC_ROUTE,
 } from '../../../constants/routes';
+import { storeController } from '../../../controllers/store.controller';
 import { storeValidation } from '../../../validations/store.validation';
 
 const router = express.Router();
