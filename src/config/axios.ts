@@ -19,9 +19,11 @@ axiosClient.interceptors.request.use(
 
 axiosClient.interceptors.response.use(
   (response) => response.data,
-  (error) =>
-    new ApiError({
+  (error) => {
+    const errorMessage = error.response.data.message || error.response.statusText;
+    return new ApiError({
       statusCode: error.response.data.status || error.response.status,
-      message: error.response.data.message || error.response.statusText,
-    }).rejectError(),
+      message: errorMessage,
+    }).rejectError();
+  },
 );

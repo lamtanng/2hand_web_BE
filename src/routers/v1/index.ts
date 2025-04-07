@@ -3,25 +3,21 @@ import { StatusCodes } from 'http-status-codes';
 import {
   ADMIN_ROUTE,
   AUTH_ROUTE,
+  OPENAI_ROUTE,
   ORDERDETAIL_ROUTE,
-  ORDERREQUEST_ROUTE,
-  ORDERSTAGE_ROUTE,
   PAYMENTMETHOD_ROUTE,
   REASON_ROUTE,
   REPORT_ROUTE,
-  REVIEW_ROUTE,
-  SELLER_ROUTE,
+  SELLER_ROUTE
 } from '../../constants/routes';
 import { adminRouter } from './adminRoutes';
 import { authRouter } from './auth.routes';
 import { customerRouter } from './customerRoutes';
+import { openaiRoutes } from './openai.routes';
 import { orderDetailRoutes } from './orderDetail.routes';
-import { orderRequestRoutes } from './orderRequest.routes';
-import { orderStageRoutes } from './customerRoutes/orderStage.routes';
 import { paymentMethodRoutes } from './paymentMethod.route';
 import { reasonRoutes } from './reason.routes';
 import { reportRoutes } from './report.routes';
-import { reviewRoutes } from './customerRoutes/review.routes';
 import { sellerRouter } from './sellerRoutes';
 
 const router = express.Router();
@@ -42,5 +38,7 @@ router.use(REASON_ROUTE, reasonRoutes);
 
 router.use(ORDERDETAIL_ROUTE, orderDetailRoutes);
 router.use(REPORT_ROUTE, reportRoutes);
+
+router.use(OPENAI_ROUTE, openaiRoutes);
 
 export const APIs_V1 = router;
