@@ -20,9 +20,12 @@ axiosClient.interceptors.request.use(
 axiosClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    const errorMessage = error.response.data.message || error.response.statusText;
+    // console.log('error axios: ', error.response);
+    const errorMessage =
+      error.response.data.message || error.response.data.error.message || error.response.statusText;
     return new ApiError({
-      statusCode: error.response.data.status || error.response.status,
+      statusCode:
+        error.response.data.status || error.response.data.error.status || error.response.status,
       message: errorMessage,
     }).rejectError();
   },

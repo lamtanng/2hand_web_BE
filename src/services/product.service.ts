@@ -16,6 +16,9 @@ import ApiError from '../utils/classes/ApiError';
 import { deleteEmptyObjectFields, parseJson } from '../utils/object';
 import { generateSlug } from '../utils/slug';
 import { uploadCloudinary, UploadCloudinaryProps } from './cloudinary.service';
+import { createEmbedding } from '../apis/openai';
+import { createVectorIndex } from '../utils/createVectocIndex';
+import { PipelineStage } from 'mongoose';
 
 const findAll = async (req: Request, res: Response) => {
   try {
@@ -141,6 +144,79 @@ const uploadProductImages = async ({ files }: Pick<UploadCloudinaryProps, 'files
   return uploadedFiles.map((file: UploadApiResponse) => file.secure_url);
 };
 
+export const createEmbeddingData = async () => {
+  try {
+    const products = await ProductModel.find({
+      name: { $regex: '.*' },
+    }).limit(100);
+
+    const updatedProducts = await Promise.all(
+      products?.map(async (product) => {
+        const embeddingResponse = await createEmbedding({
+          input: product.name,
+        });
+
+        const embedding = embeddingResponse.data?.[0]?.embedding;
+
+        return await ProductModel.findByIdAndUpdate(
+          product._id,  
+          { $set: { embedding } },
+          { new: true },
+        );
+      }),
+    );
+
+    const result = await createVectorIndex(ProductModel);
+
+    return { result };
+  } catch (err) {
+    console.log('Error: ', err);
+    throw err;
+  }
+};
+
+const getProductByEmbedding = async (req: Request, res: Response) => {
+  try {
+    const { search } = req.body;
+    const queryEmbedding = await createEmbedding({
+      input: search,
+    });
+
+    const embedding = queryEmbedding.data?.[0]?.embedding;
+
+    const pipeline: PipelineStage[] = [
+      {
+        $vectorSearch: {
+          index: 'vector_product',
+          queryVector: embedding,
+          path: 'embedding',
+          limit: 10,
+          numCandidates: 30,
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          score: { $meta: 'vectorSearchScore' },
+        },
+      },
+    ];
+
+    const result = await ProductModel.aggregate(pipeline);
+
+    const highSimilarityResults = result.filter((item) => item.score >= 0.7);
+    const remainingResults = result.filter((item) => item.score < 0.7);
+
+    return {
+      highSimilarity: highSimilarityResults,
+      remaining: remainingResults,
+    };
+  } catch (error: AppError) {
+    return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
+  }
+};
+
 export const productService = {
   findAll,
   addProduct,
@@ -149,4 +225,6 @@ export const productService = {
   toggleActiveProduct,
   findOneById,
   findOneBySlug,
+  createEmbeddingData,
+  getProductByEmbedding,
 };

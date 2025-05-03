@@ -138,3 +138,31 @@ export interface OpenAIUsageProps {
   totalTokens: number;
   [property: string]: any;
 }
+
+//create embedding
+export interface CreateEmbeddingRequest {
+  input: string;
+  model?: string;
+  [property: string]: any;
+}
+
+export interface CreateEmbeddingResponse {
+  data: Datum[];
+  model: string;
+  object: string;
+  usage: Usage;
+  [property: string]: any;
+}
+
+export interface Datum {
+  embedding?: number[];
+  index?: number;
+  object?: string;
+  [property: string]: any;
+}
+
+export interface Usage {
+  prompt_tokens: number;
+  total_tokens: number;
+  [property: string]: any;
+}

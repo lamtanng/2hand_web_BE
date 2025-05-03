@@ -21,4 +21,5 @@ export interface ProductProps {
   width: number;
   length: number;
   address: AddressProps;
+  embedding?: number[];
 }
