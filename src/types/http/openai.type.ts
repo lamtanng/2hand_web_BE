@@ -166,3 +166,13 @@ export interface Usage {
   total_tokens: number;
   [property: string]: any;
 }
+
+export enum PromptType {
+  ProductDescription = 'product_description',
+  CheckCommunityViolation = 'check_community_violation',
+}
+
+export interface PromptAIRequestProps {
+  content: OpenAIMessageProps['content'];
+  promptType: PromptType;
+}
