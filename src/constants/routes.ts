@@ -42,7 +42,6 @@ export const ORDER_AVAILABLE_SERVICE_ROUTE = '/available_service';
 export const ORDER_SHIPPING_FEE_ROUTE = '/calc_shipping_fee';
 export const ORDER_PLACE_ROUTE = '/place_order';
 
-
 export const REVIEW_ROUTE = '/reviews';
 export const ORDERSTAGE_ROUTE = '/orderstages';
 export const PAYMENTMETHOD_ROUTE = '/paymentmethods';
@@ -52,3 +51,4 @@ export const REASON_ROUTE = '/reasons';
 export const ORDERDETAIL_ROUTE = '/orderdetails';
 export const ORDERREQUEST_ROUTE = '/orderrequests';
 export const REPORT_ROUTE = '/reports';
+export const NOTIFICATION_ROUTE = '/notifications';

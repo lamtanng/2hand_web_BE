@@ -8,11 +8,64 @@ import { V1_ROUTE } from './constants/routes';
 import { errorHandler } from './middlewares/errorHandler.middleware';
 import { APIs_V1 } from './routers/v1';
 import cookieParser from 'cookie-parser';
-import exitHook from "async-exit-hook";
+import exitHook from 'async-exit-hook';
+import http from 'http';
+import { Server } from 'socket.io';
+import jwt from 'jsonwebtoken';
+import { verifyAccessToken } from './utils/jwt';
+import { DecodedTokenProps } from './types/token.type';
 dotenv.config();
 
 const startServer = () => {
   const app = express();
+  const server = http.createServer(app);
+
+  // Set up Socket.IO with CORS
+  const io = new Server(server, {
+    cors: {
+      origin: corsOptions.origin,
+      methods: ['GET', 'POST'],
+      credentials: true,
+    },
+  });
+
+  // Make io accessible to our route handlers
+  app.set('io', io);
+
+  // Socket.IO authentication and connection setup
+  io.use(async (socket, next) => {
+    // Get token from handshake auth or query params
+    const token = socket.handshake.auth.token || socket.handshake.query.token;
+
+    if (!token) {
+      return next(new Error('Authentication error: Token not provided'));
+    }
+
+    try {
+      const decodedToken = (await verifyAccessToken(token)) as DecodedTokenProps;
+      socket.data.user = decodedToken;
+      socket.join(decodedToken._id.toString());
+      next();
+    } catch (error) {
+      next(new Error('Authentication error: Invalid token'));
+    }
+  });
+
+  // Socket.IO connection event
+  io.on('connection', (socket) => {
+    console.log(`User connected: ${socket.id}`);
+
+    // Join a room with the user's ID for private notifications
+    if (socket.data.user && socket.data.user._id) {
+      socket.join(socket.data.user._id);
+      console.log(`User ${socket.data.user._id} joined their private room`);
+    }
+
+    // Disconnect event
+    socket.on('disconnect', () => {
+      console.log(`User disconnected: ${socket.id}`);
+    });
+  });
 
   // enable req.body json parsing
   app.use(express.json({ limit: '50mb' }));
@@ -22,17 +75,18 @@ const startServer = () => {
   app.use(cookieParser());
 
   //enable cors
-app.use(cors(corsOptions));
+  app.use(cors(corsOptions));
 
   // app routes
   app.use(V1_ROUTE, APIs_V1);
 
-  app.listen(env.APP_PORT, env.APP_HOST, () => {
-    console.log(`I am running server`);
-  });
-
   //middleware for error handling
   app.use(errorHandler);
+
+  // Start the server with http module instead of app.listen
+  server.listen(env.APP_PORT, env.APP_HOST, () => {
+    console.log(`Server running on http://${env.APP_HOST}:${env.APP_PORT}`);
+  });
 
   // Close the DB connection when the Node process is terminated
   exitHook(() => {

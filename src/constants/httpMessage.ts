@@ -12,6 +12,7 @@ const PRODUCT_IS_USED = 'Product is used';
 const ACCESS_DENIED = 'Access denied';
 const ADDRESS = 'Address';
 const PAYMENT_METHOD = 'Payment method';
+const NOTIFICATION = 'Notification';
 
 const getNotFoundMsg = (title: string) => `${title} ${ReasonPhrases.NOT_FOUND}`;
 const getConflictMsg = (title: string) => `${title} already exists`;
@@ -29,6 +30,7 @@ const NOT_FOUND = {
   TOKEN: getNotFoundMsg(TOKEN),
   PAYMENT_METHOD: getNotFoundMsg(PAYMENT_METHOD),
   ADDRESS: getNotFoundMsg(ADDRESS).concat('or is default'),
+  NOTIFICATION: getNotFoundMsg(NOTIFICATION),
 };
 
 const INCORRECT = {
@@ -56,5 +58,5 @@ export const HttpMessage = {
   OUT_OF_STOCK,
   ACCESS_DENIED,
   ORDER_STAGE_CONDITION,
-  PRODUCT_IS_USED
+  PRODUCT_IS_USED,
 };
