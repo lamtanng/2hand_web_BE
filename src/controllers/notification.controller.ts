@@ -4,7 +4,7 @@ import { catchErrors } from '../utils/catchErrors';
 import { notificationService } from '../services/notification.service';
 
 const createNotification = catchErrors(async (req: Request, res: Response) => {
-  const result = await notificationService.createNotification(req, res);
+  const result = await notificationService.createNotificationByRequest(req, res);
   res.status(StatusCodes.CREATED).json(result).send();
 });
 

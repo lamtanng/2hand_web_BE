@@ -34,7 +34,17 @@ const sendNotification = async (
   }
 };
 
-const createNotification = catchServiceFunc(async (req: Request, res: Response) => {
+const createNotification = async (notificationData: CreateNotificationRequest) => {
+  try {
+    const newNotification = await NotificationModel.create(notificationData);
+    return newNotification;
+  } catch (error) {
+    console.error('Error creating notification:', error);
+    throw error;
+  }
+};
+
+const createNotificationByRequest = catchServiceFunc(async (req: Request, res: Response) => {
   const notificationData = req.body as CreateNotificationRequest;
 
   // Use the sendNotification function with io instance from app
@@ -156,10 +166,11 @@ const deleteNotification = catchServiceFunc(async (req: Request, res: Response) 
 
 export const notificationService = {
   sendNotification,
-  createNotification,
+  createNotificationByRequest,
   getNotifications,
   getNotificationById,
   markAsRead,
   updateNotification,
   deleteNotification,
+  createNotification
 };

@@ -6,6 +6,7 @@ export interface CreateNotificationRequest {
   title: string;
   content: string;
   receiver: Types.ObjectId | string;
+  relatedId?: Types.ObjectId | string;
 }
 
 export interface UpdateNotificationRequest {

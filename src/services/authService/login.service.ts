@@ -1,9 +1,9 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { HttpMessage } from '../../constants/httpMessage';
 import { UserModel } from '../../models/user';
 import { LoginRequestProps, LoginResponseProps } from '../../types/http/login.type';
-import { UserProps } from '../../types/model/user.type';
+import { catchServiceFunc } from '../../utils/catchErrors';
 import ApiError from '../../utils/classes/ApiError';
 import {
   setAccessTokenToCookies,
@@ -11,7 +11,6 @@ import {
   signAccessToken,
   signRefreshToken,
 } from '../../utils/jwt';
-import { catchServiceFunc } from '../../utils/catchErrors';
 import { formatPhoneNumber } from '../../utils/phone';
 
 const login = catchServiceFunc(async (req: Request, res: Response) => {

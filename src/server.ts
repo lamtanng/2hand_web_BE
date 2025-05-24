@@ -16,6 +16,14 @@ import { verifyAccessToken } from './utils/jwt';
 import { DecodedTokenProps } from './types/token.type';
 dotenv.config();
 
+// Khai báo global.socketIO để có thể truy cập từ bất kỳ đâu
+declare global {
+  var socketIO: Server | null;
+}
+
+// Khởi tạo global.socketIO
+global.socketIO = null;
+
 const startServer = () => {
   const app = express();
   const server = http.createServer(app);
@@ -28,6 +36,9 @@ const startServer = () => {
       credentials: true,
     },
   });
+
+  // Lưu Socket.IO instance vào biến global để có thể truy cập từ mọi nơi
+  global.socketIO = io;
 
   // Make io accessible to our route handlers
   app.set('io', io);

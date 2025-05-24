@@ -1,7 +1,13 @@
 import { Document } from 'mongoose';
 import { Types } from 'mongoose';
 
-export type NotificationType = 'Order' | 'Finance' | 'System' | 'Product' | 'User';
+export enum NotificationType {
+  Order = 'Order',
+  Finance = 'Finance',
+  System = 'System',
+  Product = 'Product',
+  User = 'User',
+}
 
 export interface NotificationProps extends Document {
   _id: Types.ObjectId;
