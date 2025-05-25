@@ -5,7 +5,8 @@
   "scripts": {
     "lint": "eslint src --ext ts --report-unused-disable-directives --max-warnings 0",
     "build": "tsc",
-    "dev": "cross-env BUILD_MODE=dev nodemon src/server.ts"
+    "dev": "cross-env BUILD_MODE=dev nodemon src/server.ts",
+    "start": "node dist/server.js"
   },
   "keywords": [],
   "author": "",
