@@ -38,6 +38,7 @@ export const createEmbedding = async (data: CreateEmbeddingRequest) => {
       },
     })
     .then((res) => {
+      console.log('res', res);
       return Promise.resolve(res);
     })
     .catch((err) => {

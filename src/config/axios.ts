@@ -18,7 +18,10 @@ axiosClient.interceptors.request.use(
 );
 
 axiosClient.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    console.log('response', response);
+    return response.data;
+  },
   (error) => {
     // console.log('error axios: ', error.response);
     const errorMessage =

@@ -6,6 +6,8 @@ import { UploadApiResponse } from 'cloudinary';
 import { reviewFolder } from '../constants/cloudinaryFolder';
 import { CreateReviewRequest, ReactToReviewRequest } from '../types/http/review.type';
 import { OrderDetailModel } from '../models/orderDetail';
+import { openaiService } from './openai.service';
+import { PromptType } from '../types/http/openai.type';
 
 const findAll = catchServiceFunc(async (reqBody: Request, res: Response) => {
   const reviews = await ReviewModel.find().findAll();
@@ -13,7 +15,36 @@ const findAll = catchServiceFunc(async (reqBody: Request, res: Response) => {
 });
 
 const createOne = catchServiceFunc(async (req: Request, res: Response) => {
-  const { video, image, orderDetailID } = req.body as CreateReviewRequest;
+  const { video, image, orderDetailID, content } = req.body as CreateReviewRequest;
+
+  let request: any[] = [];
+  if (image?.length) {
+    image.forEach((img) => {
+      if (img)
+        request.push({
+          type: 'image_url',
+          image_url: {
+            url: img,
+          },
+        });
+    });
+  }
+  console.log('request image', request);
+
+  if (content) {
+    request.push({
+      type: 'text',
+      text: content,
+    });
+  }
+  console.log('request content', request);
+
+  const result = await openaiService.askWithAI(request, PromptType.CheckCommunityViolation);
+  // console.log('result', result);
+  return {
+    content: request,
+    result: JSON.parse(result?.[0] || '{}'),
+  };
 
   const uploadedVideos = await uploadReviewFiles({
     files: video,
