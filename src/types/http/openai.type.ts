@@ -177,6 +177,11 @@ export interface PromptAIRequestProps {
   promptType: PromptType;
 }
 
+export interface CheckViolationRequestProps {
+  content: string[];
+  images: string[];
+}
+
 export interface PromptAIResponseProps {
   status: boolean;
   images?: string[];

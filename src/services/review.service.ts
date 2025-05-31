@@ -15,10 +15,7 @@ const findAll = catchServiceFunc(async (reqBody: Request, res: Response) => {
 });
 
 const createOne = catchServiceFunc(async (req: Request, res: Response) => {
-  const { video, image, orderDetailID, content } = req.body as CreateReviewRequest;
-
-  const checkViolation = await openaiService.checkCommunityViolation([content], image);
-  if (!checkViolation.status) return checkViolation;
+  const { video, image, orderDetailID } = req.body as CreateReviewRequest;
 
   const uploadedVideos = await uploadReviewFiles({
     files: video,

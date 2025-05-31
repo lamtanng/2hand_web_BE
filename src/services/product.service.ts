@@ -1,5 +1,7 @@
 import { UploadApiResponse } from 'cloudinary';
 import { Request, Response } from 'express';
+import { PipelineStage } from 'mongoose';
+import { createEmbedding } from '../apis/openai';
 import { productFolder } from '../constants/cloudinaryFolder';
 import { pagination } from '../constants/pagination';
 import { ProductModel } from '../models/product';
@@ -13,13 +15,10 @@ import {
 import { ProductProps } from '../types/model/product.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
+import { createVectorIndex } from '../utils/createVectocIndex';
 import { deleteEmptyObjectFields, parseJson } from '../utils/object';
 import { generateSlug } from '../utils/slug';
 import { uploadCloudinary, UploadCloudinaryProps } from './cloudinary.service';
-import { createEmbedding } from '../apis/openai';
-import { createVectorIndex } from '../utils/createVectocIndex';
-import { PipelineStage } from 'mongoose';
-import { openaiService } from './openai.service';
 const findAll = async (req: Request, res: Response) => {
   try {
     const { page, limit, search, skip } = pagination(req);
@@ -99,10 +98,6 @@ const addProduct = async (req: Request, res: Response) => {
   try {
     const product = req.body as ProductProps;
 
-    const content = [product.description, product.name];
-    const checkViolation = await openaiService.checkCommunityViolation(content, product.image);
-    if (!checkViolation.status) return checkViolation;
-
     //upload image to cloudinary
     const urlImages = await uploadProductImages({ files: product.image });
     const newProduct = await ProductModel.create({ ...product, image: urlImages });
@@ -119,10 +114,6 @@ const addProduct = async (req: Request, res: Response) => {
 
 const updateProduct = catchServiceFunc(async (req: Request, res: Response) => {
   const product = req.body as UpdateProductRequestProps;
-
-  const content = [product.description, product.name];
-  const checkViolation = await openaiService.checkCommunityViolation(content, product.image);
-  if (!checkViolation.status) return checkViolation;
 
   //upload image to cloudinary
   const urlImages = await uploadProductImages({ files: product.image });

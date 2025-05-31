@@ -8,4 +8,9 @@ const promptAI = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
-export const openaiController = { promptAI };
+const checkViolationRequest = catchErrors(async (req: Request, res: Response) => {
+  const result = await openaiService.checkViolationRequest(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
+export const openaiController = { promptAI, checkViolationRequest };
