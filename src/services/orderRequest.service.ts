@@ -65,8 +65,6 @@ const addOrderRequest = catchServiceFunc(async (req: Request, res: Response) => 
 
   //auto approved request if stage is Confirmating
   if (name === OrderStage.Confirmating) {
-    console.log('auto approved request', name);
-
     await reply({
       _id: newOrderRequest?._id,
       replyStatus: ReplyStatus.Succeeded,

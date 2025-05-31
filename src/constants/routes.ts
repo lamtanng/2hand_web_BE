@@ -36,7 +36,7 @@ export const ORDER_STAGE_STATUS_ROUTE = '/order-stage-status';
 //order routes
 export const ORDER_ROUTE = '/orders';
 export const ORDER_TRACKING_ROUTE = '/tracking/:orderID';
-export const ORDER_DELIVERY_TIME_ROUTE = '/tracking/:orderID';
+export const ORDER_DELIVERY_TIME_ROUTE = '/delivery-time';
 export const ORDER_PICKUP_ROUTE = '/pickup-date';
 export const ORDER_AVAILABLE_SERVICE_ROUTE = '/available_service';
 export const ORDER_SHIPPING_FEE_ROUTE = '/calc_shipping_fee';
