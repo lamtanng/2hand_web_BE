@@ -13,6 +13,7 @@ import { HttpMessage } from '../constants/httpMessage';
 import { Types } from 'mongoose';
 import { Server as SocketServer } from 'socket.io';
 import { pagination } from '../constants/pagination';
+import { deleteEmptyObjectFields } from '../utils/object';
 
 const sendNotification = async (
   notificationData: CreateNotificationRequest,
@@ -58,9 +59,11 @@ const getNotifications = catchServiceFunc(async (req: Request, res: Response) =>
   const { type } = req.query as unknown as GetNotificationsRequest;
   const { page, limit, skip } = pagination(req);
 
-  const userId = req.body._id;
+  const userId = req.query._id;
   const filter: any = { receiver: userId };
   if (type) filter.type = type;
+
+  deleteEmptyObjectFields(filter);  
 
   const total = await NotificationModel.countDocuments(filter);
 
@@ -172,5 +175,5 @@ export const notificationService = {
   markAsRead,
   updateNotification,
   deleteNotification,
-  createNotification
+  createNotification,
 };
