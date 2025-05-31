@@ -29,13 +29,16 @@ const findAll = async (req: Request, res: Response) => {
     const isPublish = parseJson(req.query.isPublish as string);
     const isActive = parseJson(req.query.isActive as string);
     const isApproved = parseJson(req.query.isApproved as string);
+    const isSoldOut = !!req.query?.isSoldOut
+      ? parseJson(req.query?.isSoldOut as string)
+      : undefined;
 
     const findCondition = {
       name: search && { $regex: search, $options: 'i' },
       cateID: cateID && { $in: cateID },
       isPublish: isPublish && String(isPublish),
       isActive: isActive && String(isActive),
-      // quantity: { $gt: 0 },
+      quantity: isSoldOut !== undefined ? (isSoldOut ? { $eq: 0 } : { $gt: 0 }) : undefined,
       quality: quality && { $in: quality },
       price: price && { $gte: price.min, $lte: price.max },
       storeID: storeID && { $in: storeID },
