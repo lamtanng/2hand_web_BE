@@ -100,7 +100,13 @@ const addProduct = async (req: Request, res: Response) => {
 
     //upload image to cloudinary
     const urlImages = await uploadProductImages({ files: product.image });
-    return await ProductModel.create({ ...product, image: urlImages });
+    const newProduct = await ProductModel.create({ ...product, image: urlImages });
+    return {
+      status: newProduct ? true : false,
+      data: {
+        slug: newProduct.slug,
+      },
+    };
   } catch (error: AppError) {
     return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
   }
@@ -109,16 +115,27 @@ const addProduct = async (req: Request, res: Response) => {
 const updateProduct = catchServiceFunc(async (req: Request, res: Response) => {
   const product = req.body as UpdateProductRequestProps;
 
+  const content = [product.description, product.name];
+  const checkViolation = await openaiService.checkCommunityViolation(content, product.image);
+  if (!checkViolation.status) return checkViolation;
+
   //upload image to cloudinary
   const urlImages = await uploadProductImages({ files: product.image });
 
-  return await ProductModel.findByIdAndUpdate(
+  const updatedProduct = await ProductModel.findByIdAndUpdate(
     product._id,
     { ...product, image: urlImages, slug: generateSlug(product.name) },
     {
       new: true,
     },
   );
+
+  return {
+    status: updatedProduct ? true : false,
+    data: {
+      slug: updatedProduct?.slug,
+    },
+  };
 });
 
 const deleteProduct = catchServiceFunc(async (req: Request, res: Response) => {
@@ -164,7 +181,7 @@ export const createEmbeddingData = async () => {
         const embedding = embeddingResponse.data?.[0]?.embedding;
 
         return await ProductModel.findByIdAndUpdate(
-          product._id,  
+          product._id,
           { $set: { embedding } },
           { new: true },
         );
