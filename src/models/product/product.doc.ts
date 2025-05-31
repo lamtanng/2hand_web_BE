@@ -120,6 +120,10 @@ export const PRODUCT_COLLECTION_SCHEMA = new Schema<
       type: ADDRESS_COLLECTION_SCHEMA,
       required: true,
     },
+    isApproved: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true },
 );
