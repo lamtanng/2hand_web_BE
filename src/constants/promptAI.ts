@@ -36,7 +36,6 @@ Output only the final HTML string to use dangerouslySetInnerHTML to render the c
 **Output Requirements:** 
 - Strictly use this JSON format:
 {
-  "status": boolean, // false if ANY violation exists in text/images
   "images": string[], // array of violating image filenames 
   "text": string[] // array of exact violating phrases
 }
@@ -44,14 +43,12 @@ Output only the final HTML string to use dangerouslySetInnerHTML to render the c
 **Examples:**
 Good Response:
 {
-  "status": false,
   "images": ["photo1.jpg"],
   "text": ["illegal drugs", "hate speech"]
 }
 
 No Violation Response: 
 {
-  "status": true,
   "images": [],
   "text": []
 }

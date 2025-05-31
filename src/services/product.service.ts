@@ -19,7 +19,7 @@ import { uploadCloudinary, UploadCloudinaryProps } from './cloudinary.service';
 import { createEmbedding } from '../apis/openai';
 import { createVectorIndex } from '../utils/createVectocIndex';
 import { PipelineStage } from 'mongoose';
-
+import { openaiService } from './openai.service';
 const findAll = async (req: Request, res: Response) => {
   try {
     const { page, limit, search, skip } = pagination(req);
@@ -93,6 +93,11 @@ const findOneBySlug = catchServiceFunc(async (req: Request, res: Response) => {
 const addProduct = async (req: Request, res: Response) => {
   try {
     const product = req.body as ProductProps;
+
+    const content = [product.description, product.name];
+    const checkViolation = await openaiService.checkCommunityViolation(content, product.image);
+    if (!checkViolation.status) return checkViolation;
+
     //upload image to cloudinary
     const urlImages = await uploadProductImages({ files: product.image });
     return await ProductModel.create({ ...product, image: urlImages });

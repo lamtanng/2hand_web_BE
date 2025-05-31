@@ -176,3 +176,9 @@ export interface PromptAIRequestProps {
   content: OpenAIMessageProps['content'];
   promptType: PromptType;
 }
+
+export interface PromptAIResponseProps {
+  status: boolean;
+  images?: string[];
+  text?: string[];
+}
