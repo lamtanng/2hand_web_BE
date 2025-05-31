@@ -22,4 +22,5 @@ export interface ProductProps {
   length: number;
   address: AddressProps;
   embedding?: number[];
+  isApproved: boolean;
 }

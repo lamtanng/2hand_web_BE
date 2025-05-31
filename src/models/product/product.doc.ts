@@ -124,6 +124,10 @@ export const PRODUCT_COLLECTION_SCHEMA = new Schema<
       type: [Number],
       default: [],
     },
+    isApproved: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true },
 );
