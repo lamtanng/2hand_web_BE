@@ -11,4 +11,5 @@ export interface DecodedTokenProps extends Omit<UserProps, 'roleID'> {
     _id: mongoose.Schema.Types.ObjectId;
     name: string;
   }[];
+  storeId?: string;
 }

@@ -69,3 +69,99 @@ export const NOTIFICATION_CONTENT: Record<
   [NotificationType.Product]: {},
   [NotificationType.User]: {},
 };
+
+export const NOTIFICATION_CONTENT_SELLER: Record<
+  NotificationType,
+  Record<string, { title: string; content: any }>
+> = {
+  [NotificationType.Order]: {
+    [OrderStage.Confirmating]: {
+      title: 'Bạn có đơn hàng mới',
+      content: (orderCode: string) =>
+        `<div><p>Bạn có đơn hàng mới: <strong>${orderCode}</strong>.</p><p>Vui lòng xác nhận đơn hàng trong thời gian sớm nhất.</p></div>`,
+    },
+    [OrderStage.Picking]: {
+      title: 'Đơn hàng đang được chuẩn bị',
+      content: (orderCode: string) =>
+        `<div><p>Đơn hàng <strong>${orderCode}</strong> đang được chuẩn bị.</p></div>`,
+    },
+    [OrderStage.Delivering]: {
+      title: 'Đơn hàng đã được giao cho đơn vị vận chuyển',
+      content: (orderCode: string) =>
+        `<div><p>Đơn hàng <strong>${orderCode}</strong> đã được giao cho đơn vị vận chuyển.</p></div>`,
+    },
+    [OrderStage.Delivered]: {
+      title: 'Đơn hàng đã giao thành công',
+      content: (orderCode: string) =>
+        `<div><p>Đơn hàng <strong>${orderCode}</strong> đã được giao thành công.</p></div>`,
+    },
+    [OrderStage.Cancelled]: {
+      title: 'Đơn hàng đã hủy',
+      content: (orderCode: string) =>
+        `<div><p>Đơn hàng <strong>${orderCode}</strong> đã bị hủy.</p></div>`,
+    },
+    [OrderStage.Returned]: {
+      title: 'Đơn hàng hoàn trả',
+      content: (orderCode: string) =>
+        `<div><p>Đơn hàng <strong>${orderCode}</strong> đã được hoàn trả.</p></div>`,
+    },
+    // Thêm trạng thái mới cho đơn hàng bán thành công
+    order_success: {
+      title: 'Đơn hàng bán thành công',
+      content: (orderCode: string, amount: string) =>
+        `<div>
+          <p>Đơn hàng <strong>${orderCode}</strong> đã được bán thành công!</p>
+          <p>Số tiền: <strong>${amount}</strong></p>
+          <p>Tiền sẽ được chuyển vào tài khoản của bạn sau khi hoàn tất kiểm tra.</p>
+        </div>`,
+    },
+  },
+  [NotificationType.Finance]: {
+    payment_received: {
+      title: 'Đã nhận thanh toán',
+      content: (orderCode: string, amount: string) =>
+        `<div>
+          <p>Bạn đã nhận thanh toán cho đơn hàng <strong>${orderCode}</strong>.</p>
+          <p>Số tiền: <strong>${amount}</strong></p>
+        </div>`,
+    },
+    withdrawal_success: {
+      title: 'Rút tiền thành công',
+      content: (amount: string) =>
+        `<div>
+          <p>Yêu cầu rút tiền của bạn đã thành công.</p>
+          <p>Số tiền: <strong>${amount}</strong></p>
+        </div>`,
+    },
+  },
+  [NotificationType.System]: {
+    // ...giữ nguyên như NOTIFICATION_CONTENT
+  },
+  [NotificationType.Product]: {
+    low_stock: {
+      title: 'Sản phẩm sắp hết hàng',
+      content: (productName: string) =>
+        `<div>
+          <p>Sản phẩm <strong>${productName}</strong> sắp hết hàng.</p>
+          <p>Vui lòng bổ sung hàng tồn kho.</p>
+        </div>`,
+    },
+    out_of_stock: {
+      title: 'Sản phẩm đã hết hàng',
+      content: (productName: string) =>
+        `<div>
+          <p>Sản phẩm <strong>${productName}</strong> đã hết hàng.</p>
+          <p>Vui lòng bổ sung hàng tồn kho để tiếp tục bán.</p>
+        </div>`,
+    },
+  },
+  [NotificationType.User]: {
+    new_review: {
+      title: 'Có đánh giá mới',
+      content: (productName: string) =>
+        `<div>
+          <p>Sản phẩm <strong>${productName}</strong> có đánh giá mới.</p>
+        </div>`,
+    },
+  },
+};

@@ -44,6 +44,6 @@ router.use(REASON_ROUTE, reasonRoutes);
 
 router.use(ORDERDETAIL_ROUTE, orderDetailRoutes);
 router.use(REPORT_ROUTE, reportRoutes);
-router.use(NOTIFICATION_ROUTE, notificationRoutes);
+router.use('/', notificationRoutes);
 
 export const APIs_V1 = router;

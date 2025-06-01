@@ -25,4 +25,13 @@ export interface GetNotificationsRequest {
   limit?: number;
   type?: NotificationType;
   page?: number;
+  _id?: Types.ObjectId | string;
+}
+
+export interface CountNotificationResponse {
+  [key: string]: {
+    total: number;
+    unread: number;
+    read: number;
+  };
 }

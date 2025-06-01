@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
 import { Request, Response } from 'express';
-import { NotificationModel } from '../models/notification';
 import { catchServiceFunc } from '../utils/catchErrors';
 import {
   CreateNotificationRequest,
@@ -14,21 +13,25 @@ import { Types } from 'mongoose';
 import { Server as SocketServer } from 'socket.io';
 import { pagination } from '../constants/pagination';
 import { deleteEmptyObjectFields } from '../utils/object';
+import { NotificationModel } from '../models/notification';
 
 const sendNotification = async (
-  notificationData: CreateNotificationRequest,
+  notificationData: CreateNotificationRequest[],
   io: SocketServer | null = null,
 ) => {
   try {
-    const receiver = String(notificationData.receiver);
-    // Create notification in database
-    const notification = await NotificationModel.create(notificationData);
-    // Emit to specific user using their room (userID as room name) if io instance exists
+    const notifications = await NotificationModel.insertMany(notificationData);
     if (io) {
-      io.to(receiver).emit('notification', notification);
+      notifications.forEach((notification) => {
+        const receiver = String(notification.receiver);
+        io.to(receiver).emit('notification', {
+          ...notification.toObject(),
+          _id: notification._id.toString(),
+        });
+      });
     }
 
-    return notification;
+    return notifications;
   } catch (error) {
     console.error('Error sending notification:', error);
     throw error;
@@ -50,7 +53,7 @@ const createNotificationByRequest = catchServiceFunc(async (req: Request, res: R
 
   // Use the sendNotification function with io instance from app
   const io = req.app.get('io');
-  const newNotification = await sendNotification(notificationData, io);
+  const newNotification = await sendNotification([notificationData], io);
 
   return newNotification;
 });
@@ -63,7 +66,7 @@ const getNotifications = catchServiceFunc(async (req: Request, res: Response) =>
   const filter: any = { receiver: userId };
   if (type) filter.type = type;
 
-  deleteEmptyObjectFields(filter);  
+  deleteEmptyObjectFields(filter);
 
   const total = await NotificationModel.countDocuments(filter);
 
@@ -76,7 +79,7 @@ const getNotifications = catchServiceFunc(async (req: Request, res: Response) =>
   const nextPage = hasNextPage ? Number(page) + 1 : null;
 
   return {
-    notifications,
+    data: notifications,
     nextPage,
   };
 });
@@ -104,16 +107,13 @@ const getNotificationById = catchServiceFunc(async (req: Request, res: Response)
 
 const markAsRead = catchServiceFunc(async (req: Request, res: Response) => {
   const { _id } = req.body as MarkNotificationAsReadRequest;
-  const userId = req.body._id;
 
-  // Find and update notification, ensuring it belongs to the requesting user
   const notification = await NotificationModel.findOneAndUpdate(
-    { _id, receiver: userId },
+    { _id },
     { isRead: true },
     { new: true },
   );
 
-  // If not found, throw error
   if (!notification) {
     throw new ApiError({
       message: HttpMessage.NOT_FOUND.NOTIFICATION,
@@ -167,6 +167,75 @@ const deleteNotification = catchServiceFunc(async (req: Request, res: Response) 
   return { success: true, message: 'Notification deleted successfully' };
 });
 
+const countNotification = catchServiceFunc(async (req: Request, res: Response) => {
+  let { ids } = req.query as { ids?: string[] | string };
+
+  if (!ids) {
+    throw new ApiError({
+      message: 'Missing ids parameter',
+      statusCode: StatusCodes.BAD_REQUEST,
+    });
+  }
+
+  if (typeof ids === 'string') {
+    ids = [ids];
+  }
+
+  const receiverIds = ids.map((id) => new Types.ObjectId(id));
+
+  const result = await NotificationModel.aggregate([
+    { $match: { receiver: { $in: receiverIds } } },
+    {
+      $group: {
+        _id: '$receiver',
+        total: { $sum: 1 },
+        unread: { $sum: { $cond: [{ $eq: ['$isRead', false] }, 1, 0] } },
+        read: { $sum: { $cond: [{ $eq: ['$isRead', true] }, 1, 0] } },
+      },
+    },
+  ]);
+
+  // Format result as required
+  const response: Record<string, { total: number; unread: number; read: number }> = {};
+  receiverIds.forEach((id) => {
+    const found = result.find((r) => String(r._id) === String(id));
+    response[String(id)] = {
+      total: found?.total || 0,
+      unread: found?.unread || 0,
+      read: found?.read || 0,
+    };
+  });
+
+  return response;
+});
+
+const deleteAllByReceiver = catchServiceFunc(async (req: Request, res: Response) => {
+  const receiverId = req.params.id;
+  if (!receiverId) {
+    throw new ApiError({
+      message: 'Missing receiverId parameter',
+      statusCode: StatusCodes.BAD_REQUEST,
+    });
+  }
+  const result = await NotificationModel.deleteMany({ receiver: new Types.ObjectId(receiverId) });
+  return { status: true, deletedCount: result.deletedCount };
+});
+
+const markAllAsReadByReceiver = catchServiceFunc(async (req: Request, res: Response) => {
+  const receiverId = req.params.id;
+  if (!receiverId) {
+    throw new ApiError({
+      message: 'Missing receiverId parameter',
+      statusCode: StatusCodes.BAD_REQUEST,
+    });
+  }
+  const result = await NotificationModel.updateMany(
+    { receiver: new Types.ObjectId(receiverId), isRead: false },
+    { $set: { isRead: true } },
+  );
+  return { status: true, modifiedCount: result.modifiedCount };
+});
+
 export const notificationService = {
   sendNotification,
   createNotificationByRequest,
@@ -176,4 +245,7 @@ export const notificationService = {
   updateNotification,
   deleteNotification,
   createNotification,
+  countNotification,
+  deleteAllByReceiver,
+  markAllAsReadByReceiver,
 };
