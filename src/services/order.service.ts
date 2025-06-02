@@ -180,8 +180,9 @@ const payByMomo = catchServiceFunc(async (req: Request, res: Response) => {
   const items = orders.reduce((accumulator: MoMoPaymentItemsProps[], shopOrder: any) => {
     return accumulator.concat(shopOrder.items);
   }, []);
-  const requestBody = getMoMoCreationRequestBody({ items, amount, extraData });
 
+  const requestBody = getMoMoCreationRequestBody({ items, amount, extraData });
+  
   const data = await createMoMoPayment(requestBody);
   return data;
 });

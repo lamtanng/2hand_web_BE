@@ -1,5 +1,7 @@
 import { UploadApiResponse } from 'cloudinary';
 import { Request, Response } from 'express';
+import { PipelineStage } from 'mongoose';
+import { createEmbedding } from '../apis/openai';
 import { productFolder } from '../constants/cloudinaryFolder';
 import { pagination } from '../constants/pagination';
 import { ProductModel } from '../models/product';
@@ -13,10 +15,10 @@ import {
 import { ProductProps } from '../types/model/product.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
+import { createVectorIndex } from '../utils/createVectocIndex';
 import { deleteEmptyObjectFields, parseJson } from '../utils/object';
 import { generateSlug } from '../utils/slug';
 import { uploadCloudinary, UploadCloudinaryProps } from './cloudinary.service';
-
 const findAll = async (req: Request, res: Response) => {
   try {
     const { page, limit, search, skip } = pagination(req);
@@ -95,9 +97,16 @@ const findOneBySlug = catchServiceFunc(async (req: Request, res: Response) => {
 const addProduct = async (req: Request, res: Response) => {
   try {
     const product = req.body as ProductProps;
+
     //upload image to cloudinary
     const urlImages = await uploadProductImages({ files: product.image });
-    return await ProductModel.create({ ...product, image: urlImages });
+    const newProduct = await ProductModel.create({ ...product, image: urlImages });
+    return {
+      status: newProduct ? true : false,
+      data: {
+        slug: newProduct.slug,
+      },
+    };
   } catch (error: AppError) {
     return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
   }
@@ -109,13 +118,20 @@ const updateProduct = catchServiceFunc(async (req: Request, res: Response) => {
   //upload image to cloudinary
   const urlImages = await uploadProductImages({ files: product.image });
 
-  return await ProductModel.findByIdAndUpdate(
+  const updatedProduct = await ProductModel.findByIdAndUpdate(
     product._id,
     { ...product, image: urlImages, slug: generateSlug(product.name) },
     {
       new: true,
     },
   );
+
+  return {
+    status: updatedProduct ? true : false,
+    data: {
+      slug: updatedProduct?.slug,
+    },
+  };
 });
 
 const deleteProduct = catchServiceFunc(async (req: Request, res: Response) => {
@@ -146,6 +162,79 @@ const uploadProductImages = async ({ files }: Pick<UploadCloudinaryProps, 'files
   return uploadedFiles.map((file: UploadApiResponse) => file.secure_url);
 };
 
+export const createEmbeddingData = async () => {
+  try {
+    const products = await ProductModel.find({
+      name: { $regex: '.*' },
+    }).limit(100);
+
+    const updatedProducts = await Promise.all(
+      products?.map(async (product) => {
+        const embeddingResponse = await createEmbedding({
+          input: product.name,
+        });
+
+        const embedding = embeddingResponse.data?.[0]?.embedding;
+
+        return await ProductModel.findByIdAndUpdate(
+          product._id,
+          { $set: { embedding } },
+          { new: true },
+        );
+      }),
+    );
+
+    const result = await createVectorIndex(ProductModel);
+
+    return { result };
+  } catch (err) {
+    console.log('Error: ', err);
+    throw err;
+  }
+};
+
+const getProductByEmbedding = async (req: Request, res: Response) => {
+  try {
+    const { search } = req.body;
+    const queryEmbedding = await createEmbedding({
+      input: search,
+    });
+
+    const embedding = queryEmbedding.data?.[0]?.embedding;
+
+    const pipeline: PipelineStage[] = [
+      {
+        $vectorSearch: {
+          index: 'vector_product',
+          queryVector: embedding,
+          path: 'embedding',
+          limit: 10,
+          numCandidates: 30,
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          score: { $meta: 'vectorSearchScore' },
+        },
+      },
+    ];
+
+    const result = await ProductModel.aggregate(pipeline);
+
+    const highSimilarityResults = result.filter((item) => item.score >= 0.7);
+    const remainingResults = result.filter((item) => item.score < 0.7);
+
+    return {
+      highSimilarity: highSimilarityResults,
+      remaining: remainingResults,
+    };
+  } catch (error: AppError) {
+    return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
+  }
+};
+
 export const productService = {
   findAll,
   addProduct,
@@ -154,4 +243,6 @@ export const productService = {
   toggleActiveProduct,
   findOneById,
   findOneBySlug,
+  createEmbeddingData,
+  getProductByEmbedding,
 };

@@ -53,3 +53,4 @@ export const ORDERDETAIL_ROUTE = '/orderdetails';
 export const ORDERREQUEST_ROUTE = '/orderrequests';
 export const REPORT_ROUTE = '/reports';
 export const NOTIFICATION_ROUTE = '/notifications';
+export const OPENAI_ROUTE = '/prompt_ai';
