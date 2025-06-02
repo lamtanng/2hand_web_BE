@@ -11,7 +11,6 @@ import {
 import { createMoMoPayment } from '../apis/momo';
 import { MOMO } from '../constants/momo';
 import { pagination } from '../constants/pagination';
-import { NotificationModel } from '../models/notification';
 import { OrderModel } from '../models/order';
 import { OrderDetailModel } from '../models/orderDetail';
 import { OrderStageModel } from '../models/orderStage';
@@ -26,14 +25,15 @@ import {
   CreateCODPaymentRequestProps,
 } from '../types/http/order.type';
 import { PaginationResponseProps } from '../types/http/pagination.type';
+import { NotificationType } from '../types/model/notification.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
 import { getDate } from '../utils/format';
 import { getMoMoCreationRequestBody } from '../utils/momo';
+import { NOTIFICATION_CONTENT, NOTIFICATION_CONTENT_SELLER } from '../utils/notificationHelper';
 import { deleteEmptyObjectFields, parseJson } from '../utils/object';
+import { notificationService } from './notification.service';
 import { orderStageService } from './orderStage.service';
-import { NotificationType } from '../types/model/notification.type';
-import { NOTIFICATION_CONTENT } from '../utils/notificationHelper';
 const crypto = require('crypto');
 
 const findAll = catchServiceFunc(async (req: Request, res: Response) => {
@@ -180,8 +180,9 @@ const payByMomo = catchServiceFunc(async (req: Request, res: Response) => {
   const items = orders.reduce((accumulator: MoMoPaymentItemsProps[], shopOrder: any) => {
     return accumulator.concat(shopOrder.items);
   }, []);
-  const requestBody = getMoMoCreationRequestBody({ items, amount, extraData });
 
+  const requestBody = getMoMoCreationRequestBody({ items, amount, extraData });
+  
   const data = await createMoMoPayment(requestBody);
   return data;
 });
@@ -251,17 +252,33 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
 
     if (createdOrders.length > 0) {
       try {
-        const notifications: CreateNotificationRequest[] = createdOrders.map((order) => ({
-          type: NotificationType.Order,
-          title: NOTIFICATION_CONTENT.Order[OrderStage.Confirmating].title,
-          content: NOTIFICATION_CONTENT.Order[OrderStage.Confirmating].content(
-            order.orderId,
-          ),
-          receiver: userID,
-          relatedId: order.orderId,
-        }));
+        let notifications: CreateNotificationRequest[] = [];
 
-        await NotificationModel.insertMany(notifications);
+        createdOrders.reduce((acc, order) => {
+          const buyerNotification: CreateNotificationRequest = {
+            type: NotificationType.Order,
+            title: NOTIFICATION_CONTENT.Order[OrderStage.Confirmating].title,
+            content: NOTIFICATION_CONTENT.Order[OrderStage.Confirmating].content(order.orderId),
+            receiver: userID,
+            relatedId: order.orderId,
+          };
+
+          const sellerNotification: CreateNotificationRequest = {
+            type: NotificationType.Order,
+            title: NOTIFICATION_CONTENT_SELLER.Order[OrderStage.Confirmating].title,
+            content: NOTIFICATION_CONTENT_SELLER.Order[OrderStage.Confirmating].content(
+              order.orderId,
+            ),
+            receiver: order.storeID,
+            relatedId: order.orderId,
+          };
+
+          acc.push(buyerNotification);
+          acc.push(sellerNotification);
+          return acc;
+        }, notifications);
+
+        await notificationService.sendNotification(notifications, global.socketIO);
       } catch (notificationError) {
         console.error('Lỗi khi tạo thông báo đơn hàng:', notificationError);
       }

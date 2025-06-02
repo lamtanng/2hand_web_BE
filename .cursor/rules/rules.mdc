@@ -1,0 +1,31 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+
+- Always use the following frameworks:
+
+    + NodeJS: ^22
+    + ExpressJS: ^4.17
+    + MongoDB: ^6.9
+    + Mongoose: ^8.6.3
+    + TypeScript
+
+- Always research framework/library knowledge before implementation to ensure the most accurate coding
+
+- Always check the package.json file to verify dependency versions for accurate research
+
+- Always analyze existing source code to maintain consistent coding style in new code
+
+- Use Mongoose for all database query operations
+
+- Always write clean, concise, simplified, readable code while maintaining high performance
+
+- Functions and variables must be named clearly and meaningfully using camelCase convention
+
+- Functions should not exceed 30 lines of code
+
+- Break down functions (when possible) into smaller reusable functions

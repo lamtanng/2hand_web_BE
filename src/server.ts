@@ -49,13 +49,28 @@ const startServer = () => {
     const token = socket.handshake.auth.token || socket.handshake.query.token;
 
     if (!token) {
-      return next(new Error('Authentication error: Token not provided'));
+      return next(new Error('MISSING_TOKEN'));
     }
 
     try {
       const decodedToken = (await verifyAccessToken(token)) as DecodedTokenProps;
-      socket.data.user = decodedToken;
-      socket.join(decodedToken._id.toString());
+
+      const userData = {
+        _id: decodedToken._id,
+        storeId: decodedToken.storeId || null,
+      };
+
+      socket.data.user = userData
+
+      socket.join(userData._id.toString());
+
+      console.log(`User ${userData._id} joined user room`);
+
+      if (userData.storeId) {
+        socket.join(userData.storeId);
+        console.log(`User ${userData.storeId} joined their private room`);
+      }
+
       next();
     } catch (error) {
       next(new Error('Authentication error: Invalid token'));
@@ -65,12 +80,6 @@ const startServer = () => {
   // Socket.IO connection event
   io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);
-
-    // Join a room with the user's ID for private notifications
-    if (socket.data.user && socket.data.user._id) {
-      socket.join(socket.data.user._id);
-      console.log(`User ${socket.data.user._id} joined their private room`);
-    }
 
     // Disconnect event
     socket.on('disconnect', () => {

@@ -33,11 +33,29 @@ const deleteNotification = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const countNotification = catchErrors(async (req: Request, res: Response) => {
+  const result = await notificationService.countNotification(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
+const deleteAllByReceiver = catchErrors(async (req: Request, res: Response) => {
+  const result = await notificationService.deleteAllByReceiver(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
+const markAllAsReadByReceiver = catchErrors(async (req: Request, res: Response) => {
+  const result = await notificationService.markAllAsReadByReceiver(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const notificationController = {
   createNotification,
   getNotifications,
   getNotificationById,
   markAsRead,
   updateNotification,
-  deleteNotification
-}; 
+  deleteNotification,
+  countNotification,
+  deleteAllByReceiver,
+  markAllAsReadByReceiver,
+};

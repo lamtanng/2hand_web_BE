@@ -6,6 +6,8 @@ import { UploadApiResponse } from 'cloudinary';
 import { reviewFolder } from '../constants/cloudinaryFolder';
 import { CreateReviewRequest, ReactToReviewRequest } from '../types/http/review.type';
 import { OrderDetailModel } from '../models/orderDetail';
+import { openaiService } from './openai.service';
+import { PromptAIResponseProps, PromptType } from '../types/http/openai.type';
 
 const findAll = catchServiceFunc(async (reqBody: Request, res: Response) => {
   const reviews = await ReviewModel.find().findAll();
