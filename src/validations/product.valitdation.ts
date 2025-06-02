@@ -32,6 +32,7 @@ const productSchema = Joi.object<ProductSchema>({
   width: Joi.number().min(0).required(),
   length: Joi.number().min(0).required(),
   address: addressValidation.addressSchema,
+  isApproved: Joi.boolean().default(false),
 });
 
 const updateProductSchema = productSchema.append<UpdateProductSchema>({

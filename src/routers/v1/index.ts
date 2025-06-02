@@ -13,6 +13,7 @@ import {
 import { adminRouter } from './adminRoutes';
 import { authRouter } from './auth.routes';
 import { customerRouter } from './customerRoutes';
+import notificationRoutes from './notification.routes';
 import { openaiRoutes } from './openai.routes';
 import { orderDetailRoutes } from './orderDetail.routes';
 import { paymentMethodRoutes } from './paymentMethod.route';
@@ -38,6 +39,7 @@ router.use(REASON_ROUTE, reasonRoutes);
 
 router.use(ORDERDETAIL_ROUTE, orderDetailRoutes);
 router.use(REPORT_ROUTE, reportRoutes);
+router.use('/', notificationRoutes);
 
 router.use(OPENAI_ROUTE, openaiRoutes);
 
