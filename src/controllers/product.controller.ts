@@ -48,6 +48,11 @@ const getProductByEmbedding = catchErrors(async (req: Request, res: Response) =>
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const updateProductsApproval = catchErrors(async (req: Request, res: Response) => {
+  const result = await productService.updateProductsApproval(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const productController = {
   findAll,
   addProduct,
@@ -58,4 +63,5 @@ export const productController = {
   findOneBySlug,
   createEmbeddingData,
   getProductByEmbedding,
+  updateProductsApproval,
 };

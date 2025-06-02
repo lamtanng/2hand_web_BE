@@ -8,3 +8,5 @@ const router = express.Router();
 const { Read } = ActionPermission.User;
 const { findAll } = userController;
 router.route('/').get(checkAdminPermission(Read), findAll);
+
+export const userRoutes = router;

@@ -1,6 +1,6 @@
 import { UploadApiResponse } from 'cloudinary';
 import { Request, Response } from 'express';
-import { PipelineStage } from 'mongoose';
+import mongoose, { PipelineStage } from 'mongoose';
 import { createEmbedding } from '../apis/openai';
 import { productFolder } from '../constants/cloudinaryFolder';
 import { pagination } from '../constants/pagination';
@@ -235,6 +235,29 @@ const getProductByEmbedding = async (req: Request, res: Response) => {
   }
 };
 
+const updateProductsApproval = catchServiceFunc(async (req: Request, res: Response) => {
+  const { products } = req.body;
+
+  if (!products || !Array.isArray(products)) {
+    throw new ApiError({ message: 'Invalid products data', statusCode: 400 });
+  }
+
+  const bulkOps = products.map(({ _id, isApproved }) => ({
+    updateOne: {
+      filter: { _id: new mongoose.Types.ObjectId(_id) },
+      update: { $set: { isApproved } },
+    },
+  }));
+
+  const result = await ProductModel.bulkWrite(bulkOps);
+
+  return {
+    status: true,
+    matchedCount: result.matchedCount,
+    modifiedCount: result.modifiedCount,
+  };
+});
+
 export const productService = {
   findAll,
   addProduct,
@@ -245,4 +268,5 @@ export const productService = {
   findOneBySlug,
   createEmbeddingData,
   getProductByEmbedding,
+  updateProductsApproval,
 };
