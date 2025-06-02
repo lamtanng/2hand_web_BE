@@ -38,6 +38,16 @@ const toggleActiveProduct = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const createEmbeddingData = catchErrors(async (req: Request, res: Response) => {
+  const result = await productService.createEmbeddingData();
+  res.status(StatusCodes.OK).json(result).send();
+});
+
+const getProductByEmbedding = catchErrors(async (req: Request, res: Response) => {
+  const result = await productService.getProductByEmbedding(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const productController = {
   findAll,
   addProduct,
@@ -46,4 +56,6 @@ export const productController = {
   toggleActiveProduct,
   findOneById,
   findOneBySlug,
+  createEmbeddingData,
+  getProductByEmbedding,
 };
