@@ -7,6 +7,7 @@ export enum NotificationType {
   System = 'System',
   Product = 'Product',
   User = 'User',
+  Review = 'Review',
 }
 
 export interface NotificationProps extends Document {

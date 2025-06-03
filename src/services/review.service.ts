@@ -1,13 +1,18 @@
+import { CreateNotificationRequest } from '../types/http/notification.type';
+import { NotificationType } from '../types/model/notification.type';
+import { OrderProps } from '../types/model/order.type';
+import { ProductProps } from '../types/model/product.type';
+// import { NOTIFICATION_CONTENT_SELLER } from '@/utils/notificationHelper';
+import { UploadApiResponse } from 'cloudinary';
 import { Request, Response } from 'express';
+import { reviewFolder } from '../constants/cloudinaryFolder';
+import { OrderDetailModel } from '../models/orderDetail';
 import { ReviewModel } from '../models/review';
 import { uploadCloudinary, UploadCloudinaryProps } from '../services/cloudinary.service';
-import { catchServiceFunc } from '../utils/catchErrors';
-import { UploadApiResponse } from 'cloudinary';
-import { reviewFolder } from '../constants/cloudinaryFolder';
 import { CreateReviewRequest, ReactToReviewRequest } from '../types/http/review.type';
-import { OrderDetailModel } from '../models/orderDetail';
-import { openaiService } from './openai.service';
-import { PromptAIResponseProps, PromptType } from '../types/http/openai.type';
+import { catchServiceFunc } from '../utils/catchErrors';
+import { notificationService } from './notification.service';
+import { NOTIFICATION_CONTENT_SELLER } from '../utils/notificationHelper';
 
 const findAll = catchServiceFunc(async (reqBody: Request, res: Response) => {
   const reviews = await ReviewModel.find().findAll();
@@ -34,7 +39,27 @@ const createOne = catchServiceFunc(async (req: Request, res: Response) => {
     video: uploadedVideos,
   });
 
-  await OrderDetailModel.findByIdAndUpdate(orderDetailID, { reviewID: review._id });
+  const updatedOrderDetail = await OrderDetailModel.findByIdAndUpdate(orderDetailID, {
+    reviewID: review._id,
+  })
+    .populate('orderID')
+    .populate('productID');
+
+  if (updatedOrderDetail && updatedOrderDetail?.orderID && updatedOrderDetail?.productID) {
+    const order = updatedOrderDetail.orderID as unknown as OrderProps;
+    const product = updatedOrderDetail.productID as unknown as ProductProps;
+
+    const noti: CreateNotificationRequest = {
+      receiver: order.storeID,
+      title: NOTIFICATION_CONTENT_SELLER[NotificationType.Review].new_review.title,
+      content: NOTIFICATION_CONTENT_SELLER[NotificationType.Review].new_review.content(
+        product.name,
+      ),
+      type: NotificationType.Review,
+      relatedId: review._id,
+    };
+    await notificationService.sendNotification([noti]);
+  }
 
   return review;
 });
