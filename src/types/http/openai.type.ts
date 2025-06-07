@@ -141,7 +141,7 @@ export interface OpenAIUsageProps {
 
 //create embedding
 export interface CreateEmbeddingRequest {
-  input: string;
+  input: string | string[];
   model?: string;
   [property: string]: any;
 }
@@ -170,6 +170,7 @@ export interface Usage {
 export enum PromptType {
   ProductDescription = 'product_description',
   CheckCommunityViolation = 'check_community_violation',
+  ANALYZE_PRODUCT = 'analyze_product',
 }
 
 export interface PromptAIRequestProps {

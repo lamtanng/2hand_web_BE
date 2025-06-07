@@ -1,11 +1,19 @@
 import { UploadApiResponse } from 'cloudinary';
 import { Request, Response } from 'express';
+import { mean } from 'lodash';
 import mongoose, { PipelineStage } from 'mongoose';
-import { createEmbedding } from '../apis/openai';
+import { createEmbedding, promptAI } from '../apis/openai';
 import { productFolder } from '../constants/cloudinaryFolder';
 import { pagination } from '../constants/pagination';
+import { PROMPT_MAP } from '../constants/promptAI';
 import { ProductModel } from '../models/product';
 import { AppError } from '../types/error.type';
+import {
+  Datum,
+  OpenAIRequestProps,
+  OpenAIResponseProps,
+  PromptType,
+} from '../types/http/openai.type';
 import { PaginationResponseProps } from '../types/http/pagination.type';
 import {
   DeleteProductRequestProps,
@@ -13,6 +21,7 @@ import {
   UpdateProductRequestProps,
 } from '../types/http/product.type';
 import { ProductProps } from '../types/model/product.type';
+import { getRawProductText } from '../utils/analyticProduct';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
 import { createVectorIndex } from '../utils/createVectocIndex';
@@ -162,16 +171,56 @@ const uploadProductImages = async ({ files }: Pick<UploadCloudinaryProps, 'files
   return uploadedFiles.map((file: UploadApiResponse) => file.secure_url);
 };
 
+const formatProductForEmbedding = (product: any): string => {
+  const {
+    name,
+    description,
+    price,
+    quality,
+    weight,
+    height,
+    width,
+    length,
+    cateID,
+    storeID,
+    address,
+  } = product;
+
+  const dimensions = `${length}cm x ${width}cm x ${height}cm`;
+  const location = address
+    ? `${address.ward}, ${address.district}, ${address.province}`
+    : 'Unknown';
+
+  const category = cateID?.name || 'Uncategorized';
+  const store = storeID?.name || 'Unknown Store';
+
+  return `
+Tên sản phẩm: ${name}
+Danh mục: ${category}
+Cửa hàng: ${store}
+Mô tả: ${description}
+Chất lượng: ${quality}
+Giá: ${price} VND
+Kích thước: ${dimensions}
+Trọng lượng: ${weight}kg
+Địa chỉ: ${location}
+`.trim();
+};
+
 export const createEmbeddingData = async () => {
   try {
     const products = await ProductModel.find({
       name: { $regex: '.*' },
-    }).limit(100);
+    })
+      .populate('cateID', 'name')
+      .populate('storeID', 'name')
+      .limit(100);
 
-    const updatedProducts = await Promise.all(
+    await Promise.all(
       products?.map(async (product) => {
+        const text = formatProductForEmbedding(product);
         const embeddingResponse = await createEmbedding({
-          input: product.name,
+          input: text,
         });
 
         const embedding = embeddingResponse.data?.[0]?.embedding;
@@ -193,20 +242,27 @@ export const createEmbeddingData = async () => {
   }
 };
 
-const getProductByEmbedding = async (req: Request, res: Response) => {
+export const getProductByEmbedding = async (req: Request, res: Response) => {
   try {
-    const { search } = req.body;
-    const queryEmbedding = await createEmbedding({
-      input: search,
+    const { searches } = req.body;
+
+    if (!searches || !Array.isArray(searches) || searches.length === 0) {
+      throw new ApiError({ message: 'searches must be a non-empty array', statusCode: 400 });
+    }
+
+    const embeddingResponse = await createEmbedding({
+      input: searches,
     });
 
-    const embedding = queryEmbedding.data?.[0]?.embedding;
+    const vectors: number[][] = embeddingResponse.data.map((d: Datum) => d.embedding || []);
+
+    const avgEmbedding = vectors[0].map((_, i) => mean(vectors.map((vec) => vec[i])));
 
     const pipeline: PipelineStage[] = [
       {
         $vectorSearch: {
           index: 'vector_product',
-          queryVector: embedding,
+          queryVector: avgEmbedding,
           path: 'embedding',
           limit: 10,
           numCandidates: 30,
@@ -216,6 +272,7 @@ const getProductByEmbedding = async (req: Request, res: Response) => {
         $project: {
           _id: 1,
           name: 1,
+          price: 1,
           score: { $meta: 'vectorSearchScore' },
         },
       },
@@ -223,15 +280,12 @@ const getProductByEmbedding = async (req: Request, res: Response) => {
 
     const result = await ProductModel.aggregate(pipeline);
 
-    const highSimilarityResults = result.filter((item) => item.score >= 0.7);
-    const remainingResults = result.filter((item) => item.score < 0.7);
-
-    return {
-      highSimilarity: highSimilarityResults,
-      remaining: remainingResults,
-    };
-  } catch (error: AppError) {
-    return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
+    return result.sort((a, b) => b.score - a.score);
+  } catch (error: any) {
+    return new ApiError({
+      message: error.message,
+      statusCode: error.statusCode || 500,
+    }).rejectError();
   }
 };
 
