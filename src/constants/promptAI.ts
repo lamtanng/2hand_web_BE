@@ -1,6 +1,6 @@
 import { PromptType } from '../types/http/openai.type';
 
-export const PROMPT_MAP: Record<PromptType, string> = {
+export const PROMPT_MAP: Record<PromptType, any> = {
   [PromptType.ProductDescription]: `You are an expert e-commerce content writer. Based on the provided product image and title, generate a detailed, SEO-friendly product description in Vietnamese.
 
 Requirements:
@@ -59,5 +59,33 @@ No Violation Response:
 - Return exact matched phrases/text snippets
 - Case-insensitive detection
 - Consider cultural context nuances
+  `,
+  [PromptType.ANALYZE_PRODUCT]: (text: string) => `
+You are a smart assistant specialized in e-commerce product pages.
+
+Given the following raw text content extracted from a product webpage:
+
+<<<
+${text}
+>>>
+
+Extract the following product details as JSON:
+
+{
+  "product_name": string or null,
+  "brand": string or null,
+  "model": string or null,
+  "description": string or null,
+  "specifications": { key: value, ... } or null,
+  "price": string or null,
+  "currency": string or null,
+  "rating": string or null,
+  "number_of_reviews": string or null,
+  "availability": string or null,
+  "product_url": string (the original URL)
+}
+
+If any field is not found, set it to null. Return valid JSON only.
+
   `,
 };
