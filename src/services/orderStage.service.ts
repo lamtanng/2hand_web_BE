@@ -1,13 +1,15 @@
 import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import { NotificationModel } from '../models/notification';
+import { OrderModel } from '../models/order';
 import { OrderStageModel } from '../models/orderStage';
-import { OrderStageDocument } from '../models/orderStage/orderStage.doc';
-import { catchServiceFunc } from '../utils/catchErrors';
 import { OrderStageStatusModel } from '../models/orderStageStatus';
-import { CreateOrderStageRequest } from '../types/http/orderStage.type';
 import { OrderStageStatus } from '../types/enum/orderStageStatus.enum';
 import { AppError } from '../types/error.type';
+import { CreateOrderStageRequest } from '../types/http/orderStage.type';
+import { NotificationType } from '../types/model/notification.type';
 import ApiError from '../utils/classes/ApiError';
-import { OrderModel } from '../models/order';
+import { NOTIFICATION_CONTENT } from '../utils/notificationHelper';
 import { orderStageStatusService } from './orderStageStatus.service';
 
 const findAll = async (reqBody: Request, res: Response) => {
@@ -33,6 +35,19 @@ const createOneByRequest = async (req: Request, res: Response) => {
     },
     { new: true },
   ).populate({ path: 'orderStageID', populate: { path: 'orderStageStatusID' } });
+
+  if (!newOrder) {
+    throw new ApiError({ message: 'Order not found', statusCode: StatusCodes.NOT_FOUND });
+  }
+
+  await NotificationModel.create({
+    type: NotificationType.Order,
+    title: NOTIFICATION_CONTENT.Order?.[name]?.title,
+    content: NOTIFICATION_CONTENT.Order?.[name]?.content(newOrder?._id || ''),
+    receiver: newOrder?.userID,
+    relatedId: newOrder?._id,
+  });
+
   return newOrder;
 };
 

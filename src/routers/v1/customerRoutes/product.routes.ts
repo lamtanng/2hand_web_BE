@@ -14,6 +14,10 @@ const {
   toggleActiveProduct,
   findOneById,
   findOneBySlug,
+  createEmbeddingData,
+  getProductByEmbedding,
+  updateProductsApproval,
+  getHistoryProducts,
 } = productController;
 const { updateProductValidation, createProductValidation } = productValidation;
 const { Delete } = ActionPermission.Product;
@@ -26,5 +30,9 @@ router.route('/').post(isAuthorized, createProductValidation, addProduct);
 router.route('/').put(isAuthorized, updateProductValidation, updateProduct);
 router.route('/').delete(isAuthorized, isDeleted, deleteProduct);
 router.route('/').patch(isAuthorized, toggleActiveProduct);
+router.route('/create-embedding').post(createEmbeddingData);
+router.route('/get-product-by-embedding').get(getProductByEmbedding);
+router.route('/update-products-approval').post(updateProductsApproval);
+router.route('/get-history-products').get(getHistoryProducts);
 
 export const productRouter = router;

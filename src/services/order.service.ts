@@ -15,21 +15,24 @@ import { OrderModel } from '../models/order';
 import { OrderDetailModel } from '../models/orderDetail';
 import { OrderStageModel } from '../models/orderStage';
 import { OrderStageStatusModel } from '../models/orderStageStatus';
-import { ProductModel } from '../models/product';
 import { OrderStage } from '../types/enum/orderStage.enum';
 import { AppError } from '../types/error.type';
 import { GetAvailableServiceRequestProps } from '../types/http/ghn.type';
 import { IPNMoMoPaymentRequestProps, MoMoPaymentItemsProps } from '../types/http/momoPayment.type';
+import { CreateNotificationRequest } from '../types/http/notification.type';
 import {
   CalcExpectedDeliveryDateRequest,
   CreateCODPaymentRequestProps,
 } from '../types/http/order.type';
 import { PaginationResponseProps } from '../types/http/pagination.type';
+import { NotificationType } from '../types/model/notification.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
 import { getDate } from '../utils/format';
 import { getMoMoCreationRequestBody } from '../utils/momo';
+import { NOTIFICATION_CONTENT, NOTIFICATION_CONTENT_SELLER } from '../utils/notificationHelper';
 import { deleteEmptyObjectFields, parseJson } from '../utils/object';
+import { notificationService } from './notification.service';
 import { orderStageService } from './orderStage.service';
 const crypto = require('crypto');
 
@@ -177,8 +180,9 @@ const payByMomo = catchServiceFunc(async (req: Request, res: Response) => {
   const items = orders.reduce((accumulator: MoMoPaymentItemsProps[], shopOrder: any) => {
     return accumulator.concat(shopOrder.items);
   }, []);
-  const requestBody = getMoMoCreationRequestBody({ items, amount, extraData });
 
+  const requestBody = getMoMoCreationRequestBody({ items, amount, extraData });
+  
   const data = await createMoMoPayment(requestBody);
   return data;
 });
@@ -189,6 +193,9 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
   session.startTransaction();
 
   try {
+    // Mảng lưu trữ các đơn hàng được tạo thành công
+    const createdOrders = [];
+
     for (const order of orders) {
       //create order detail
       const { total, storeID, note, items, shipmentCost } = order;
@@ -219,17 +226,6 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
         (item) => item._id,
       );
 
-      const updatedProducts = await ProductModel.bulkWrite(
-        orderDetailList.map((order) => ({
-          updateOne: {
-            filter: { _id: order.productID },
-            update: {
-              $inc: { quantity: -order.quantity },
-            },
-          },
-        })),
-      );
-
       //update orderDetailIDs to order
       newOrder.orderDetailIDs = orderDetailIDs;
 
@@ -243,9 +239,51 @@ const createOrder = async (data: CreateCODPaymentRequestProps) => {
       //update orderID to order stage
       newOrder.orderStageID = orderStage?._id as mongoose.Types.ObjectId;
       await orderModel.save({ session });
+
+      // Thêm đơn hàng mới vào mảng createdOrders
+      createdOrders.push({
+        orderId: newOrder._id,
+        total,
+        storeID,
+      });
     }
 
     await session.commitTransaction();
+
+    if (createdOrders.length > 0) {
+      try {
+        let notifications: CreateNotificationRequest[] = [];
+
+        createdOrders.reduce((acc, order) => {
+          const buyerNotification: CreateNotificationRequest = {
+            type: NotificationType.Order,
+            title: NOTIFICATION_CONTENT.Order[OrderStage.Confirmating].title,
+            content: NOTIFICATION_CONTENT.Order[OrderStage.Confirmating].content(order.orderId),
+            receiver: userID,
+            relatedId: order.orderId,
+          };
+
+          const sellerNotification: CreateNotificationRequest = {
+            type: NotificationType.Order,
+            title: NOTIFICATION_CONTENT_SELLER.Order[OrderStage.Confirmating].title,
+            content: NOTIFICATION_CONTENT_SELLER.Order[OrderStage.Confirmating].content(
+              order.orderId,
+            ),
+            receiver: order.storeID,
+            relatedId: order.orderId,
+          };
+
+          acc.push(buyerNotification);
+          acc.push(sellerNotification);
+          return acc;
+        }, notifications);
+
+        await notificationService.sendNotification(notifications, global.socketIO);
+      } catch (notificationError) {
+        console.error('Lỗi khi tạo thông báo đơn hàng:', notificationError);
+      }
+    }
+
     return { message: ReasonPhrases.OK };
   } catch (error: AppError) {
     await session.abortTransaction();

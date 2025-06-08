@@ -1,9 +1,10 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { HttpMessage } from '../../constants/httpMessage';
+import { StoreModel } from '../../models/store';
 import { UserModel } from '../../models/user';
 import { LoginRequestProps, LoginResponseProps } from '../../types/http/login.type';
-import { UserProps } from '../../types/model/user.type';
+import { catchServiceFunc } from '../../utils/catchErrors';
 import ApiError from '../../utils/classes/ApiError';
 import {
   setAccessTokenToCookies,
@@ -11,7 +12,6 @@ import {
   signAccessToken,
   signRefreshToken,
 } from '../../utils/jwt';
-import { catchServiceFunc } from '../../utils/catchErrors';
 import { formatPhoneNumber } from '../../utils/phone';
 
 const login = catchServiceFunc(async (req: Request, res: Response) => {
@@ -37,9 +37,18 @@ const login = catchServiceFunc(async (req: Request, res: Response) => {
     }).rejectError();
   }
 
+  const store = await StoreModel.findOne({
+    userID: existUser._id,
+  });
+
+  const tokenData = {
+    ...existUser.toJSON(),
+    storeId: store?._id.toString() || undefined,
+  };
+
   //generate a token
-  const accessToken = await signAccessToken(existUser.toJSON());
-  const refreshToken = await signRefreshToken(existUser.toJSON());
+  const accessToken = await signAccessToken(tokenData);
+  const refreshToken = await signRefreshToken(tokenData);
 
   // assign to cookies
   setAccessTokenToCookies(res, accessToken);
