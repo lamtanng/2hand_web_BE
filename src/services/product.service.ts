@@ -166,41 +166,39 @@ const uploadProductImages = async ({ files }: Pick<UploadCloudinaryProps, 'files
   return uploadedFiles.map((file: UploadApiResponse) => file.secure_url);
 };
 
-const formatProductForEmbedding = (product: any): string => {
-  const {
-    name,
-    description,
-    price,
-    quality,
-    weight,
-    height,
-    width,
-    length,
-    cateID,
-    storeID,
-    address,
-  } = product;
+function formatProductForEmbedding(product: any) {
+  const stripHtml = (html: string) => html.replace(/<[^>]*>?/gm, '').trim();
+  const qm = {
+    New: 'mới 100%',
+    LikeNew: 'gần như mới',
+    Good: 'sử dụng tốt, còn mới',
+    Average: 'qua sử dụng, còn dùng được',
+    Old: 'cũ, hư hỏng nhẹ',
+  };
+  const ward = product.address?.ward?.WardName;
+  const district = product.address?.district?.DistrictName;
+  const province = product.address?.province?.ProvinceName;
+  const location = [ward, district, province].filter(Boolean).join(', ');
 
-  const dimensions = `${length}cm x ${width}cm x ${height}cm`;
-  const location = address
-    ? `${address.ward}, ${address.district}, ${address.province}`
-    : 'Unknown';
-
-  const category = cateID?.name || 'Uncategorized';
-  const store = storeID?.name || 'Unknown Store';
+  const keywords = ['đồ chơi', 'mô hình', product.name.match(/Halloween/i) ? 'Halloween' : ''];
 
   return `
-Tên sản phẩm: ${name}
-Danh mục: ${category}
-Cửa hàng: ${store}
-Mô tả: ${description}
-Chất lượng: ${quality}
-Giá: ${price} VND
-Kích thước: ${dimensions}
-Trọng lượng: ${weight}kg
+Keywords: ${keywords.filter(Boolean).join(', ')}
+
+Tên: ${product.name}
+Danh mục: ${product.cateID?.name || ''}
+Cửa hàng: ${product.storeID?.name || ''}
+Tình trạng: ${qm[product.quality as keyof typeof qm] || product.quality}
+
+Giá: ${product.price.toLocaleString()} VND
+Kích thước: ${product.height} cm × ${product.width} cm × ${product.length} cm
+Trọng lượng: ${product.weight} g
+
+Mô tả: ${stripHtml(product.description)}
+
 Địa chỉ: ${location}
 `.trim();
-};
+}
 
 export const createEmbeddingData = async () => {
   try {
@@ -239,11 +237,15 @@ export const createEmbeddingData = async () => {
 
 export const getProductByEmbedding = async (req: Request, res: Response) => {
   try {
+    const search = req.query?.search;
+    if (!search) {
+      return findAll(req, res);
+    }
+
     const embeddingResponse = await createEmbedding({
-      input: [req.query?.search as string],
+      input: [search] as string[],
     });
 
-    console.log('embeddingResponse', embeddingResponse);
     const vectors: number[][] = embeddingResponse?.data?.map((d: Datum) => d.embedding || []);
     const avgEmbedding = vectors?.[0]?.map((_, i) => mean(vectors.map((vec) => vec[i])));
 
