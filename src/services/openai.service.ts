@@ -71,8 +71,10 @@ const checkCommunityViolation = async (
 
   if (request.length === 0) return { status: true, images: [], text: [] };
 
-  const result = await openaiService.askWithAI(request, PromptType.CheckCommunityViolation);
+  const result = await askWithAI(request, PromptType.CheckCommunityViolation);
   const data = JSON.parse(result?.[0] || '{}') as PromptAIResponseProps;
+
+  console.log('data', data);  
 
   const response: PromptAIResponseProps = {
     status: true,
@@ -88,7 +90,8 @@ const checkCommunityViolation = async (
 const checkViolationRequest = catchServiceFunc(async (req: Request, res: Response) => {
   const content = req.body?.content;
   const images = req.body?.images;
-  const checkViolation = await openaiService.checkCommunityViolation(content, images);
+  const checkViolation = await checkCommunityViolation(content, images);
+  console.log('checkViolation', checkViolation);
   return checkViolation;
 });
 

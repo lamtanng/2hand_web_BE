@@ -38,11 +38,9 @@ export const createEmbedding = async (data: CreateEmbeddingRequest) => {
       },
     })
     .then((res) => {
-      console.log('res', res);
       return Promise.resolve(res);
     })
     .catch((err) => {
-      // console.log('err openai: ', err, err.data.error.message);
       return Promise.reject(err);
     });
 };

@@ -1,11 +1,13 @@
 import { UploadApiResponse } from 'cloudinary';
 import { Request, Response } from 'express';
-import { PipelineStage } from 'mongoose';
+import { mean } from 'lodash';
+import mongoose, { PipelineStage } from 'mongoose';
 import { createEmbedding } from '../apis/openai';
 import { productFolder } from '../constants/cloudinaryFolder';
 import { pagination } from '../constants/pagination';
 import { ProductModel } from '../models/product';
 import { AppError } from '../types/error.type';
+import { Datum } from '../types/http/openai.type';
 import { PaginationResponseProps } from '../types/http/pagination.type';
 import {
   DeleteProductRequestProps,
@@ -15,10 +17,12 @@ import {
 import { ProductProps } from '../types/model/product.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
-import { createVectorIndex } from '../utils/createVectocIndex';
+import { createVectorIndex, VECTOR_INDEX_NAME } from '../utils/createVectocIndex';
 import { deleteEmptyObjectFields, parseJson } from '../utils/object';
 import { generateSlug } from '../utils/slug';
 import { uploadCloudinary, UploadCloudinaryProps } from './cloudinary.service';
+import { searchHistoryService } from './searchHistory.service';
+import { SearchHistoryProps } from '../types/model/searchHistory.type';
 const findAll = async (req: Request, res: Response) => {
   try {
     const { page, limit, search, skip } = pagination(req);
@@ -162,16 +166,56 @@ const uploadProductImages = async ({ files }: Pick<UploadCloudinaryProps, 'files
   return uploadedFiles.map((file: UploadApiResponse) => file.secure_url);
 };
 
+const formatProductForEmbedding = (product: any): string => {
+  const {
+    name,
+    description,
+    price,
+    quality,
+    weight,
+    height,
+    width,
+    length,
+    cateID,
+    storeID,
+    address,
+  } = product;
+
+  const dimensions = `${length}cm x ${width}cm x ${height}cm`;
+  const location = address
+    ? `${address.ward}, ${address.district}, ${address.province}`
+    : 'Unknown';
+
+  const category = cateID?.name || 'Uncategorized';
+  const store = storeID?.name || 'Unknown Store';
+
+  return `
+Tên sản phẩm: ${name}
+Danh mục: ${category}
+Cửa hàng: ${store}
+Mô tả: ${description}
+Chất lượng: ${quality}
+Giá: ${price} VND
+Kích thước: ${dimensions}
+Trọng lượng: ${weight}kg
+Địa chỉ: ${location}
+`.trim();
+};
+
 export const createEmbeddingData = async () => {
   try {
     const products = await ProductModel.find({
       name: { $regex: '.*' },
-    }).limit(100);
+    })
+      .populate('cateID', 'name')
+      .populate('storeID', 'name')
+      .limit(100);
 
-    const updatedProducts = await Promise.all(
+    await Promise.all(
       products?.map(async (product) => {
+        const text = formatProductForEmbedding(product);
         const embeddingResponse = await createEmbedding({
-          input: product.name,
+          input: text,
         });
 
         const embedding = embeddingResponse.data?.[0]?.embedding;
@@ -184,7 +228,7 @@ export const createEmbeddingData = async () => {
       }),
     );
 
-    const result = await createVectorIndex(ProductModel);
+    const result = await createVectorIndex(ProductModel, VECTOR_INDEX_NAME.PRODUCT);
 
     return { result };
   } catch (err) {
@@ -193,46 +237,145 @@ export const createEmbeddingData = async () => {
   }
 };
 
-const getProductByEmbedding = async (req: Request, res: Response) => {
+export const getProductByEmbedding = async (req: Request, res: Response) => {
   try {
-    const { search } = req.body;
-    const queryEmbedding = await createEmbedding({
-      input: search,
+    const embeddingResponse = await createEmbedding({
+      input: [req.query?.search as string],
     });
 
-    const embedding = queryEmbedding.data?.[0]?.embedding;
+    console.log('embeddingResponse', embeddingResponse);
+    const vectors: number[][] = embeddingResponse?.data?.map((d: Datum) => d.embedding || []);
+    const avgEmbedding = vectors?.[0]?.map((_, i) => mean(vectors.map((vec) => vec[i])));
+
+    // Tạo matchStage để sử dụng trong $match
+    const sort = parseJson(req.query.sort as string);
+    const quality = parseJson(req.query.quality as string);
+    const cateID = parseJson(req.query.cateID as string);
+    const price = parseJson(req.query.price as string);
+    const storeID = parseJson(req.query.storeID as string);
+    const isPublish = parseJson(req.query.isPublish as string);
+    const isActive = parseJson(req.query.isActive as string);
+    const isApproved = parseJson(req.query.isApproved as string);
+    const isSoldOut = !!req.query?.isSoldOut
+      ? parseJson(req.query?.isSoldOut as string)
+      : undefined;
+
+    const findCondition = {
+      cateID: cateID && { $in: cateID },
+      isPublish: isPublish && String(isPublish),
+      isActive: isActive && String(isActive),
+      quantity: isSoldOut !== undefined ? (isSoldOut ? { $eq: 0 } : { $gt: 0 }) : undefined,
+      quality: quality && { $in: quality },
+      price: price && { $gte: price.min, $lte: price.max },
+      storeID: storeID && { $in: storeID },
+      isApproved: isApproved,
+    };
+
+    deleteEmptyObjectFields(findCondition);
+
+    console.log('findCondition', findCondition);
 
     const pipeline: PipelineStage[] = [
       {
         $vectorSearch: {
-          index: 'vector_product',
-          queryVector: embedding,
+          index: VECTOR_INDEX_NAME.PRODUCT,
+          queryVector: avgEmbedding,
           path: 'embedding',
-          limit: 10,
-          numCandidates: 30,
+          limit: 30, // tăng limit vì có lọc
+          numCandidates: 100,
         },
       },
       {
-        $project: {
-          _id: 1,
-          name: 1,
+        $addFields: {
           score: { $meta: 'vectorSearchScore' },
         },
       },
+      {
+        $replaceWith: {
+          $mergeObjects: ['$$ROOT', { score: '$score' }],
+        },
+      },
+      { $match: findCondition }, // lọc sau khi tìm bằng vector
+      { $sort: { score: -1 } },
+      // { $limit: 10 }, // lọc tiếp theo điểm
     ];
 
     const result = await ProductModel.aggregate(pipeline);
-
-    const highSimilarityResults = result.filter((item) => item.score >= 0.7);
-    const remainingResults = result.filter((item) => item.score < 0.7);
-
-    return {
-      highSimilarity: highSimilarityResults,
-      remaining: remainingResults,
+    const response: PaginationResponseProps = {
+      page: 1,
+      limit: 30,
+      total: result.length,
+      data: result,
     };
-  } catch (error: AppError) {
-    return new ApiError({ message: error.message, statusCode: error.statusCode }).rejectError();
+
+    // console.log('result', response);
+    return { response };
+  } catch (error: any) {
+    return new ApiError({
+      message: error.message,
+      statusCode: error.statusCode || 500,
+    }).rejectError();
   }
+};
+
+const updateProductsApproval = catchServiceFunc(async (req: Request, res: Response) => {
+  const { products } = req.body;
+
+  if (!products || !Array.isArray(products)) {
+    throw new ApiError({ message: 'Invalid products data', statusCode: 400 });
+  }
+
+  const bulkOps = products.map(({ _id, isApproved }) => ({
+    updateOne: {
+      filter: { _id: new mongoose.Types.ObjectId(_id) },
+      update: { $set: { isApproved } },
+    },
+  }));
+
+  const result = await ProductModel.bulkWrite(bulkOps);
+
+  return {
+    status: true,
+    matchedCount: result.matchedCount,
+    modifiedCount: result.modifiedCount,
+  };
+});
+
+const getHistoryProducts = async (req: Request, res: Response) => {
+  const historySearchTexts = (await searchHistoryService.findAllByUserIdWithoutRequest(
+    req.query?.userId as string,
+  )) as SearchHistoryProps[];
+
+  const vectors: number[][] = historySearchTexts?.map((d: SearchHistoryProps) => d.embedding || []);
+
+  console.log('vectors', vectors);
+  const avgEmbedding = vectors?.[0]?.map((_, i) => mean(vectors.map((vec) => vec[i])));
+
+  const pipeline: PipelineStage[] = [
+    {
+      $vectorSearch: {
+        index: VECTOR_INDEX_NAME.PRODUCT,
+        queryVector: avgEmbedding,
+        path: 'embedding',
+        limit: 10,
+        numCandidates: 50,
+      },
+    },
+    {
+      $addFields: {
+        score: { $meta: 'vectorSearchScore' },
+      },
+    },
+    {
+      $replaceWith: {
+        $mergeObjects: ['$$ROOT', { score: '$score' }],
+      },
+    },
+  ];
+
+  const historyProducts = await ProductModel.aggregate(pipeline);
+
+  return historyProducts;
 };
 
 export const productService = {
@@ -245,4 +388,6 @@ export const productService = {
   findOneBySlug,
   createEmbeddingData,
   getProductByEmbedding,
+  updateProductsApproval,
+  getHistoryProducts,
 };

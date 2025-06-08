@@ -1,8 +1,8 @@
-export const createVectorIndex = async (collection: any) => {
+export const createVectorIndex = async (collection: any, name: string) => {
   try {
     // Define your Atlas Vector Search index
     const index = {
-      name: 'vector_product',
+      name: name,
       type: 'vectorSearch',
       definition: {
         fields: [
@@ -22,4 +22,9 @@ export const createVectorIndex = async (collection: any) => {
   } catch (err) {
     console.log('err: ', err);
   }
+};
+
+export const VECTOR_INDEX_NAME = {
+  PRODUCT: 'vector_product',
+  SEARCH_HISTORY: 'vector_search_history',
 };

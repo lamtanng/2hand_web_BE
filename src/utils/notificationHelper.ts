@@ -68,6 +68,15 @@ export const NOTIFICATION_CONTENT: Record<
   },
   [NotificationType.Product]: {},
   [NotificationType.User]: {},
+  [NotificationType.Review]: {
+    new_review: {
+      title: 'Có đánh giá mới',
+      content: (productName: string) =>
+        `<div>
+          <p>Sản phẩm <strong>${productName}</strong> có đánh giá mới.</p>
+        </div>`,
+    },
+  },
 };
 
 export const NOTIFICATION_CONTENT_SELLER: Record<
@@ -161,6 +170,15 @@ export const NOTIFICATION_CONTENT_SELLER: Record<
       content: (productName: string) =>
         `<div>
           <p>Sản phẩm <strong>${productName}</strong> có đánh giá mới.</p>
+        </div>`,
+    },
+  },
+  [NotificationType.Review]: {
+    new_review: {
+      title: 'Có đánh giá mới',
+      content: (productName: string) =>
+        `<div>
+          <p>Sản phẩm <strong>${productName}</strong> có đánh giá mới.</p>  
         </div>`,
     },
   },

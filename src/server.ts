@@ -1,19 +1,19 @@
+import exitHook from 'async-exit-hook';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
+import http from 'http';
+import { Server } from 'socket.io';
 import { connectDB } from './config/db_mongoose';
 import { env } from './config/environment';
 import { corsOptions } from './constants/corsOptions';
 import { V1_ROUTE } from './constants/routes';
 import { errorHandler } from './middlewares/errorHandler.middleware';
 import { APIs_V1 } from './routers/v1';
-import cookieParser from 'cookie-parser';
-import exitHook from 'async-exit-hook';
-import http from 'http';
-import { Server } from 'socket.io';
-import jwt from 'jsonwebtoken';
-import { verifyAccessToken } from './utils/jwt';
 import { DecodedTokenProps } from './types/token.type';
+import { startApprovalCron } from './utils/crons';
+import { verifyAccessToken } from './utils/jwt';
 dotenv.config();
 
 // Khai báo global.socketIO để có thể truy cập từ bất kỳ đâu
@@ -60,7 +60,7 @@ const startServer = () => {
         storeId: decodedToken.storeId || null,
       };
 
-      socket.data.user = userData
+      socket.data.user = userData;
 
       socket.join(userData._id.toString());
 
@@ -121,6 +121,7 @@ const startServer = () => {
     await connectDB();
     console.log('Connected to MongoDB successfully');
     startServer();
+    startApprovalCron();
   } catch (error) {
     console.error('Error connecting to MongoDB', error);
     process.exit(0);
