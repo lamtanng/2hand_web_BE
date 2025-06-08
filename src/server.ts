@@ -104,7 +104,7 @@ const startServer = () => {
   app.use(errorHandler);
 
   // Start the server with http module instead of app.listen
-  server.listen(Number(process.env.PORT), env.APP_HOST, () => {
+  server.listen(env.APP_PORT, env.APP_HOST, () => {
     console.log(`Server running on http://${env.APP_HOST}:${env.APP_PORT}`);
   });
 
