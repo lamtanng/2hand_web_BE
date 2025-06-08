@@ -53,6 +53,11 @@ const updateProductsApproval = catchErrors(async (req: Request, res: Response) =
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const getHistoryProducts = catchErrors(async (req: Request, res: Response) => {
+  const result = await productService.getHistoryProducts(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const productController = {
   findAll,
   addProduct,
@@ -64,4 +69,5 @@ export const productController = {
   createEmbeddingData,
   getProductByEmbedding,
   updateProductsApproval,
+  getHistoryProducts,
 };

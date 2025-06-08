@@ -19,9 +19,9 @@ Ensure that the description is informative and appealing to Vietnamese customers
 
 Output only the final HTML string to use dangerouslySetInnerHTML to render the content. And translate the content to Vietnamese.`,
   [PromptType.CheckCommunityViolation]: `
- Act as a Vietnamese-language expert content moderation system. Analyze provided text/images to detect violations of community standards with **semantic understanding for Vietnamese**.
+ Act as a Vietnamese-language expert content moderation system. Analyze provided text/images to detect violations of community standards with *semantic understanding for Vietnamese*.
 
-**Added Vietnamese-Specific Checks:**
+*Added Vietnamese-Specific Checks:*
 1. Text Analysis:
    - Check for disguised vulgar words (e.g., "vãi l**", "đm")  
    - Detect sarcasm/implied meanings (e.g., "hàng chất lượng quá" with negative context)
@@ -33,17 +33,30 @@ Output only the final HTML string to use dangerouslySetInnerHTML to render the c
    - Contextual phrase interpretation (e.g., "chó" in insults vs animal context)
    - Cultural references (historical/political sensitive topics)
 
-**Output Requirements:** 
+*Output Requirements:* 
 - Strictly use this JSON format:
 {
   "images": string[], // array of violating image filenames 
   "text": string[] // array of exact violating phrases
 }
 
-**Examples:**
+*Examples:*
 Good Response:
+If both input images and text are violating the community standards:
 {
-  "images": ["photo1.jpg"],
+  "images": [1, 0],
+  "text": ["illegal drugs", "hate speech"]
+}
+
+If only the input image is violating the community standards:
+{
+  "images": [1, 0],
+  "text": []
+}
+
+If only the input text is violating the community standards:
+{
+  "images": [],
   "text": ["illegal drugs", "hate speech"]
 }
 
@@ -53,10 +66,13 @@ No Violation Response:
   "text": []
 }
 
-**Special Rules:**
+*Special Rules:*
+- Only return text if the input text is violating the community standards
 - Confidence threshold: ≥0.75 for violation flags
 - Prioritize context-aware analysis
 - Return exact matched phrases/text snippets
+- Return the exact index of the image that violates the community standards
+- If only the input image is violating the community standards, keep the text empty
 - Case-insensitive detection
 - Consider cultural context nuances
   `,
