@@ -150,7 +150,7 @@ const findByEmbedding = async (searchText?: string) => {
   ]);
 };
 
-const getTrendingKeywords = async (limit = 10, hours = 24) => {
+const getTrendingKeywords = async (limit = 10, hours = 240) => {
   const since = new Date(Date.now() - hours * 60 * 60 * 1000);
 
   const trending = await SearchHistoryModel.aggregate([
