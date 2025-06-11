@@ -38,7 +38,7 @@ const askWithAI = async (content: any, promptType: PromptType) => {
       tools: [],
     };
     const response = (await promptAI(payload)) as unknown as OpenAIResponseProps;
-    return response.choices.map((choice) => choice.message?.content);
+    return response.choices?.[0]?.message?.content;
   } catch (error) {
     console.log('error', error);
   }
@@ -72,9 +72,9 @@ const checkCommunityViolation = async (
   if (request.length === 0) return { status: true, images: [], text: [] };
 
   const result = await askWithAI(request, PromptType.CheckCommunityViolation);
-  const data = JSON.parse(result?.[0] || '{}') as PromptAIResponseProps;
+  const data = JSON.parse(result || '{}') as PromptAIResponseProps;
 
-  console.log('data', data);  
+  console.log('data', data);
 
   const response: PromptAIResponseProps = {
     status: true,

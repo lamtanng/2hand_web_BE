@@ -18,6 +18,7 @@ const {
   getProductByEmbedding,
   updateProductsApproval,
   getHistoryProducts,
+  getProductByImage,
 } = productController;
 const { updateProductValidation, createProductValidation } = productValidation;
 const { Delete } = ActionPermission.Product;
@@ -34,5 +35,6 @@ router.route('/create-embedding').post(createEmbeddingData);
 router.route('/get-product-by-embedding').get(getProductByEmbedding);
 router.route('/update-products-approval').post(updateProductsApproval);
 router.route('/get-history-products').get(getHistoryProducts);
+router.route('/get-product-by-image').post(getProductByImage);
 
 export const productRouter = router;

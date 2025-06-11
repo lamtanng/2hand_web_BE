@@ -58,6 +58,11 @@ const getHistoryProducts = catchErrors(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result).send();
 });
 
+const getProductByImage = catchErrors(async (req: Request, res: Response) => {
+  const result = await productService.getProductByImage(req, res);
+  res.status(StatusCodes.OK).json(result).send();
+});
+
 export const productController = {
   findAll,
   addProduct,
@@ -70,4 +75,5 @@ export const productController = {
   getProductByEmbedding,
   updateProductsApproval,
   getHistoryProducts,
+  getProductByImage,
 };

@@ -171,6 +171,7 @@ export enum PromptType {
   ProductDescription = 'product_description',
   CheckCommunityViolation = 'check_community_violation',
   ANALYZE_PRODUCT = 'analyze_product',
+  FindProductByImage = 'find_product_by_image',
 }
 
 export interface PromptAIRequestProps {

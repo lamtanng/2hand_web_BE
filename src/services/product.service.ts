@@ -7,7 +7,7 @@ import { productFolder } from '../constants/cloudinaryFolder';
 import { pagination } from '../constants/pagination';
 import { ProductModel } from '../models/product';
 import { AppError } from '../types/error.type';
-import { Datum } from '../types/http/openai.type';
+import { Datum, PromptType } from '../types/http/openai.type';
 import { PaginationResponseProps } from '../types/http/pagination.type';
 import {
   DeleteProductRequestProps,
@@ -23,6 +23,7 @@ import { generateSlug } from '../utils/slug';
 import { uploadCloudinary, UploadCloudinaryProps } from './cloudinary.service';
 import { searchHistoryService } from './searchHistory.service';
 import { SearchHistoryProps } from '../types/model/searchHistory.type';
+import { openaiService } from './openai.service';
 const findAll = async (req: Request, res: Response) => {
   try {
     const { page, limit, search, skip } = pagination(req);
@@ -380,6 +381,58 @@ const getHistoryProducts = async (req: Request, res: Response) => {
   return historyProducts;
 };
 
+const getProductByImage = async (req: Request, res: Response) => {
+  const { imageBase64 } = req.body;
+
+  const input = [
+    {
+      type: 'image_url',
+      image_url: { url: imageBase64 || '' },
+    },
+  ];
+
+  const tags = await openaiService.askWithAI(input, PromptType.FindProductByImage);
+  const tagsArray = tags?.length && tags[0]?.trim() ? JSON.parse(tags) : ['sản phẩm'];
+  console.log('tagsArray', tagsArray);
+
+  const embedding = await createEmbedding({
+    input: tagsArray as string[],
+  });
+
+  const vectors: number[][] = embedding?.data?.map((d: Datum) => d.embedding || []);
+  const avgEmbedding = vectors?.[0]?.map((_, i) => mean(vectors.map((vec) => vec[i])));
+
+  const pipeline: PipelineStage[] = [
+    {
+      $vectorSearch: {
+        index: VECTOR_INDEX_NAME.PRODUCT,
+        queryVector: avgEmbedding,
+        path: 'embedding',
+        limit: 10,
+        numCandidates: 50,
+      },
+    },
+    {
+      $addFields: {
+        score: { $meta: 'vectorSearchScore' },
+      },
+    },
+    {
+      $replaceWith: {
+        $mergeObjects: ['$$ROOT', { score: '$score' }],
+      },
+    },
+    {
+      $project: {
+        embedding: 0,
+      },
+    },
+  ];
+
+  const result = await ProductModel.aggregate(pipeline);
+  return result;
+};
+
 export const productService = {
   findAll,
   addProduct,
@@ -392,4 +445,5 @@ export const productService = {
   getProductByEmbedding,
   updateProductsApproval,
   getHistoryProducts,
+  getProductByImage,
 };
