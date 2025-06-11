@@ -1,5 +1,5 @@
 import mongoose, { Model, Schema } from 'mongoose';
-import { NotificationProps } from '../../types/model/notification.type';
+import { NotificationProps, NotificationType } from '../../types/model/notification.type';
 import { USER_COLLECTION_NAME } from '../user/user.doc';
 
 export interface INotificationMethods {}
@@ -29,7 +29,7 @@ export const NOTIFICATION_COLLECTION_SCHEMA = new Schema<
     type: {
       type: String,
       required: true,
-      enum: ['Order', 'Finance', 'System', 'Product', 'User'],
+      enum: Object.values(NotificationType),
     },
     title: {
       type: String,
