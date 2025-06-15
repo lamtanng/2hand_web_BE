@@ -5,6 +5,8 @@ import mongoose, { PipelineStage } from 'mongoose';
 import { createEmbedding } from '../apis/openai';
 import { productFolder } from '../constants/cloudinaryFolder';
 import { pagination } from '../constants/pagination';
+import { CartModel } from '../models/cart';
+import { OrderModel } from '../models/order';
 import { ProductModel } from '../models/product';
 import { AppError } from '../types/error.type';
 import { Datum, PromptType } from '../types/http/openai.type';
@@ -15,15 +17,15 @@ import {
   UpdateProductRequestProps,
 } from '../types/http/product.type';
 import { ProductProps } from '../types/model/product.type';
+import { SearchHistoryProps } from '../types/model/searchHistory.type';
 import { catchServiceFunc } from '../utils/catchErrors';
 import ApiError from '../utils/classes/ApiError';
-import { createVectorIndex, VECTOR_INDEX_NAME } from '../utils/createVectocIndex';
+import { averageVectors, createVectorIndex, VECTOR_INDEX_NAME } from '../utils/createVectocIndex';
 import { deleteEmptyObjectFields, parseJson } from '../utils/object';
 import { generateSlug } from '../utils/slug';
 import { uploadCloudinary, UploadCloudinaryProps } from './cloudinary.service';
-import { searchHistoryService } from './searchHistory.service';
-import { SearchHistoryProps } from '../types/model/searchHistory.type';
 import { openaiService } from './openai.service';
+import { searchHistoryService } from './searchHistory.service';
 const findAll = async (req: Request, res: Response) => {
   try {
     const { page, limit, search, skip } = pagination(req);
@@ -351,7 +353,6 @@ const getHistoryProducts = async (req: Request, res: Response) => {
 
   const vectors: number[][] = historySearchTexts?.map((d: SearchHistoryProps) => d.embedding || []);
 
-  console.log('vectors', vectors);
   const avgEmbedding = vectors?.[0]?.map((_, i) => mean(vectors.map((vec) => vec[i])));
 
   const pipeline: PipelineStage[] = [
@@ -380,6 +381,185 @@ const getHistoryProducts = async (req: Request, res: Response) => {
 
   return historyProducts;
 };
+
+async function createCombinedVector(sources: any) {
+  const vectors = [];
+  const weights = [];
+
+  // Xử lý từ khóa tìm kiếm (weight: 0.2)
+  if (sources.keywords && sources.keywords.length > 0) {
+    const keywordAvgVector = averageVectors(sources.keywords);
+    vectors.push(keywordAvgVector);
+    weights.push(0.2);
+  }
+
+  // Xử lý sản phẩm trong giỏ hàng (weight: 0.5)
+  if (sources.cartItems && sources.cartItems.length > 0) {
+    const cartVector = averageVectors(sources.cartItems);
+    vectors.push(cartVector);
+    weights.push(0.5);
+  }
+
+  // Xử lý sản phẩm đã mua (weight: 0.3)
+  if (sources.orderProducts && sources.orderProducts.length > 0) {
+    const orderVector = averageVectors(sources.orderProducts);
+    vectors.push(orderVector);
+    weights.push(0.3);
+  }
+
+  // Nếu không có vector nào, trả về mảng rỗng
+  if (vectors.length === 0) return [];
+  console.log('vectors', vectors.length);
+  // Tính vector kết hợp có trọng số
+  const dimension = vectors[0].length;
+  const combinedVector = Array(dimension).fill(0);
+  let totalWeight = 0;
+
+  for (let i = 0; i < vectors.length; i++) {
+    const vector = vectors[i];
+    const weight = weights[i];
+
+    for (let j = 0; j < dimension; j++) {
+      combinedVector[j] += vector[j] * weight;
+    }
+    totalWeight += weight;
+  }
+
+  return combinedVector.map((val) => val / totalWeight);
+}
+
+async function getRecommendations(req: Request, res: Response) {
+  try {
+    const { userId } = req.query;
+
+    let historySearchTexts: SearchHistoryProps[] = [];
+    let orders: any[] = [];
+    let cart: any = null;
+    let excludeProductIds: string[] = [];
+
+    if (userId && typeof userId === 'string') {
+      [historySearchTexts, orders, cart] = await Promise.all([
+        searchHistoryService.findAllByUserIdWithoutRequest(userId),
+        OrderModel.find({ userID: userId })
+          .select('orderDetailIDs')
+          .populate({
+            path: 'orderDetailIDs',
+            select: 'productID',
+            populate: {
+              path: 'productID',
+              select: 'embedding _id',
+            },
+          })
+          .lean(),
+        CartModel.findOne({ userID: userId })
+          .select('items')
+          .populate({
+            path: 'items',
+            select: 'productID',
+            populate: {
+              path: 'productID',
+              select: 'embedding _id',
+            },
+          })
+          .lean(),
+      ]);
+
+      // Thu thập các productID cần loại trừ
+      const cartProductIds =
+        cart?.items?.map((item: any) => item.productID?._id?.toString()).filter(Boolean) || [];
+
+      const orderProductIds =
+        orders.flatMap((order: any) =>
+          order.orderDetailIDs.map((p: any) => p.productID?._id?.toString()).filter(Boolean),
+        ) || [];
+
+      excludeProductIds = [
+        ...new Set([...cartProductIds.slice(0, 10), ...orderProductIds.slice(0, 10)]),
+      ];
+    } else {
+      historySearchTexts = await searchHistoryService.findAllByUserIdWithoutRequest();
+    }
+
+    // Extract embeddings efficiently
+    const keywordVectors = historySearchTexts
+      .slice(-5)
+      .map((d) => d.embedding || [])
+      .filter((v) => v.length > 0);
+
+    const cartVectors =
+      cart?.items?.flatMap((item: any) =>
+        item.productID?.embedding ? [item.productID.embedding] : [],
+      ) || [];
+
+    const orderVectors =
+      orders.flatMap((order: any) =>
+        order.orderDetailIDs.flatMap((p: any) =>
+          p.productID?.embedding ? [p.productID.embedding] : [],
+        ),
+      ) || [];
+
+    // Create combined vector
+    const combinedVector = await createCombinedVector({
+      keywords: keywordVectors,
+      cartItems: cartVectors,
+      orderProducts: orderVectors,
+    });
+
+    console.log('combinedVector', keywordVectors.length, cartVectors.length, orderVectors.length);
+    console.log('combinedVector length', combinedVector.length);
+    if (combinedVector.length === 0) {
+      return await ProductModel.find().limit(20);
+    }
+
+    const pipeline = getSearchPipeline(combinedVector, excludeProductIds);
+    const recommendations = await ProductModel.aggregate(pipeline);
+
+    return recommendations;
+  } catch (error) {
+    console.error('Recommendation error:', error);
+    return await ProductModel.find().limit(20);
+  }
+}
+
+function getSearchPipeline(queryVector: number[], excludeIds: string[] = []) {
+  const vectorSearchStage: any = {
+    $vectorSearch: {
+      index: VECTOR_INDEX_NAME.PRODUCT,
+      queryVector,
+      path: 'embedding',
+      limit: 30,
+      numCandidates: 50,
+    },
+  };
+
+  // Thêm bộ lọc nếu có sản phẩm cần loại trừ
+  // if (excludeIds.length > 0) {
+  //   vectorSearchStage.$vectorSearch.filter = {
+  //     _id: {
+  //       $nin: excludeIds.map((id) => new mongoose.Types.ObjectId(id)),
+  //     },
+  //   };
+  // }
+
+  return [
+    vectorSearchStage,
+    {
+      $addFields: {
+        score: { $meta: 'vectorSearchScore' },
+      },
+    },
+    {
+      $replaceWith: {
+        $mergeObjects: ['$$ROOT', { score: '$score' }],
+      },
+    },
+    {
+      $project: {
+        embedding: 0,
+      },
+    },
+  ];
+}
 
 const getProductByImage = async (req: Request, res: Response) => {
   const { imageBase64 } = req.body;
@@ -444,6 +624,7 @@ export const productService = {
   createEmbeddingData,
   getProductByEmbedding,
   updateProductsApproval,
-  getHistoryProducts,
+  getHistoryProducts: getRecommendations,
   getProductByImage,
+  getRecommendations,
 };

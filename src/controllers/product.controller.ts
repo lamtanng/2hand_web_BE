@@ -54,7 +54,7 @@ const updateProductsApproval = catchErrors(async (req: Request, res: Response) =
 });
 
 const getHistoryProducts = catchErrors(async (req: Request, res: Response) => {
-  const result = await productService.getHistoryProducts(req, res);
+  const result = await productService.getRecommendations(req, res);
   res.status(StatusCodes.OK).json(result).send();
 });
 
