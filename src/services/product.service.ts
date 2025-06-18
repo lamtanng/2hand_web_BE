@@ -2,14 +2,14 @@ import { UploadApiResponse } from 'cloudinary';
 import { Request, Response } from 'express';
 import { mean } from 'lodash';
 import mongoose, { PipelineStage } from 'mongoose';
-import { createEmbedding } from '../apis/openai';
+import { createEmbedding, promptAI } from '../apis/openai';
 import { productFolder } from '../constants/cloudinaryFolder';
 import { pagination } from '../constants/pagination';
 import { CartModel } from '../models/cart';
 import { OrderModel } from '../models/order';
 import { ProductModel } from '../models/product';
 import { AppError } from '../types/error.type';
-import { Datum, PromptType } from '../types/http/openai.type';
+import { Datum, OpenAIResponseProps, OpenAIRequestProps, PromptType } from '../types/http/openai.type';
 import { PaginationResponseProps } from '../types/http/pagination.type';
 import {
   DeleteProductRequestProps,
@@ -26,6 +26,7 @@ import { generateSlug } from '../utils/slug';
 import { uploadCloudinary, UploadCloudinaryProps } from './cloudinary.service';
 import { openaiService } from './openai.service';
 import { searchHistoryService } from './searchHistory.service';
+import { PROMPT_MAP } from '../constants/promptAI';
 const findAll = async (req: Request, res: Response) => {
   try {
     const { page, limit, search, skip } = pagination(req);
@@ -562,18 +563,42 @@ function getSearchPipeline(queryVector: number[], excludeIds: string[] = []) {
 }
 
 const getProductByImage = async (req: Request, res: Response) => {
-  const { imageBase64 } = req.body;
+  const { imageBase64, description } = req.body;
 
   const input = [
-    {
+    { 
       type: 'image_url',
       image_url: { url: imageBase64 || '' },
     },
+    // { type: 'text', text: description || 'màu đỏ, size lớn' },
   ];
 
-  const tags = await openaiService.askWithAI(input, PromptType.FindProductByImage);
-  const tagsArray = tags?.length && tags[0]?.trim() ? JSON.parse(tags) : ['sản phẩm'];
-  console.log('tagsArray', tagsArray);
+  // const tags = await openaiService.askWithAI(input, PromptType.FindProductByImage);
+  // const tagsArray = tags?.length ? JSON.parse(tags) : ['sản phẩm'];
+
+  const payload: OpenAIRequestProps = {
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+            content: PROMPT_MAP[PromptType.FindProductByImage](description),
+        },
+        {
+          role: 'user',
+          content: input,
+        },
+      ],
+      stream: false,
+      temperature: 0.7,
+      n: 1,
+      toolChoice: { type: 'none' },
+      tools: [],
+    };
+    console.log('payload', payload.messages);
+    const response = (await promptAI(payload)) as unknown as OpenAIResponseProps;
+    const tags = response.choices?.[0]?.message?.content;
+    const tagsArray = tags?.length ? JSON.parse(tags) : ['sản phẩm'];
+    console.log('tagsArray', tags, typeof tags);
 
   const embedding = await createEmbedding({
     input: tagsArray as string[],
