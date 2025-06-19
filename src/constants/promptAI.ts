@@ -104,33 +104,48 @@ Extract the following product details as JSON:
 If any field is not found, set it to null. Return valid JSON only.
 
   `,
-  [PromptType.FindProductByImage]: `
-  Bạn là một AI chuyên phân tích hình ảnh sản phẩm nhằm hỗ trợ người dùng tìm kiếm trên website thương mại điện tử.
-Tôi sẽ cung cấp cho bạn một hình ảnh sản phẩm (ví dụ: quần áo, phụ kiện, đồ dùng...). Nhiệm vụ của bạn là:
+  [PromptType.FindProductByImage]: (description: string) => `
+  Bạn là AI chuyên phân tích hình ảnh sản phẩm kết hợp mô tả bổ sung. Hãy:
 
-✅ Yêu cầu chính:
-- Phân tích vật thể chính trong hình ảnh để trích xuất 1 đến 3 keyword chính xác và ngắn gọn.
-- Các keyword luôn viết bằng tiếng Việt.
-- Trả về đúng định dạng sau: ["keyword 1", "keyword 2", "keyword 3"]
-(Số lượng keyword tùy theo ảnh, có thể là 1, 2 hoặc 3)
+✅ Yêu cầu:
+1. Phân tích vật thể chính trong hình ảnh
+2. Kết hợp mô tả bổ sung: "${description}"
+3. Trích xuất 1-5 keyword tiếng Việt (ưu tiên thông tin từ mô tả bổ sung)
+4. Định dạng output: ["keyword1", "keyword2", ...]
 
-🔍 Dựa trên các tiêu chí sau để xác định keyword:
-- Tên gọi sản phẩm (ví dụ: áo khoác, váy, balo, giày)
-- Loại sản phẩm / kiểu dáng (ví dụ: áo tay dài, váy xếp ly, giày sneaker)
-- Thông số kỹ thuật nổi bật (nếu có thể xác định): như tay dài/ngắn, chất liệu (vải bò, da...), cổ áo, form dáng...
-- Màu sắc chính (nếu dễ nhận biết và nổi bật)
-- Giới tính người dùng sản phẩm (ví dụ: nam, nữ, unisex – nếu có thể nhận diện qua người mẫu trong ảnh)
+🔍 Nguồn keyword:
+- Từ hình ảnh: Tên sản phẩm, kiểu dáng, màu sắc (nếu rõ), giới tính (nếu rõ)
+- Từ mô tả: Tất cả thông tin hữu ích (màu sắc, kích cỡ, chất liệu, giới tính, kiểu dáng, tên sản phẩm...)
 
-⚠️ Quy tắc bắt buộc:
-- Nếu không xác định được vật thể chính hoặc không thể nhận diện được sản phẩm → trả về: []
-- Không bao giờ thêm chú thích, mô tả hay giải thích.
-- Chỉ trả về đúng array keyword dạng tiếng Việt như yêu cầu.
+⚖️ Quy tắc kết hợp:
+- Ưu tiên thông tin từ mô tả bổ sung khi có khác biệt
+- Loại bỏ keyword trùng lặp
+- Giữ keyword ngắn gọn (<3 từ/keyword)
 
-🧠 Ví dụ:
-- Hình ảnh: Nam mặc áo khoác dài tay màu đen ["áo khoác", "áo khoác tay dài", "áo nam"]
-- Hình ảnh: Nữ mặc váy trắng xoè ["váy", "váy trắng", "váy nữ"]
-- Hình ảnh: Không rõ vật thể chính hoặc không phải sản phẩm []
+⚠️ Quy tắt output:
+- Chỉ trả về mảng JSON
+- Không giải thích/thêm text
+- Không xác định được sản phẩm → []
 
-🎯 Mục tiêu cuối cùng: Tạo ra các tag keyword giúp hệ thống tìm kiếm hiển thị đúng sản phẩm khi người dùng tải ảnh lên. Hãy ưu tiên độ chính xác cao, đúng vật thể chính, và ngắn gọn, súc tích.
-  `,  
+🎯 Ví dụ minh họa:
+1. Hình ảnh: Áo khoác nam đen → Mô tả: "màu xanh navy, size XL" 
+   → ["áo khoác nam", "màu xanh navy", "size XL"]
+   
+2. Hình ảnh: Giày thể thao trắng → Mô tả: "giày chạy bộ nam size 42" 
+   → ["giày chạy bộ nam", "size 42"]
+   
+3. Hình ảnh: Váy dài → Mô tả: "váy công sở nữ, màu be" 
+   → ["váy công sở nữ", "màu be"]
+   
+4. Hình ảnh: Balo → Mô tả: "túi laptop chống nước 15 inch" 
+   → ["túi laptop", "chống nước", "15 inch"]
+   
+5. Hình ảnh: Không rõ → Mô tả: "nón rộng vành nữ" 
+   → []
+   
+6. Hình ảnh: Đồng hồ → Mô tả: "đồng hồ dây da nam, kính chống trầy" 
+   → ["đồng hồ nam", "dây da", "kính chống trầy"]
+   
+7. Hình ảnh: Áo thun → Mô tả: "" (trống) 
+   → ["áo thun"]`,  
 };
